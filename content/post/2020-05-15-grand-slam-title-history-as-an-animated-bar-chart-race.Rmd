@@ -1,6 +1,6 @@
 ---
 title: Grand Slam title history as an animated bar chart race
-author: Victor
+author: ''
 date: '2020-05-15'
 slug: grand-slam-title-history-as-an-animated-bar-chart-race
 categories:
@@ -14,18 +14,31 @@ tags:
 publishdate: '2020-05-15'
 lastmod: '2020-05-15'
 ---
+![](C:\Users\victor.enciso\Documents_notOneDrive\Projects\site\static\post\2020-05-15-grand-slam-title-history-as-an-animated-bar-chart-race_files/gganim.gif)
 
-```{r message=FALSE, warning=FALSE, cache=FALSE, include=FALSE}
+I've spoiled it by putting the gif at the start of the post but if you are interested in how it was made then read on! 
+
+I've seen this kind of charts around the web so I wanted to make a tennis-related one and what better than using Grand Slam wins since the very beginning; 1877.
+
+The main package that is needed for the animation is gganimate. As the name suggests it integrates with ggplot to make an animation given many different charts and a transition variable.
+
+Let's load the necessary packages
+
+```{r message=FALSE, warning=FALSE, cache=FALSE}
 
 require(XML)
 require(data.table)
 library(httr)
 require(dplyr)
 require(stringr)
-require(RColorBrewer)
 require(ggplot2)
 require(gganimate)
+```
 
+Then we need to get the data for the chart. 
+Wikipedia helpfully has an article with all Grand Slam winner in history so we can pull the table within the article using `GET` and `readHTMLTable`
+
+```{r message=FALSE, warning=FALSE, cache=FALSE, include=FALSE}
 # url <- "https://en.wikipedia.org/wiki/List_of_Grand_Slam_men%27s_singles_champions"
 # 
 # r <- GET(url)
@@ -35,24 +48,28 @@ require(gganimate)
 tabs<-readRDS("C:/Users/victor.enciso/Documents_notOneDrive/Projects/misc/wiki_html_mes_singles_gs_champs")
 ```
 
+Once we know where the table is located in the HTML we can pull it into a data table. 
+
+There are some kinks in the table we have to get rid off. For example, in 1977 there were two Austrlian Opens so the entry for 1977 is split into two rows but just one year. 
+
+We then get rid of anything that is not a player name including special characters. Tjem the table is melted so we get one entry per year and Grand Slam.
+
+We also get rid of other stuff such as all the French Opens before 1925 because the tournament was not actually "open" and also instances when the tournaments were not held such as world wars.
+
 ```{r message=FALSE, warning=FALSE, cache=FALSE}
 gs<-data.table(tabs[[3]])
 
 names(gs) <- as.character(unlist(gs[1,]))
 gs<-gs[-1]
 
-#1977 had to AOs. Fix manually.
-gs<-bind_rows(gs,
-data.table(Year="1977","Australian Open"="Vitas Gerulaitis"))
+gs<-bind_rows(gs,data.table(Year="1977","Australian Open"="Vitas Gerulaitis"))
 
 gs<-gs[grep("[0-9]",Year)][order(Year)]
 
 gs <- melt(gs, id.vars = "Year")
 
-gs[grep("\\(([^)]+)\\)",gs[,value]),value]
 gs$winner <- gsub("\\(([^)]+)\\)","",gs$value)
 
-#gs[grep("[†]",value)]
 gs$winner<-gsub("[*]","",gs$winner)
 gs$winner<-gsub("[†]","",gs$winner)
 
@@ -63,27 +80,22 @@ gs[,winner:=str_trim(winner)]
 
 gs[,.N,winner][order(-N)]
 
-#Exclude FO before 1925
 gs<-gs[!(variable=="French Open" & Year<1925)]
 
 gs[,win:=1]
 
-#gs[,gs_wins := cumsum(win), .(year,winner)]
-#gs[,gs_wins_tot := cumsum(win), .(winner)]
+gs<-gs[!grep("tournament|started|WorldW|occupation|Tournament|oronavir",winner)]
 
-gs<-gs[!grep("tournament|started|World W|occupation|Tournament|oronavir",winner)]
-#gets rid of nas too
 gs<-gs[winner!=""]
+```
 
+We now need to keep a running tally of anyone who has won at least one Grand Slam for every year so that they show up in our chart with the correct number of GS's. This is what the `fun` function is doing below.
 
-###################################
-####  Get a cumulative table ######
-###################################
+Additionally we also need to rank the players from most GS's to least GS's to create a rank variable.
 
+```{r message=FALSE, warning=FALSE, cache=FALSE}
 #Get a list of all the years
 yearList<-gs[order(Year)][,unique(Year)]
-yearList[140:141]
-#Year>=2000 & 
 #Function fun calculates cumulative GS wins for all the players up to the current year
 fun<-function(year){ gs[Year<=year,.(win=sum(win),latestWin=max(Year)),.(winner)][,year:=year] }
 #Create a table that has all combinations of year/player
@@ -95,21 +107,13 @@ gsfull[,rank:=seq(1,.N),year]
 gsfull[,win_label := paste0(" ", win)]
 ```
 
-```{r}
+```{r message=FALSE, warning=FALSE, cache=FALSE}
 y<-1877
 
-###################################
-############# ggplot ##############
-###################################
-sp<-ggplot(gsfull[year>=y & rank<=20],aes(x=rank,y=win,fill=winner)) + 
-  #geom_bar(stat="Identity",position="stack") + theme_bw() +
+sp<-ggplot(gsfull[year>=y & rank<=30],aes(x=rank,y=win,fill=winner)) + 
   geom_tile(aes(y=win/2,height=win, width=0.95),alpha=0.9) + theme_bw() +
   geom_text(aes(y=0,label = paste0(winner," ")), hjust = 1) +
   geom_text(aes(y=win,label = win_label, hjust=0)) +
-  #scale_fill_manual(values=colors) +
-  #scale_fill_brewer(palette = "Paired", 12) +
-  #scale_fill_manual(values = mycolors) +
-  #coord_flip()+
   coord_flip(clip = "off", expand = F) +
   scale_x_reverse() +
   guides(color = FALSE, fill = FALSE) +
@@ -125,20 +129,18 @@ sp<-ggplot(gsfull[year>=y & rank<=20],aes(x=rank,y=win,fill=winner)) +
         panel.grid.major=element_blank(),
         panel.grid.minor=element_blank(),
         panel.grid.major.x = element_line( size=.1, color="grey" ),
-        panel.grid.minor.x = element_line( size=.1, color="grey" )
-        ,
+        panel.grid.minor.x = element_line( size=.1, color="grey" ),
         plot.margin = margin(5,5,5,5, "cm")
-        #plot.margin = margin(3,3,3,3, "cm")
         )
 
-sp
+#sp
 
 p <- sp + transition_states(year, transition_length = 4, state_length = 2) +
   view_follow(fixed_x = TRUE)  +
   labs(title = 'Grand Slam Titles : {closest_state}')  +
    enter_drift(y_mod=10) + exit_shrink()  + 
   ease_aes('linear')
-p
+#p
 
 
 #animate(p, 600, fps = 7,  width = 800, height = 600, 
