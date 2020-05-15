@@ -1,0 +1,274 @@
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>
+	leaflet on A stats website
+	
+	</title>
+    <link>/tags/leaflet/</link>
+    <description>Recent content 
+	
+	in leaflet on A stats website
+	</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+	
+	
+    <lastBuildDate>Mon, 04 May 2020 00:00:00 +0000</lastBuildDate>
+	
+    
+        <atom:link href="/tags/leaflet/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Analysing  tweets from the Virtual Madrid Open</title>
+      <link>/2020-05-01-analysing-tweets-from-the-virtual-madrid-open/</link>
+      <pubDate>Mon, 04 May 2020 00:00:00 +0000</pubDate>
+      
+      <guid>/2020-05-01-analysing-tweets-from-the-virtual-madrid-open/</guid>
+	  <description>
+&lt;script src=&#34;/rmarkdown-libs/htmlwidgets/htmlwidgets.js&#34;&gt;&lt;/script&gt;
+&lt;script src=&#34;/rmarkdown-libs/jquery/jquery.min.js&#34;&gt;&lt;/script&gt;
+&lt;link href=&#34;/rmarkdown-libs/leaflet/leaflet.css&#34; rel=&#34;stylesheet&#34; /&gt;
+&lt;script src=&#34;/rmarkdown-libs/leaflet/leaflet.js&#34;&gt;&lt;/script&gt;
+&lt;link href=&#34;/rmarkdown-libs/leafletfix/leafletfix.css&#34; rel=&#34;stylesheet&#34; /&gt;
+&lt;script src=&#34;/rmarkdown-libs/Proj4Leaflet/proj4-compressed.js&#34;&gt;&lt;/script&gt;
+&lt;script src=&#34;/rmarkdown-libs/Proj4Leaflet/proj4leaflet.js&#34;&gt;&lt;/script&gt;
+&lt;link href=&#34;/rmarkdown-libs/rstudio_leaflet/rstudio_leaflet.css&#34; rel=&#34;stylesheet&#34; /&gt;
+&lt;script src=&#34;/rmarkdown-libs/leaflet-binding/leaflet.js&#34;&gt;&lt;/script&gt;
+&lt;script src=&#34;/rmarkdown-libs/kePrint/kePrint.js&#34;&gt;&lt;/script&gt;
+
+
+&lt;p&gt;With the world in lockdown and no live tennis in the horizon in the near future the Madrid Open decided to organise an online tournament with male and female players facing each other using the Tennis World Tour video game.&lt;/p&gt;
+&lt;p&gt;I was curious to see how fans reacted to the event. I downloaded twitter data using the rtweet package. I tried to include as many relevant terms as possible, the command I used was: &lt;code&gt;search_tweets2(q=&#34;#MMOPEN OR #PlayAtHome OR MutuaMadridOpen OR @MutuaMadridOpen&#34;,include_rts = F,n=18000)&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;The query retrieved ~7500 tweets from the last 9 days, executed on May 1st, which is enough to cover the duration of the tournament. I saved the data in a file to use later.&lt;/p&gt;
+&lt;p&gt;Armed with the data we are ready to make some visualisations and text analysis. The tweet data is loaded in as a data.table with name &lt;code&gt;tw&lt;/code&gt;.&lt;/p&gt;
+&lt;div id=&#34;tweet-map&#34; class=&#34;section level3&#34;&gt;
+&lt;h3&gt;Tweet map&lt;/h3&gt;
+&lt;p&gt;The tweets come with latitude and longitude coordinates for users who allowed their location to be known.&lt;/p&gt;
+&lt;p&gt;Using leaflet we can plot the location of the tweets to get an idea of where they are coming from. Unfortunately only a very small proportion of tweets come with location information but we will map those anyway. There are other variables in the dataset that provide information about where the tweet comes from such as city, place but it’s not standardised in any way. These data could be used to derive coordinates if you were stubborn enough.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;m &amp;lt;- leaflet() %&amp;gt;%
+     addTiles() %&amp;gt;%  # Add default OpenStreetMap map tiles
+    #addProviderTiles(&amp;#39;Stamen.Toner&amp;#39;) %&amp;gt;% 
+     addMarkers(lat=tw[!is.na(lat),lat], lng=tw[!is.na(lng),lng],
+                     popup=tw[!is.na(lng),text]) 
+m  &lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;div id=&#34;htmlwidget-1&#34; style=&#34;width:672px;height:480px;&#34; class=&#34;leaflet html-widget&#34;&gt;&lt;/div&gt;
+&lt;script type=&#34;application/json&#34; data-for=&#34;htmlwidget-1&#34;&gt;{&#34;x&#34;:{&#34;options&#34;:{&#34;crs&#34;:{&#34;crsClass&#34;:&#34;L.CRS.EPSG3857&#34;,&#34;code&#34;:null,&#34;proj4def&#34;:null,&#34;projectedBounds&#34;:null,&#34;options&#34;:{}}},&#34;calls&#34;:[{&#34;method&#34;:&#34;addTiles&#34;,&#34;args&#34;:[&#34;//{s}.tile.openstreetmap.org/{z}/{x}/{y}.png&#34;,null,null,{&#34;minZoom&#34;:0,&#34;maxZoom&#34;:18,&#34;tileSize&#34;:256,&#34;subdomains&#34;:&#34;abc&#34;,&#34;errorTileUrl&#34;:&#34;&#34;,&#34;tms&#34;:false,&#34;noWrap&#34;:false,&#34;zoomOffset&#34;:0,&#34;zoomReverse&#34;:false,&#34;opacity&#34;:1,&#34;zIndex&#34;:1,&#34;detectRetina&#34;:false,&#34;attribution&#34;:&#34;&amp;copy; &lt;a href=\&#34;http://openstreetmap.org\&#34;&gt;OpenStreetMap&lt;\/a&gt; contributors, &lt;a href=\&#34;http://creativecommons.org/licenses/by-sa/2.0/\&#34;&gt;CC-BY-SA&lt;\/a&gt;&#34;}]},{&#34;method&#34;:&#34;addMarkers&#34;,&#34;args&#34;:[[-38.19988735475,55.8761973,51.457877,-6.19621135,40.1687225,38.009443,55.13332045,55.1598345,55.1598345,55.1598345,55.1598345,55.1598345,51.59925535,28.1030125,-37.97256651425,39.55871005,39.55871005,39.55871005,39.55871005,39.55871005,39.55871005,39.55871005,39.55871005,50.1035907,50.1035907,50.1035907,26.4561475,-28.45340525,41.39265665,43.629311,43.27787125,43.27787125,-6.9155569,-6.9155569,7.42907465,42.394453,42.394453,6.49311225,43.2436283,25.5694737,25.5694737,25.5694737,25.5694737,25.5694737,25.5694737,25.5694737,34.0207895,35.9824705,29.8384948,-22.9333,36.251936,45.4091172,44.9346135,7.8786602,7.8786602,7.8786602,41.6916363,37.7706565,40.4777947,-33.4254004,28.1030125,40.4313888,41.6916363,37.10851325,40.31990335,15.2011325,15.2011325,15.2011325,44.787123,55.5486656,51.61188465,51.61188465,51.61188465,-33.8065285,30.0615955,34.0207895,49.3419815,42.8302591,53.1548066,53.1548066,51.67910325,41.14601905,41.14601905,41.14601905,41.14601905,41.14601905,51.5138971,55.94230005,28.4983765,35.4019815,35.4019815,35.4019815,35.4019815,50.05957995,40.655138,40.655138,40.655138,40.655138,6.6897024,-27.95422175775,52.76132755,43.73582845,57.1605562,32.6535835,35.8577,23.62541855,6.59061115,43.555244,43.555244,43.555244,43.555244,41.8984164,43.36888,45.92856115,45.92291295,40.3476735,53.8019562,29.8384948,52.11398,24.0983807,24.0983807,41.39265665,43.8806945,33.51674685,40.3341475,51.4108755,19.32838305,40.3005504,-33.429485,19.3261458,45.5578305,28.6384895,45.4827445,43.629311,40.00134,30.3834,30.3834,30.3834,30.3834,40.4,51.50378615,22.2624275,49.985057,-23.682803,50.98304269,45.0728727,35.2352865,-22.85186074,15.54795,55.466068,41.26028535,-37.97256651425,18.79171955,35.7539595,-29.85083595,53.5558197,52.01761005,50.984976,38.9293245,38.9293245,47.25082685,49.0869965,51.46468585,51.52483525,14.5464995,52.91553,53.6239735],[146.522074416,-3.1142899,-2.58539,106.8220717,-84.973784,-122.1178059,-6.66293985,-118.8117149,-118.8117149,-118.8117149,-118.8117149,-118.8117149,-0.018734,-15.45984895,145.053135344,3.249357,3.249357,3.249357,3.249357,3.249357,3.249357,3.249357,3.249357,-5.27126205,-5.27126205,-5.27126205,-80.0931798,21.26594485,2.14122735,-79.2725695,-1.9877106,-1.9877106,107.6174241,107.6174241,3.9052965,-71.2420715,-71.2420715,3.3386054,-2.2346623,85.1020385,85.1020385,85.1020385,85.1020385,85.1020385,85.1020385,85.1020385,-118.4119065,-83.9638415,-95.4464865,-43.2333,-78.9624499,12.1748172,-93.6626335,80.76465395,80.76465395,80.76465395,-0.92733235,-122.4359785,-3.70350755,-70.51891745,-15.45984895,-79.98068965,-0.92733235,-3.57099015,-3.89322605,-86.24319335,-86.24319335,-86.24319335,26.260548,-4.655906,-0.21089455,-0.21089455,-0.21089455,25.57926235,146.4647615,-118.4119065,-122.857891,-106.330781,-6.81533305,-6.81533305,-3.23023515,1.1243688,1.1243688,1.1243688,1.1243688,1.1243688,-3.42597775,-4.0086146,-81.386183,-80.6311314,-80.6311314,-80.6311314,-80.6311314,14.4658753,-73.9487755,-73.9487755,-73.9487755,-73.9487755,3.3352053,153.369361472,0.419867,11.1544972,-2.12704045,-96.55901125,-86.3947,-102.55803745,3.318066,-79.616073,-79.616073,-79.616073,-79.616073,12.54514535,-80.9843445,8.52277925,8.4322073,-74.0701315,-1.56549,-95.4464865,-2.0798,90.32870865,90.32870865,2.14122735,-79.2996725,-7.7794158,-74.2482833,-0.189289,-99.15234025,-3.6656669,-70.61075935,-99.6050475,-73.723025,77.095086,-75.6250379,-79.2725695,-74.1880345,-89.3727,-89.3727,-89.3727,-89.3727,-3.68333,-0.1891901,70.8960125,8.566941,-46.5955455,13.83831969,7.6757855,136.7583175,-43.29285691,121.09068,-4.62491655,-3.93390615,145.053135344,98.96891115,139.8539435,-51.1667104,-113.4926175,-0.22936815,-1.719032,-1.90194475,-1.90194475,9.581494,-122.2670745,-0.07060315,-0.1731149,121.03321235,-1.4707785,-113.121093],null,null,null,{&#34;interactive&#34;:true,&#34;draggable&#34;:false,&#34;keyboard&#34;:true,&#34;title&#34;:&#34;&#34;,&#34;alt&#34;:&#34;&#34;,&#34;zIndexOffset&#34;:0,&#34;opacity&#34;:1,&#34;riseOnHover&#34;:false,&#34;riseOffset&#34;:250},[&#34;Great comeback @Peter_Mitchell7 when goaded by Tim Watson tonight on @7NewsMelbourne on virtual Madrid Masters #MMOPEN \nTim with a smirk \&#34;\&#34;Well Mitch, if you want some real sport, there&#39;s a good game on @7mate tonight that you may enjoy.\&#34;\&#34; \nMitch \&#34;\&#34;It might be old but it&#39;s real!\&#34;\&#34;&#34;,&#34;@the_LTA @andy_murray @denis_shapo @MutuaMadridOpen Go Andy&#34;,&#34;@atptour @andy_murray @MutuaMadridOpen Well done ANDY !&#34;,&#34;#PlayatHome with STAR WARS figures and it comes with up 50% OFF\n.\nExclusive via Chat &amp;amp; Shop⁠\n.⁠\nGet CashBack 100K using BCA Credit Card (T&amp;amp;C apply)\n.\nFREE SHIPPING maximum IDR 20.000 for the first 50… https://t.co/6u77MhZAlE&#34;,&#34;@kikibertens @MutuaMadridOpen When you&#39;re good you&#39;re good play like you&#39;ve never played before okay&#34;,&#34;@PlayStation @AskPlayStation \nWill there be any more free games added to the #PlayAtHome initiative, maybe in May🤔?❓&#34;,&#34;@the_LTA @andy_murray @MutuaMadridOpen @NHSuk @atptour 💕💕💕💕💕💕💕&#34;,&#34;Most competitive match of the tournament so far 🎮 Well done on the battle @Bandreescu_ and pretty good result for your first tournament of the season 😊 Keep at ‘em! 🇨🇦 https://t.co/hXynTnvoSs&#34;,&#34;@TSN_Sports @TSNTennis Are you going to be broadcasting this, considering you have the rights to 900/1000 level events? 🤔 https://t.co/ffJg46yDM8&#34;,&#34;@TennisTheGame This @MutuaMadridOpen event really proves/highlights that game devs really need to up their level and release a comprehensive, high quality, @WTA @atptour player/sponsor sanctioned game with most top/popular players, on par with other top sports games 🤔&#34;,&#34;Note: Madrid is 6 hours ahead of the GTA, so if the time listed for @MutuaMadridOpen is local, than Bianca’s matches would start at 14:30 (2:30pm) Bianca time ⏰ https://t.co/cpIvQeW89h&#34;,&#34;For all the @Bandreescu_ fans out there, Bianca will play her first virtual matches on Monday the 27th starting NB 20:30 🇨🇦 I imagine the NB is “not before” but not sure what the time zone on that is; I’ll find out and add to this post 😊 https://t.co/wbVT77VRTm https://t.co/PzdJRi3CWn&#34;,&#34;You love to see it https://t.co/Dfkenk382m&#34;,&#34;@MutuaMadridOpen @andy_murray @TennisChannels Madre mía Goffin, pecho frío hasta en la play ... 😂😂😂&#34;,&#34;Walkover😂 https://t.co/Q0nkrsMkNN&#34;,&#34;Andy! https://t.co/ssjah9AIYl&#34;,&#34;He hecho unos cuantos sorteos de cuadros... ¡Pero hoy haremos uno muy especial! A las 16:00 os espero con @Rafael_Plaza para el sorteo en directo del @MutuaMadridOpen Virtual! ¡La lista de jugadores es 🔝! ¡No llegues tarde, @feliciano_lopez!\n\n🎥: https://t.co/ZUMaINsgXE https://t.co/ifk1sKiddC&#34;,&#34;¡Partidazo entre @DavidFerrer87 y @dieschwartzman para arrancar el @MutuaMadridOpen Virtual Pro!\n\n🎥: https://t.co/4zAhqNW1VU https://t.co/Pm4h9jzZm2&#34;,&#34;@miguelangeldaza @MutuaMadridOpen ¡Así lo haré! Son un equipo 🔝&#34;,&#34;Finalizó el @MutuaMadridOpen Virtual Pro con las victorias de Murray y Bertens. \n\nMe quedo, por encima de todo, con la solidaridad de muchísimas personas  que han donado y que han invertido su tiempo y cariño para hacerlo posible. 👏🏻👏🏻 https://t.co/hMhFOtPRtN&#34;,&#34;Hoy hemos celebrado con @atptour  y @WTA el sorteo del @MutuaMadridOpen Virtual Pro. ¡Os animo a seguirlo desde el lunes! Las causas benéficas merecen la pena. \nThanks @Rafael_Plaza! \n\n👉🏻 https://t.co/fkeYqdyoQR https://t.co/HCXLr1OWUs&#34;,&#34;@stewieALQ @DavidFerrer87 @dieschwartzman @MutuaMadridOpen Están en ello. Se solucionará. Quedémonos con lo positivo 😊&#34;,&#34;¡Arrancamos el sorteo del @MutuaMadridOpen Virtual PRO!\n\nhttps://t.co/ngMrOwcVtA&#34;,&#34;@MutuaMadridOpen @WTARomania I’ve got a reason to live again, it’s completion, the sea, it may be small but it’s a huge hope for you all. Romania forever Hallep foreve big waves for Nathan. Never give up. It’s soul.&#34;,&#34;@MutuaMadridOpen @dieschwartzman @andy_murray Come on Andy&#34;,&#34;@simonahalep5 @Simona_Halep @MutuaMadridOpen Babe!! Im going slightly grey in my hair (silver surfer). Before we get too old. I’m well today. Have a great day. Tony, Darren, nik, Arti dNiel and Tania and friends and family peace be with you&#34;,&#34;@TennisChannel @andy_murray @MutuaMadridOpen Three Grand Slams, 14 @ATPMasters titles, 2 Olympic Gold in singles and a Davis Cup win. Now @andy_murray can add the @MutuaMadridOpen Virtual Pro title to his collection. Sport&#39;s new reality! Well played Andy &amp;amp; well done to @feliciano_lopez &amp;amp; his staff for an innovative idea!&#34;,&#34;@atptour @MutuaMadridOpen @andy_murray The champion is back🎉🎉 @andy_murray&#34;,&#34;That tie break was genuinely tense! 😂 https://t.co/tdTsZeKab1&#34;,&#34;The #MMOpen tweeting results of Virtual Pro with headlines. How far we have fallen in the world of sport. Goodness. I know they desperately need content, but it&#39;s so incredibly cringeworthy 😂&#34;,&#34;Como termino el @David__Goffin v @StefTsitsipas the game in @MutuaMadridOpen ... #virtualtenis&#34;,&#34;@BelindaBencic ETXERA @nataliallovovic #virtualtenis @ConexionTDP_tve @feliciano_lopez  @kikibertens AURRERA..engancha el #virtualtenis .. @MutuaMadridOpen&#34;,&#34;#athome si Boi coba2 main air gerimis. Trus doi seneng, ga mau masuk😅.\n#kangenjalanjalan tapi #dirumahajadulu #keluarseperlunya\n.\n.\n.\n#stayathome against #covid_19 #playathome #2020 #april #denzelgabrieltheonardy… https://t.co/j5g8sxwG45&#34;,&#34;Lil designer &amp;amp; his tab. 😎\n#kangenjalanjalan tapi #dirumahajadulu #keluarseperlunya\n.\n.\n.\n#athome #stayathome against #covid_19 #playathome #2020 #may #denzelgabrieltheonardy #davidvaniajourney #familylife @ Salt &amp;amp;… https://t.co/n9SickzCuB&#34;,&#34;Toor okay https://t.co/dUJ5REQbkk&#34;,&#34;Yes https://t.co/OuWefQoW5O&#34;,&#34;Class act from @dieschwartzman https://t.co/jVV2mJdj4D&#34;,&#34;What game is this\nI think it&#39;s sacrilegious that we&#39;ve not had a top tier tennis game in close to a decade https://t.co/kqW751swuN&#34;,&#34;@BelindaBencic @MutuaMadridOpen 🔝performance&#34;,&#34;subscribe - https://t.co/lVejK0bmPA\n\n#gharbaithoindia #LifebuoyKarona #playathome #abhishekanand4u #foryou #foryoupage https://t.co/gClrP4EUW3&#34;,&#34;subscribe - https://t.co/lVejK0sXH8\n\n#gharbaithoindia #LifebuoyKarona #playathome #abhishekanand4u #foryou #foryoupage https://t.co/LfrewKFupx&#34;,&#34;subscribe - https://t.co/lVejK0bmPA\n\n#gharbaithoindia #LifebuoyKarona #playathome #abhishekanand4u #foryou #foryoupage https://t.co/goSCX03kkz&#34;,&#34;subscribe - https://t.co/lVejK0bmPA\n\n#gharbaithoindia #LifebuoyKarona #playathome #abhishekanand4u #foryou #foryoupage https://t.co/M6DFPSdbdQ&#34;,&#34;subscribe - https://t.co/lVejK0bmPA\n\n#gharbaithoindia #LifebuoyKarona #playathome #abhishekanand4u #foryou #foryoupage https://t.co/HyO9A2yo1D&#34;,&#34;subscribe - https://t.co/lVejK0bmPA\n\n#gharbaithoindia #LifebuoyKarona #playathome #abhishekanand4u #foryou #foryoupage https://t.co/nclDCvzIkK&#34;,&#34;subscribe - https://t.co/lVejK0bmPA\n\n#gharbaithoindia #LifebuoyKarona #playathome #abhishekanand4u #foryou #foryoupage https://t.co/YTgdhFa7a0&#34;,&#34;Ouuuu #escaperoom #PlayAtHome https://t.co/9l6M0Kdd4V #affiliate https://t.co/DHnyj4vSyt&#34;,&#34;Tomorrow night I have to choose between #playathome d&amp;amp;d, the @parksandrecnbc reunion, or the Three 6/Bone Thugz Instagram #Verzuz. Truly a king’s ransom of quarantine activities. My modem can handle all three, but can my heart?&#34;,&#34;#WTA La tenista Louisa Chirico jugando en el @MutuaMadridOpen en el 2016. El Mutua Open se hubiera celebrado esta semana. @Louisa_Chirico 🎾 https://t.co/4FkLTWv4KY&#34;,&#34;I recorded this video for the PRS guitars challenge!\n\n@prsguitars \n#Playathome\n#myPRS em Tijuca, Rio De Janeiro, Brazil https://t.co/DWLyZYa0dd&#34;,&#34;You can help our #healthcareheroes &amp;amp; other essential employees during the #COVID19 pandemic. \n\nHow? #StayatHome &amp;amp; #PlayatHome in #Durham. https://t.co/lSByWqtZu9&#34;,&#34;@MutuaMadridOpen @dieschwartzman @andy_murray Is it a joke? The correct score is 3-0! https://t.co/feYNJjwtty&#34;,&#34;@BorjaIglesias9 @MutuaMadridOpen @brunonieto_ No más faltó que bailes 😂🤣 https://t.co/fijdHzOdAj&#34;,&#34;Watching #Techstorm #esports on @dialoglk TV @Quantic_Dream&#39;s #DetroitBecomeHuman one helluva video game. I am watching this &amp;amp; I&#39;m playing #BeyondTwoSouls these days which is a awesome game too, loving it. @EllenPage performance is epic. #Sony #PlayStation4 #PlayAtHome #StayHome https://t.co/CvfX5V9VIs&#34;,&#34;Just now finished #BeyondTwoSouls absolutely brilliant @Quantic_Dream #DavidCage. @EllenPage &amp;amp; #WillemDafore both of your acting is simply magnificent. I chose #Life #Sony #Playstation4 #StayHome #PlayAtHome https://t.co/QjVdHiCDWw&#34;,&#34;Video games and unemployment... Not losing my mind, not at all... Thank you #Sony #Playstation4 #StayHome #PlayAtHome #LKA #SRILANKA&#34;,&#34;@BorjaIglesias9 @MutuaMadridOpen @brunonieto_ Jajajjajajaa, que Showman estas hecho...&#34;,&#34;“We’ll Meet Again” piano cover Quarantine Cabaret w Kitten on the Keys https://t.co/0N4YpjcB5g via @YouTube @kittenonthekeys #piano #playathome #quarantinecabaret #wellmeetagain&#34;,&#34;¿Podemos decir que los juegos del @PSPlusES de este mes son 1 mierda?\nConfirmamos, los juegos de este mes son una auténtica mierda pinchada en 1 palo. \nEsperemos que saquen un 2@ #PlayAtHome mejor, porque no veas... se han lucido totalmente 😂😂😂😂 https://t.co/FDCm1t7wSy&#34;,&#34;@ATPTour_ES @andy_murray @feliciano_lopez @MutuaMadridOpen Andi yu si mi?&#34;,&#34;@Gravesen_1 @MutuaMadridOpen Te llevaste la victoria esta vez, aunque espero poder tener una revancha! 😉 Un placer y mucha suerte en la siguiente ronda 💪🏻&#34;,&#34;All you need to make music is  ❤💜💙💚💛\nEnjoy this piece \&#34;\&#34;Quaratine\&#34;\&#34; by Camilo Jauregui performed by Mr. DeLuca from his kitchen counter! 🍴🥣🧂🥛🎶\n#PlayAtHome\n#MusicAnywhere #MusicEverywhere https://t.co/bke74aDg7P&#34;,&#34;@BorjaIglesias9 @MutuaMadridOpen @brunonieto_ Contra quién toca hoy???&#34;,&#34;@BorjaIglesias9 @MutuaMadridOpen @brunonieto_ 🤣 🤣 Muy top!&#34;,&#34;@BorjaIglesias9 @MutuaMadridOpen @brunonieto_ ÍDOLO 🤣🎾&#34;,&#34;@BelindaBencic @MutuaMadridOpen Go Belinda and get yourself into the second round of @MutuaMadridOpen!&#34;,&#34;@ESPNtenis @MutuaMadridOpen @ElinaSvitolina @AngeliqueKerber @KaPliskova @DonnaVekic All of them beautiful!&#34;,&#34;@atptour @fabiofogna @MutuaMadridOpen La idea de este torneo virtual es genial!&#34;,&#34;@MutuaMadridOpen @sorana_cirstea @ElinaSvitolina @JohannaKonta @vika7 Sorana 😍&#34;,&#34;The quarter-final line-up for the Mutua Madrid Virtual Pro has been set.\n\nToday’s match-ups include: \n\n🇬🇧Andy Murray vs 🇩🇪Alexander Zverev\n🇦🇷Diego Schwartzman vs 🇮🇹Fabio Fognini\n🇬🇷Stefanos Tsitsipas vs 🇪🇸David Ferrer\n🇧🇪David Goffin vs 🇫🇷Benoit Paire\n\nWho’s your pick? \n\n#MMOPEN&#34;,&#34;Wendy Darling as a pirate! 🏴‍☠️ YES! Can’t wait for me &amp;amp; Pops to try this one out. 👍🏴‍☠️ FREE play to download fellow parents /anyone with kids to entertain OR if you need some theatrical fun today 🥳 #PlayAtHome https://t.co/PsMIbGrSk8&#34;,&#34;Thrilled to be co-producing this with @RachelBarnett02 &amp;amp; our company @flyhighstories FREE NEW PLAYS for you to do AT HOME! For families or for anyone who loves #theatreforyoungaudiences stay safe stay at home #PlayAtHome https://t.co/1xieEryndT&#34;,&#34;ITS READY! @flyhighstories AT HOME project. First THREE plays are online ready for families to read/perform/play with at home for FREE. I’m so excited &amp;amp; proud of this. Please check them out! #playathome https://t.co/l2OGc7vPK9&#34;,&#34;Car number 2 done: Shout out to the best crew in the streets of @CSRRacing \n#PlayApartTogether \n#ilovecars \n#CSRRacing \n#PlayAtHome https://t.co/97CzfSB6Qc&#34;,&#34;こんな時だからこそ大量断捨離‼️\nたくさんのピアス、さようなら👋\n\nhttps://t.co/SUz3pwDVWc\n\n#大掃除 する #おうち時間 👍💡\n\n#stayhome #おうちエブリ #ピアス好きと繋がりたい #ピアス女子 #STAYHOME週間 #ステイホーム #StaySafe #断捨離 #PlayAtHome https://t.co/olPBJQbepv&#34;,&#34;Late Show with Stephen Colbert: John Fogerty \&#34;\&#34;Have You Ever Seen The Rain\&#34;\&#34; - #PlayAtHome https://t.co/TB7Wr2T3Og via @YouTube&#34;,&#34;Miss them games #basketball #hockey #sport #rugby @SportHostingVan @MyVancouver #Vancouver #PlayAtHome https://t.co/rpE78sqVWU&#34;,&#34;John Fogerty \&#34;\&#34;Have You Ever Seen The Rain\&#34;\&#34; - #PlayAtHome https://t.co/RMsenN9xgF via @YouTube&#34;,&#34;@BellshawGeorge @MutuaMadridOpen when did Svitolina and Konta play this and how come it wasn’t streamed? Thanks&#34;,&#34;@shawnspencer96 @MutuaMadridOpen @sorana_cirstea https://t.co/KHGbIxuDGg&#34;,&#34;@the_LTA @JohannaKonta @MutuaMadridOpen @CaroWozniacki How do I watch this virtual tennis?&#34;,&#34;@David___Llorens @adellfdez @MutuaMadridOpen @Doural28 No me hace falta animarme, estoy con ella en casa jugando un rato! https://t.co/t518rykC7x&#34;,&#34;@David___Llorens @charlyygarcia_ @MutuaMadridOpen @Doural28 @Adr11an_ @Monleon_P @DrefanHardy @Cristian10VM @TheMagician5GS @AlejanMilos @RealNiKLo https://t.co/Hpt2Va7r60&#34;,&#34;#TeamBibi #TeamVika https://t.co/8WG6s7QSNl&#34;,&#34;Elina dejándose perder para que no pase Vika, lamentable. Los celos porque Monfils quiere más a Vika que a ella https://t.co/9RdpD7WuM0&#34;,&#34;@MutuaMadridOpen @Bandreescu_ https://t.co/BhcDeOTW0A&#34;,&#34;We have created a video with some ideas of activities for you to do whilst at home head over to YouTube for the full video\nhttps://t.co/1Ke1Evh8yd\n\n#StayHome #PlayAtHome #COVID19 https://t.co/hz4iFhGc9T&#34;,&#34;@the_LTA @andy_murray @RafaelNadal @MutuaMadridOpen Prefer @andy_murray doing his own commentary 😁&#34;,&#34;@Madison_Keys @MutuaMadridOpen https://t.co/N1ohXry2za&#34;,&#34;@MutuaMadridOpen @nikkori89506411 Nishikori. ❤️🎾❤️🎾 Go Kei.&#34;,&#34;@MutuaMadridOpen Please do a tweet giving viewing methods. I&#39;m sure you have already, but now you need to make at least 2 or 3 tweets about this. Starting times only help if you know where to find it. Thank you from all of us who missed this info before. ❤️🎾❤️🎾❤️😎😎&#34;,&#34;@MutuaMadridOpen I couldn&#39;t follow your schedule. Didn&#39;t seem accurate. Will it be better? Also, every time I went to watch, all I saw were commentators and snippets of matches.&#34;,&#34;@keinishikori @MutuaMadridOpen Go Kei! 💪💪🎾❤️🎾❤️&#34;,&#34;První výhra @KaPliskova na @MutuaMadridOpen 😅 (3:1) https://t.co/RWS4vrHslJ&#34;,&#34;Stream dying when Isner plays, we stan @MutuaMadridOpen&#34;,&#34;Most winners in Caroline Wozniacki’s career https://t.co/1LJbn6iYvg&#34;,&#34;Kill her Donna 🥵 https://t.co/EBmMN2xkl9&#34;,&#34;The @MutuaMadridOpen is shaking https://t.co/QVE3OfPuib&#34;,&#34;Were you able to watch these games @LifeOfAdunni? https://t.co/4rVBA3gFIw&#34;,&#34;This is going to be epic! If you’re a #StarWars fan and love a bit of #trivia, be sure to get a team together, have a laugh and get involved. Comp starts May 4th at 6pm AEST on https://t.co/CV8XNXE1Fz #aussieED #PlayAtHome  #starwarstrivia #edutwitter https://t.co/NBvL1TtFZZ&#34;,&#34;@MutuaMadridOpen Nishikori&#34;,&#34;@BelindaBencic @MutuaMadridOpen https://t.co/PTR31Mvd7N&#34;,&#34;This is great! 🙌🏽 #buildingresiliance #PlayAtHome https://t.co/nMJglqe4lS&#34;,&#34;@AngeliqueKerber @MutuaMadridOpen Hello beautiful&#34;,&#34;When you send your video guy a take and he sends this back as your thumbnail pic for the song! To check out the next one, hit that YouTube link in bio and subscribe much appreciated\n.\n.\n.\n#myprs #playathome… https://t.co/Md6aLIRclQ&#34;,&#34;@KaPliskova @MutuaMadridOpen Omg i love that Dual! 😍😍😍&#34;,&#34;@LifeOfAdunni @JJlovesTennis @MutuaMadridOpen @JohannaKonta 😍😍&#34;,&#34;Genie 🇨🇦 will play 2 matches tomorrow in the virtual @MutuaMadridOpen \nFirst Match \nBouchard vs Vekic\n\nSecond Match\nBouchard vs Bertens\n\n#Geniearmy🎾 #Webelieveinbouchard @geniebouchard goodluck u got this 👍👍👍👍&#34;,&#34;Bianca 🇨🇦 will play 2 matches on the virtual @MutuaMadridOpen tournament\n\nFirst Match\nBianca vs Wozniacki\n\nSecond Match\nBianca vs Keys \n\n#bianca #andreescu @Bandreescu_ good luck on the tournament&#34;,&#34;Bibi 🇨🇦 wins 4-3 in a tiebreaker #virtualmadridmudala @MutuaMadridOpen&#34;,&#34;Lets go Eli good luck on the tournament @MutuaMadridOpen even thought it&#39;s virtual #FamEli #mutuaMadridopen @ElinaSvitolina https://t.co/v7GvlX6Tv2&#34;,&#34;vamos Peque carajo https://t.co/4PYsqqXcve&#34;,&#34;@KaPliskova @MutuaMadridOpen I bet you lost on purpose ☘️🎾&#34;,&#34;Il genio di @feliciano_lopez e tutti gli sono andati dietro 🤣🤣🤣🤣\nDa @Eurosport_ES alla @BBCSport passando dal @CorSport...\nUn genio 🤣🤣🤣🤣\n#MMOPEN #Nadal https://t.co/VzKmtLIRbU&#34;,&#34;Vamos a Ganar 💪🏼🎾🎮🤣🤣\n#VamosRafa #MMOPEN https://t.co/v8JDZagHD4&#34;,&#34;Connected Coaches Episode #2 with @FocusGolfGroup @RudyGonzalezIII and @Blazer_Justin. We talk about indoor putting drills and how to keep your game sharp at home. Episode #3 coming later this week! https://t.co/lUoNcwAwGY via @YouTube #ConnectedCoaches #GolfTips #PlayAtHome&#34;,&#34;This is so captivating! Watching top professional tennis players play each other on the play station! Loving it! Will you be doing a special podcast @TennisPodcast ? 😆 https://t.co/hLcbLQiJwM&#34;,&#34;Wildcat Tennis! Click on the blog to view Best Stretches for Tennis Players @Humble_Tennis #elevatetoexcellence  #wildcatPRIDE #PlayAtHome #TennisAtHome #HealthyAtHome #tennis @HumbleISD @HumbleISD_HHS @HumbleISD_Ath https://t.co/BAYdF1Bbl4&#34;,&#34;Evening S&amp;amp;C following my edgbastonpriorytennis home training programme. Today was lower body, will be also doing some footwork drills.  Had a bit of the @mutuamadridopen virtual tennis on in the background 🎾🎮… https://t.co/V0KS5pDMsM&#34;,&#34;@rnadalacademy @RafaelNadal @MutuaMadridOpen Vamos Rafa&#34;,&#34;Vamos Babe @RafaelNadal https://t.co/AirqbR7mtD&#34;,&#34;@MutuaMadridOpen virtual tournament is not a bad idea but can the commentators shut the fuck up and let hear @JohnIsner and Schwartzman?&#34;,&#34;@BelindaBencic @MutuaMadridOpen 😂👏🏼&#34;,&#34;@KaPliskova @MutuaMadridOpen 🤝&#34;,&#34;@MutuaMadridOpen @feliciano_lopez The English link doesn&#39;t work https://t.co/RRY5aigNsR&#34;,&#34;@MutuaMadridOpen @KaPliskova @fioferro Eek!&#34;,&#34;Jajajaja venga manacori #nadal #madridvirtual #mutuamadridopen\nHabría que ver las habilidades predeterminadas en la consola a uno y otro jugador. https://t.co/CcaWIWuG8e&#34;,&#34;@viciuslab @MutuaMadridOpen Dale primo dale!!!&#34;,&#34;@BelindaBencic @MutuaMadridOpen Visualization 😉&#34;,&#34;Lo de hoy... #pandemicbarbie #stayhome #quedateencasa #Barbie #barbiedoll #PlayAtHome https://t.co/nQEHUs3qrC&#34;,&#34;@jessicamimi7 @MutuaMadridOpen After what thiem said yesterday?&#34;,&#34;Participate in a contest of Game of Scores and stand a chance to win #REALCASH upto 1 Lakh!*\rRegister Now: https://t.co/Um8RM4BZqy\r\r#Gamming #WinRealCashPrize #PlayAtHome #gharpebaithochallenge #ContestAlert  #QuizTimeMorningsWithGameofScores  #MondayMotivaton #MondayMorning https://t.co/6ssJS9qys2&#34;,&#34;@MutuaMadridOpen @geniebouchard @DonnaVekic Go Genie🇨🇦&#34;,&#34;Thanks @PlayStation, what a great initiative! \n\nDon’t forget to grab your #free games here: https://t.co/aQeLUaWjKH\n\n#StayHome #PlayAtHome https://t.co/PggOBGp0uG&#34;,&#34;@ElinaSvitolina @MutuaMadridOpen @Nikecourt @Hublot Great shots!!!⭐️👌💪👊👍☝️🔥&#34;,&#34;@gish this one is for #teamspnbtchjrk duplicate a TV dinner challenge #gish #playathome #gishplayathome2020 #spnfamily #tvdinner @ Diamondhead, Mississippi https://t.co/NPUSNNWUqi&#34;,&#34;@gish this one is for #teamspnbtchjrk video call/ugly shirt challenge #gish #playathome #gishplayathome2020 #spnfamily #uglyshirt @ Diamondhead, Mississippi https://t.co/9x9s8PiQ4v&#34;,&#34;@gish this one is for #teamspnbtchjrk toilet paper altar challenge #gish #playathome #gishplayathome2020 #spnfamily #toiletpaper @ Diamondhead, Mississippi https://t.co/xGWVDmZ975&#34;,&#34;@gish this one is for #teamspnbtchjrk virtual hug challenge #gish #playathome #gishplayathome2020 #spnfamily #virtualhug done with my bff @jeanellesonnier @ Diamondhead, Mississippi https://t.co/SXNEjCQKKt&#34;,&#34;El peque ya tiene su primer rival del #mmopen 👦🏼👦🏼\n.\nTODA LA INFO en en https://t.co/O6v39Tvfxu\n.\n.\n.\n.\n.\n.\n.\n.\n#AtpTour #AtpWorldTour #Wta #TenisMasculino #TenisFemenino #TenisTime #TennisPlayers #TennisAtHome… https://t.co/uWF5Bl006V&#34;,&#34;Few to get you going... enjoy!\n\nHeating\nAl Pacino battles Robert Di Niro for control of the thermostat.\n\nGhosting \nAn autobiographical tale of a serial Tinder dater. \n\nReservoir Dogging \n- I’d rather not say... 😁\n\n#IsolationGames #PlayAtHome https://t.co/S0ipVZIa5B&#34;,&#34;INDIA WON WORLD CUP 🏏🇮🇳\n#WCC2 #PlayAtHome #CricketConnected #WorldCup #kingkohli #MSDhoni #enjoyathome https://t.co/A4wfDRgUiJ&#34;,&#34;@ElinaSvitolina @MutuaMadridOpen @Nikecourt @Hublot Sexy&#34;,&#34;E o torneio de tênis de Madrid que, ao ser cancelado pelo Corona, decidiu: “quer saber? Vamos manter esse treco pelo vídeo game mesmo!”. Sensacional.  😂 https://t.co/q9c2xQfZ6F&#34;,&#34;#playground #quarantine #nokids #silence #silencio #bobcat #play #playathome #toys #toystory #toystagram #playtime #kids #kidsroom #nature #outsideisfree #outsideisfree #mitkindernunterwegs #baby @ Großluga, Sachsen,… https://t.co/fjlIQgc1N4&#34;,&#34;The main actors of the WWII\n#warzag #strategic #boardgame #history #giochidatavolo #ComingSoon #followme #oninstagram #PlayAtHome #players #leaders #WorldWar2 #boardgames #italy #Germany #uk #Russia #basegame #comment #support #project https://t.co/WGoMaCejvu&#34;,&#34;@keinishikori @MutuaMadridOpen 圭くんおうえんしてるよ\nがんばって https://t.co/a5SCc9mAlM&#34;,&#34;Carpe diem \n🍃\n.\n.\n.\n.\n.\n.\n.\n.\n.\n.\n.\n.\n.\n.\n.\n.\n.\n.\n.\n.\n.\n.\n.\n.\n#brasil🇧🇷 #carpediemplanner #instabeaches #ilhagrande_bra #ilhagrande #playathome #nacagi #saturdayvibes #sol #bikini #nacagiphoto #canonphotography… https://t.co/lxFkQbastA&#34;,&#34;20200425\nAbra Community Day 💙💛❤️\n\npokemongoapp\nnianticlabs\n\n#PokemonGo #abracommunityday #counter #fastmove #pokemon #PlayAtHome #StaySafe #StayHome #InvestigatingIllusions #psychic #FingerAbs @ Palayan City https://t.co/OC2w0e8nF9&#34;,&#34;@MutuaMadridOpen Had tickets to come to the real thing in Madrid. Will pour a long cool drink and watch this instead...from the sofa in Scotland.&#34;,&#34;@sacary7 @MutuaMadridOpen Pero si no das una bien.&#34;,&#34;@CarlaSuarezNava @MutuaMadridOpen @WTA Vamos Carla!!! 💪💪💪&#34;,&#34;#StayHome  #PlayAtHome \n#PokemonGOCommunityDay https://t.co/1k5Lx9IMaO&#34;,&#34;おはようございます😃☀\n4/25 #歩道橋の日\nそーいえばここ何年も、\n歩道橋を利用してないです。\n駅前直結スタイルならありますが。。\n\nさて。今日はケーシィ。\n#早速イロチ\n#あまりイロチ感なし\n#playathome\n#おこう3時間ww https://t.co/0XAO7hojF7 https://t.co/1Y9fmlRPxT&#34;,&#34;@MutuaMadridOpen Thiem&#34;,&#34;We’re missing 8 members of our #GISH #PlayAtHome team, is anyone part of Rhoades2Victory? @GISH #rolecall #scavengerhunt&#34;,&#34;@DonnaVekic @BelindaBencic @MutuaMadridOpen solid and consistent!&#34;,&#34;Thanks for your time @feliciano_lopez and congratulations on a great draw! Good luck with the #PlayAtHome #MMOpen @MutuaMadridOpen Hasta la vista 👍 https://t.co/Cmg5kTvelb&#34;,&#34;@MutuaMadridOpen @DavidFerrer87 No he visto a Deliciano en el cuadro va a ser director virtual del torneo?&#34;,&#34;@MutuaMadridOpen @DavidFerrer87 Nadal por supuesto..&#34;,&#34;@MutuaMadridOpen @atptour A gde vam je djokovic Majmuni&#34;,&#34;Looking for some cheap and easy entertainment to stimulate your brain? DIY (bilingual) puzzle races using a cracker box! Play against a family member or time yourself.  Challenge yourself further by mixing together ALL the pieces and try to solve both sides! #PlayAtHome #diy https://t.co/bEV0piRjXu&#34;,&#34;If you’re looking for something to keep you busy this weekend - we’ve launched another #PlayAtHome game!! 👏🏼💎 #PlayApartTogether https://t.co/igYETcSuu7&#34;,&#34;Tomorrow tomorrow I love ya tomorrow you’re only a dayyyy aaaaawaaaayyyy! 😍 #GISH #PlayAtHome&#34;,&#34;My favorite players taking part in the @MutuaMadridOpen Virtual Pro tournament. I hope @DonnaVekic wins! 🏆🐼🎾 https://t.co/4D1f21JBBO&#34;,&#34;The best game ever! #stayathome #playathome https://t.co/t8WctpQscM&#34;,&#34;#PlayAtHome https://t.co/ebqTaTSyeY&#34;],null,null,null,null,{&#34;interactive&#34;:false,&#34;permanent&#34;:false,&#34;direction&#34;:&#34;auto&#34;,&#34;opacity&#34;:1,&#34;offset&#34;:[0,0],&#34;textsize&#34;:&#34;10px&#34;,&#34;textOnly&#34;:false,&#34;className&#34;:&#34;&#34;,&#34;sticky&#34;:true},null]}],&#34;limits&#34;:{&#34;lat&#34;:[-38.19988735475,57.1605562],&#34;lng&#34;:[-122.857891,153.369361472]}},&#34;evals&#34;:[],&#34;jsHooks&#34;:[]}&lt;/script&gt;
+
+Even with the small proportion of tweets we can get an idea of where the audience for the tournament is. Leaflet provides nice interactivity, you can the map; if you click on the location pins you get the tweet.&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;global-audience&#34; class=&#34;section level3&#34;&gt;
+&lt;h3&gt;Global audience&lt;/h3&gt;
+&lt;p&gt;Tennis is known to be a very interantional sport with fans all around the world. Separately from mapping the tweet locations we can examine which languages are most represented in the tweet set.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;ggplot(tw[,.N,lang][N&amp;gt;50], aes(x=lang,y=N)) + geom_bar(stat=&amp;quot;Identity&amp;quot;) + theme_bw()&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;/post/2020-05-01-analysing-tweets-from-the-virtual-madrid-open_files/figure-html/unnamed-chunk-3-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;As expected English is the most represented language followed by Spanish. Not a big surprise since the tournament took place in Spain. Japanese comes in a surprising 3rd place due to the presence of Kei Nishikori.&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;sentiment-analysis&#34; class=&#34;section level3&#34;&gt;
+&lt;h3&gt;Sentiment analysis&lt;/h3&gt;
+&lt;p&gt;So, how do people feel about this first attempt at an online tournament? We can use sentiment anlysis to go through all the tweets and classify them into positive or negative sentiment. There are several ways to do this, here I will opt for using the &lt;code&gt;sentimentr&lt;/code&gt; package which comes with some neat functions that evaluate sentiment directly without having to tokenise or pre-process the data.&lt;/p&gt;
+&lt;p&gt;Here’s an example of how the package works. We take an example tweet…&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;exampleText&amp;lt;-tw[lang==&amp;quot;en&amp;quot;,text][129]
+exampleText&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## [1] &amp;quot;I thought the next gen would dominate the virtual #MMOPEN and one of them would be the champs. \n\nIt turned out that one of the big 4 stole the victory.\n\nShame on you, next gen &amp;lt;U+0001F609&amp;gt;&amp;lt;U+0001F61D&amp;gt;&amp;lt;U+0001F604&amp;gt;&amp;quot;&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;…and then apply the &lt;code&gt;sentiment_by&lt;/code&gt; function to the tweet.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;sentiment_by(exampleText)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;##    element_id word_count        sd ave_sentiment
+## 1:          1         34 0.1980625    -0.1427715&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;code&gt;sentiment_by&lt;/code&gt; takes the terms in the tweet and associates them to positive or negative sentiments to produce an average sentiment for that tweet. It also outputs thw word count and a standard deviation measure. In this case we can see that the sentiment is negative but given that the stadard deviation is larger than the estimate we cannot be absolutely certain.&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;language-barrier&#34; class=&#34;section level3&#34;&gt;
+&lt;h3&gt;Language barrier&lt;/h3&gt;
+&lt;p&gt;Since the sentiment analysis pacakge is geared to work with English only my original idea was to take all the tweets in the most prevalent non-English langauges and translate them to English.&lt;/p&gt;
+&lt;p&gt;To that end I was planning to use &lt;code&gt;TextBlob&lt;/code&gt;; a python pacakge for text analysis that comes with translation capabilities without requiring API keys.&lt;/p&gt;
+&lt;p&gt;For those paying attention you would have noticed that I casually mention python. That’s right. Using the &lt;code&gt;reticulate&lt;/code&gt; package you can import python modules into R! I thought that’s pretty cool and wanted to showcase it in this analysis.&lt;/p&gt;
+&lt;p&gt;Unfortunately, the translate funtion in &lt;code&gt;TextBlob&lt;/code&gt; actually has a limit to how much it can translate and that limit was nowhere close enough to translate all the tweet I have.&lt;/p&gt;
+&lt;p&gt;In any case, this is how you would go about it:&lt;/p&gt;
+&lt;p&gt;Import the python module and use it to make a text blob:&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;require(reticulate)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## Warning: package &amp;#39;reticulate&amp;#39; was built under R version 3.5.3&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;tb&amp;lt;-import(&amp;quot;textblob&amp;quot;) #Import TextBlob
+spanishTweet&amp;lt;-tb$TextBlob(tw[lang==&amp;quot;es&amp;quot;,][1,text]) #create a blob
+spanishTweet&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## Hoy debería de dar comienzo el @MutuaMadridOpen. Volveremos a disfrutar como siempre, como nunca. https://t.co/GOT7Yp4Eg8&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Do the actual translation:&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;trans.spanishTweet&amp;lt;-spanishTweet$translate(from_lang = &amp;quot;es&amp;quot;, to=&amp;quot;en&amp;quot;)
+trans.spanishTweet&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## Today should start @MutuaMadridOpen. We will enjoy again as always, like never before. https://t.co/GOT7Yp4Eg8&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The cool thing here is that we are using python within R. This specific case didn’t turn out like I wanted it to but think of the possibilities! Anyway, moving on…&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;the-actual-analysis&#34; class=&#34;section level3&#34;&gt;
+&lt;h3&gt;The actual analysis&lt;/h3&gt;
+&lt;p&gt;We are not able to get translated tweet so for now we’ll restrict our view to English tweets only.&lt;/p&gt;
+&lt;p&gt;Also, I’m interested in the fans’ opinions so I will remove what I call ‘official’ accounts. These include the accounts for the tournament, offcial bodies and broadcasters.&lt;/p&gt;
+&lt;p&gt;Finally, in my first pass at this I found I was getting some non-tennis related terms back. Turns out the #PlayAtHome term brings in tweets from other events such as concerts, other gaming events, etc. Since this is a quick analysis I decided to get rid of tweets with that hashtag.&lt;/p&gt;
+&lt;p&gt;We can now calculate sentiment for all the remaining tweets.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;twen &amp;lt;- tw[lang==&amp;quot;en&amp;quot;]
+offical&amp;lt;-c(&amp;quot;MutuaMadridOpen&amp;quot;,&amp;quot;the_LTA&amp;quot;,&amp;quot;TennisChannel&amp;quot;,&amp;quot;WTA&amp;quot;,&amp;quot;atptour&amp;quot;,&amp;quot;Tennis&amp;quot;,&amp;quot;Eurosport_UK&amp;quot;)
+twen&amp;lt;-twen[!screen_name %in% offical]
+twen&amp;lt;-twen[!grep(&amp;quot;tHome|thome&amp;quot;,text)]
+sent &amp;lt;- sentiment_by(get_sentences(twen[,(text)]))&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;How is the sentiment distributed?&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;ggplot(sent,aes(ave_sentiment)) + geom_histogram(bins=50) + theme_bw()&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;/post/2020-05-01-analysing-tweets-from-the-virtual-madrid-open_files/figure-html/unnamed-chunk-9-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;There is a big peak at 0 which represents neutral tweets. The distributions to either side of 0 show that sentiment is more positive than negative. So it seems that in general people liked the idea of the virtual Madrid Open.&lt;/p&gt;
+&lt;p&gt;Let’s remove the neutral-sentiment tweets and plot the histogram again this time looking at the evolution per day.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;twen&amp;lt;-bind_cols(twen,sent)
+twen[,sent_dir:=ifelse(ave_sentiment&amp;lt;0,&amp;quot;Negative&amp;quot;,ifelse(ave_sentiment&amp;gt;0,&amp;quot;Positive&amp;quot;,&amp;quot;Neutral&amp;quot;))]
+ggplot(twen[abs(ave_sentiment)&amp;gt;0 &amp;amp; date(created_at)&amp;lt;&amp;quot;2020-05-01&amp;quot;],aes(ave_sentiment, fill=sent_dir)) + geom_histogram(bins = 50) + facet_wrap(.~date(created_at)) + theme_bw()&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;/post/2020-05-01-analysing-tweets-from-the-virtual-madrid-open_files/figure-html/unnamed-chunk-10-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;The tournament started on the 27th. From these charts we can see how interest starts building up in the days prior and then peaks on the day the tournament starts. The number of tweets then decreases each day before having a bump on the final day.&lt;/p&gt;
+&lt;p&gt;In terms of sentiment we can see that positive outweights negative every day but from the histograms it is not easy to see if the proportion changes.&lt;/p&gt;
+&lt;p&gt;We can tabulate the proportion of postive and negative tweets.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;percs&amp;lt;-twen[abs(ave_sentiment)&amp;gt;0 &amp;amp; date(created_at)&amp;lt;&amp;quot;2020-05-01&amp;quot;,.N,.(date(created_at),sent_dir)][sent_dir!=&amp;quot;Neutral&amp;quot;][,.(sent_dir,p=round(100*N/sum(N))),date]
+kable(dcast(percs,sent_dir~date,value.var=&amp;quot;p&amp;quot;),format = &amp;#39;html&amp;#39;) %&amp;gt;% kable_styling(bootstrap_options = &amp;#39;striped&amp;#39;)&lt;/code&gt;&lt;/pre&gt;
+&lt;table class=&#34;table table-striped&#34; style=&#34;margin-left: auto; margin-right: auto;&#34;&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th style=&#34;text-align:left;&#34;&gt;
+sent_dir
+&lt;/th&gt;
+&lt;th style=&#34;text-align:right;&#34;&gt;
+2020-04-23
+&lt;/th&gt;
+&lt;th style=&#34;text-align:right;&#34;&gt;
+2020-04-24
+&lt;/th&gt;
+&lt;th style=&#34;text-align:right;&#34;&gt;
+2020-04-25
+&lt;/th&gt;
+&lt;th style=&#34;text-align:right;&#34;&gt;
+2020-04-26
+&lt;/th&gt;
+&lt;th style=&#34;text-align:right;&#34;&gt;
+2020-04-27
+&lt;/th&gt;
+&lt;th style=&#34;text-align:right;&#34;&gt;
+2020-04-28
+&lt;/th&gt;
+&lt;th style=&#34;text-align:right;&#34;&gt;
+2020-04-29
+&lt;/th&gt;
+&lt;th style=&#34;text-align:right;&#34;&gt;
+2020-04-30
+&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td style=&#34;text-align:left;&#34;&gt;
+Negative
+&lt;/td&gt;
+&lt;td style=&#34;text-align:right;&#34;&gt;
+23
+&lt;/td&gt;
+&lt;td style=&#34;text-align:right;&#34;&gt;
+28
+&lt;/td&gt;
+&lt;td style=&#34;text-align:right;&#34;&gt;
+15
+&lt;/td&gt;
+&lt;td style=&#34;text-align:right;&#34;&gt;
+23
+&lt;/td&gt;
+&lt;td style=&#34;text-align:right;&#34;&gt;
+33
+&lt;/td&gt;
+&lt;td style=&#34;text-align:right;&#34;&gt;
+24
+&lt;/td&gt;
+&lt;td style=&#34;text-align:right;&#34;&gt;
+23
+&lt;/td&gt;
+&lt;td style=&#34;text-align:right;&#34;&gt;
+24
+&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td style=&#34;text-align:left;&#34;&gt;
+Positive
+&lt;/td&gt;
+&lt;td style=&#34;text-align:right;&#34;&gt;
+77
+&lt;/td&gt;
+&lt;td style=&#34;text-align:right;&#34;&gt;
+72
+&lt;/td&gt;
+&lt;td style=&#34;text-align:right;&#34;&gt;
+85
+&lt;/td&gt;
+&lt;td style=&#34;text-align:right;&#34;&gt;
+77
+&lt;/td&gt;
+&lt;td style=&#34;text-align:right;&#34;&gt;
+67
+&lt;/td&gt;
+&lt;td style=&#34;text-align:right;&#34;&gt;
+76
+&lt;/td&gt;
+&lt;td style=&#34;text-align:right;&#34;&gt;
+77
+&lt;/td&gt;
+&lt;td style=&#34;text-align:right;&#34;&gt;
+76
+&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;The proportion of positive sentiment is in the high 70s and 80s for most days. The glaring exception happened on the 27th when the tournament started. Negative sentiment goes up to 32%. Let’s try to figure out why by looking at some wordclouds.&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;wordclouds-from-sentiment-terms&#34; class=&#34;section level3&#34;&gt;
+&lt;h3&gt;Wordclouds from sentiment terms&lt;/h3&gt;
+&lt;p&gt;The &lt;code&gt;extract_sentiment_terms&lt;/code&gt; function tells us which terms in the tweets contributed to the sentiment score.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;terms&amp;lt;-extract_sentiment_terms((twen[,text]))&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;We can visualise these terms using the &lt;code&gt;wordcloud&lt;/code&gt; package. I will make one cloud for positive terms and one for negative ones.&lt;/p&gt;
+&lt;p&gt;Before constructing the clouds I’m removing stop words, common terms like ‘at’,‘the’,‘in’, that do not contribute to sentiment. Apart from the terms in the stop_words array provided by the &lt;code&gt;tidytext&lt;/code&gt; pacakge I’m also removing some custom terms that will be very common in our tweet set but which won’t tell us much about sentiment.&lt;/p&gt;
+&lt;p&gt;The postive-term cloud:&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;my_sw&amp;lt;-c(stop_words$word,&amp;quot;virtual&amp;quot;,&amp;quot;pro&amp;quot;,&amp;quot;play&amp;quot;,&amp;quot;game&amp;quot;,&amp;quot;tennis&amp;quot;,&amp;quot;players&amp;quot;,&amp;quot;madrid&amp;quot;,&amp;quot;match&amp;quot;,&amp;quot;video&amp;quot;,&amp;quot;games&amp;quot;,&amp;quot;player&amp;quot;,&amp;quot;players&amp;quot;,&amp;quot;tournament&amp;quot;)
+
+u&amp;lt;-data.table(words=unlist(terms[,positive]))[,.N,words][order(-N)]
+u&amp;lt;-u[!words %in% my_sw]
+par(mfrow=c(1,2))
+wc_pos&amp;lt;-wordcloud(words = u$words, freq = u$N, min.freq = 1,max.words=200, random.order=FALSE, rot.per=0.35,colors=brewer.pal(8, &amp;quot;Dark2&amp;quot;))&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;/post/2020-05-01-analysing-tweets-from-the-virtual-madrid-open_files/figure-html/unnamed-chunk-13-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Positive terms are what you would expect with things like “win”, “fun”, “luck” and “congrats” having the biggest size.&lt;/p&gt;
+&lt;p&gt;The negative-term cloud:&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;u&amp;lt;-data.table(words=unlist(terms[,negative]))[,.N,words][order(-N)]
+u&amp;lt;-u[!words %in% my_sw]
+wc_neg&amp;lt;-wordcloud(words = u$words, freq = u$N, min.freq = 1,max.words=200, random.order=FALSE, rot.per=0.35,colors=brewer.pal(8, &amp;quot;Dark2&amp;quot;))&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;/post/2020-05-01-analysing-tweets-from-the-virtual-madrid-open_files/figure-html/unnamed-chunk-14-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Regarding negative terms apart from traditionally negative words it is interesting to see things like “issues”, “twitch”, “controller”. “Twitch” could be fans aluding to the fact that it would have been better to hold the tournament in that platform.&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;wordclouds-from-tweets&#34; class=&#34;section level3&#34;&gt;
+&lt;h3&gt;Wordclouds from tweets&lt;/h3&gt;
+&lt;p&gt;Finally, we can also build wordlcouds directly from the tweets. We can make a positive-term wordcloud from the tweets with positive average sentiment and analogously for the negative terms.&lt;/p&gt;
+&lt;p&gt;First, let’s do a quick cleaning of the text data so it doesn’t appear in the clouds.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;twen[,text2 := gsub(&amp;quot;https\\S*&amp;quot;, &amp;quot;&amp;quot;, text)]
+twen[,text2 := gsub(&amp;quot;@\\S*&amp;quot;, &amp;quot;&amp;quot;, text2) ]
+twen[,text2 := gsub(&amp;quot;#\\S*&amp;quot;, &amp;quot;&amp;quot;, text2) ]
+twen[,text2 := gsub(&amp;quot;amp&amp;quot;, &amp;quot;&amp;quot;, text2) ]
+twen[,text2 := gsub(&amp;quot;[\r\n]&amp;quot;, &amp;quot;&amp;quot;, text2)]
+twen[,text2 := gsub(&amp;quot;[[:punct:]]&amp;quot;, &amp;quot;&amp;quot;, text2)]&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;We now make the wordclouds.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;u&amp;lt;-unnest_tokens(twen[!grep(&amp;quot;atHome&amp;quot;,text)][ave_sentiment&amp;gt;0,.(text2)],words,text2)[,.N,words][order(-N)]
+u&amp;lt;-u[!words %in% my_sw]
+wordcloud(words = u$words, freq = u$N, min.freq = 5,max.words=200, random.order=FALSE, rot.per=0.35,colors=brewer.pal(8, &amp;quot;Dark2&amp;quot;),scale = c(1.5,0.5))&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;/post/2020-05-01-analysing-tweets-from-the-virtual-madrid-open_files/figure-html/unnamed-chunk-16-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;This time there’s a lot more terms in the wordcloud because the tweets are richer than the extracted term data. Many of the extra terms are realted to player names. Otherwise we see similar type of words as in the extracted term cloud.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;u&amp;lt;-unnest_tokens(twen[!grep(&amp;quot;atHome&amp;quot;,text)][ave_sentiment&amp;lt;0,.(text2)],words,text2)[,.N,words][order(-N)]
+u&amp;lt;-u[!words %in% my_sw]
+wordcloud(words = u$words, freq = u$N, min.freq = 3,max.words=200, random.order=FALSE, rot.per=0.35,colors=brewer.pal(8, &amp;quot;Dark2&amp;quot;), scale = c(1.5,0.5))&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;/post/2020-05-01-analysing-tweets-from-the-virtual-madrid-open_files/figure-html/unnamed-chunk-17-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;The negative-tweet word cloud also now includes a lot of player names but we can see more hints of what poeple didn’t like so much, i.e., terms like “commentators”,&#34; internet“,”wait&#34; and “facebook”.&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;conclusion&#34; class=&#34;section level3&#34;&gt;
+&lt;h3&gt;Conclusion&lt;/h3&gt;
+&lt;p&gt;We went on a whirlwind tour of several packages that can be used to analyse tweets or other types of text data. This is really only scratching the surface of what can be done so it will be interesting to keep exploring these packages and other ones such as &lt;code&gt;spacy&lt;/code&gt; and &lt;code&gt;quanteda&lt;/code&gt; which are used to do more complex things like parts-of-speech tagging, more comprehensive feature extraction and they also support more language models.&lt;/p&gt;
+&lt;p&gt;In terms of the tournament, there were some teething issues like the choice of streaming platform, players with bad internet connections and too much commentary rather than having players mic’ed up. However, the overall sentiment was positive and people seemed to welcome this type of innovation from the organisers. We’ll see how future online tournaments fare.&lt;/p&gt;
+&lt;p&gt;This site is being aggregated with permission by &lt;a href=&#34;https://www.r-bloggers.com/&#34;&gt;r-bloggers&lt;/a&gt;&lt;/p&gt;
+&lt;/div&gt;
+</description>
+    </item>
+    
+  </channel>
+</rss>

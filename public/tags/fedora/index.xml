@@ -1,0 +1,60 @@
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>
+	fedora on A stats website
+	
+	</title>
+    <link>/tags/fedora/</link>
+    <description>Recent content 
+	
+	in fedora on A stats website
+	</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+	
+	
+    <lastBuildDate>Fri, 26 Oct 2018 12:59:51 -0500</lastBuildDate>
+	
+    
+        <atom:link href="/tags/fedora/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Use Snap to install the Hugo edge version on Fedora and Ubuntu</title>
+      <link>/use-snap-to-install-the-hugo-edge-version-on-fedora-and-ubuntu/</link>
+      <pubDate>Fri, 26 Oct 2018 12:59:51 -0500</pubDate>
+      
+      <guid>/use-snap-to-install-the-hugo-edge-version-on-fedora-and-ubuntu/</guid>
+	  <description>&lt;p&gt;If you are using the Fedora or Ubuntu Linux distributions &amp;ndash; I&amp;rsquo;m currently on Fedora 28 &amp;ndash; and would like to &lt;a href=&#34;https://discourse.gohugo.io/t/help-test-upcoming-hugo-0-50/14880&#34;&gt;help test the latest development version of Hugo&lt;/a&gt;, or if you just want to be on the bleeding-edge of things, this post is for you.&lt;/p&gt;
+&lt;h2 id=&#34;fedora-only-steps&#34;&gt;Fedora-only steps&lt;/h2&gt;
+&lt;p&gt;To get started, &lt;a href=&#34;https://docs.snapcraft.io/installing-snap-on-fedora/6755&#34;&gt;install Snap on Fedora&lt;/a&gt;:&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;sudo dnf install snapd
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;Add the &lt;a href=&#34;https://docs.snapcraft.io/commands-and-aliases/3950&#34;&gt;Snap directory&lt;/a&gt; to your &lt;code&gt;PATH&lt;/code&gt; by adding this line to your &lt;code&gt;~/.bashrc&lt;/code&gt; file. Then restart your terminal to pick up the change:&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;export PATH=&amp;quot;$PATH:/var/lib/snapd/snap/bin&amp;quot;
+&lt;/code&gt;&lt;/pre&gt;&lt;h2 id=&#34;ubuntu-only-steps&#34;&gt;Ubuntu-only steps&lt;/h2&gt;
+&lt;p&gt;Ubuntu 16.04 and above come with &lt;a href=&#34;https://docs.snapcraft.io/installing-snap-on-ubuntu/6740&#34;&gt;Snap already installed&lt;/a&gt;. If you&amp;rsquo;re using an older Ubuntu version, install Snap by running:&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;sudo apt update &amp;amp;&amp;amp; sudo apt install snapd
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;Check if the Snap directory is on your &lt;code&gt;PATH&lt;/code&gt; by listing each entry:&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;echo $PATH | tr &#39;:&#39; &#39;\n&#39;
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;If you don&amp;rsquo;t see &lt;code&gt;/snap/bin&lt;/code&gt; listed, then add this line to your &lt;code&gt;~/.bashrc&lt;/code&gt; file. Then restart your terminal to pick up the change:&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;export PATH=&amp;quot;$PATH:/snap/bin&amp;quot;
+&lt;/code&gt;&lt;/pre&gt;&lt;h2 id=&#34;install-hugo&#34;&gt;Install Hugo&lt;/h2&gt;
+&lt;p&gt;See which Snap channels are available for Hugo:&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;snap info hugo
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;Install Hugo from the edge channel:&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;sudo snap install hugo --channel=edge
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;Or, if you prefer Hugo Extended &amp;ndash; which has the &lt;a href=&#34;https://gohugo.io/hugo-pipes/&#34;&gt;Hugo Pipes&lt;/a&gt; feature &amp;ndash; install it from the extended edge channel:&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;sudo snap install hugo --channel=extended/edge
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;Lastly, confirm the location and version of Hugo that was intalled:&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;which hugo &amp;amp;&amp;amp; hugo version
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;Happy testing :)&lt;/p&gt;
+&lt;h2 id=&#34;update-or-remove-hugo&#34;&gt;Update or remove Hugo&lt;/h2&gt;
+&lt;p&gt;Snaps are &lt;a href=&#34;https://docs.snapcraft.io/keeping-snaps-up-to-date/7022&#34;&gt;updated automatically&lt;/a&gt;. To manually update Hugo:&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;sudo snap refresh hugo
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;To remove Hugo:&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;sudo snap remove hugo
+&lt;/code&gt;&lt;/pre&gt;</description>
+    </item>
+    
+  </channel>
+</rss>

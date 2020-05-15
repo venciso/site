@@ -1,0 +1,82 @@
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>
+	awk on A stats website
+	
+	</title>
+    <link>/tags/awk/</link>
+    <description>Recent content 
+	
+	in awk on A stats website
+	</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+	
+	
+    <lastBuildDate>Wed, 10 Oct 2018 12:43:20 -0500</lastBuildDate>
+	
+    
+        <atom:link href="/tags/awk/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Script to add a page-level variable to content front matter in hugo</title>
+      <link>/script-to-add-a-page-level-variable-to-content-front-matter-in-hugo/</link>
+      <pubDate>Wed, 10 Oct 2018 12:43:20 -0500</pubDate>
+      
+      <guid>/script-to-add-a-page-level-variable-to-content-front-matter-in-hugo/</guid>
+	  <description>&lt;p&gt;This was originally a question posed on the &lt;a href=&#34;https://discourse.gohugo.io/t/set-frontmatter-params-in-list-template/14645&#34;&gt;hugo discussion forums&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;The user wanted to loop through all her content files and add a &lt;code&gt;weight&lt;/code&gt; page-level variable to the front matter. The value of &lt;code&gt;weight&lt;/code&gt; needed to be the first 2 characters of the content filename, since her content was named like &lt;code&gt;01_content.md&lt;/code&gt;, &lt;code&gt;02_content.md&lt;/code&gt;, etc.&lt;/p&gt;
+&lt;p&gt;She then wanted to &lt;code&gt;range&lt;/code&gt; through her pages by their weight, like so:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-go&#34; data-lang=&#34;go&#34;&gt;{{ &lt;span style=&#34;color:#66d9ef&#34;&gt;range&lt;/span&gt; .&lt;span style=&#34;color:#a6e22e&#34;&gt;Pages&lt;/span&gt;.&lt;span style=&#34;color:#a6e22e&#34;&gt;ByWeight&lt;/span&gt; }}
+&amp;lt;!&lt;span style=&#34;color:#f92672&#34;&gt;--&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;some&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;code&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;--&lt;/span&gt;&amp;gt;
+{{ &lt;span style=&#34;color:#a6e22e&#34;&gt;end&lt;/span&gt; }}
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;the-script&#34;&gt;The script&lt;/h2&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span style=&#34;color:#75715e&#34;&gt;#!/bin/bash
+&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;&lt;/span&gt;
+&lt;span style=&#34;color:#66d9ef&#34;&gt;for&lt;/span&gt; file in *.md; &lt;span style=&#34;color:#66d9ef&#34;&gt;do&lt;/span&gt;
+    weight&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;${&lt;/span&gt;file:0:2&lt;span style=&#34;color:#e6db74&#34;&gt;}&lt;/span&gt;
+    awk -v weight&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;$weight &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;/---/{
+&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;        count++
+&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;        if(count == 2){
+&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;        sub(&amp;#34;---&amp;#34;,&amp;#34;weight: &amp;#34; weight &amp;#34;\n---&amp;#34;,$0)
+&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;        }
+&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;    }
+&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;    {print}&amp;#39;&lt;/span&gt; $file &amp;gt; tmp &lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&amp;amp;&lt;/span&gt; mv tmp $file
+&lt;span style=&#34;color:#66d9ef&#34;&gt;done&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;explained&#34;&gt;Explained&lt;/h2&gt;
+&lt;p&gt;Loop through all files in the directory with extension &lt;code&gt;.md&lt;/code&gt;:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;for&lt;/span&gt; file in *.md; &lt;span style=&#34;color:#66d9ef&#34;&gt;do&lt;/span&gt;
+    &lt;span style=&#34;color:#75715e&#34;&gt;# ...&lt;/span&gt;
+&lt;span style=&#34;color:#66d9ef&#34;&gt;done&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Set a variable using the first 2 characters of the filename:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;weight&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;${&lt;/span&gt;file:0:2&lt;span style=&#34;color:#e6db74&#34;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Call an &lt;code&gt;awk&lt;/code&gt; program and pass it a &lt;code&gt;weight&lt;/code&gt; variable:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;awk -v weight&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;$weight
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;When the &lt;code&gt;awk&lt;/code&gt; program encounters the 2nd occurrence of &lt;code&gt;---&lt;/code&gt; (which is how you end front matter in YAML), it inserts the &lt;code&gt;weight&lt;/code&gt; page-level variable on the line above:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;/---/{
+&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;    count++
+&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;    if(count == 2){
+&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;    sub(&amp;#34;---&amp;#34;,&amp;#34;weight: &amp;#34; weight &amp;#34;\n---&amp;#34;,$0)
+&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;    }
+&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;}
+&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;{print}&amp;#39;&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Redirect the output of the &lt;code&gt;awk&lt;/code&gt; program to a tmp file, then overwrite the original content file with the tmp file:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&amp;gt; tmp &lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&amp;amp;&lt;/span&gt; mv tmp $file
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;result&#34;&gt;Result&lt;/h2&gt;
+&lt;p&gt;Original &lt;code&gt;01_content.md&lt;/code&gt;:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yml&#34; data-lang=&#34;yml&#34;&gt;---
+&lt;span style=&#34;color:#66d9ef&#34;&gt;title&lt;/span&gt;: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;Some title&amp;#34;&lt;/span&gt;
+&lt;span style=&#34;color:#66d9ef&#34;&gt;draft&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;false&lt;/span&gt;
+---
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Updated &lt;code&gt;01_content.md&lt;/code&gt;:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-yml&#34; data-lang=&#34;yml&#34;&gt;---
+&lt;span style=&#34;color:#66d9ef&#34;&gt;title&lt;/span&gt;: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;Some title&amp;#34;&lt;/span&gt;
+&lt;span style=&#34;color:#66d9ef&#34;&gt;draft&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;false&lt;/span&gt;
+&lt;span style=&#34;color:#66d9ef&#34;&gt;weight&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;01&lt;/span&gt;
+---
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;</description>
+    </item>
+    
+  </channel>
+</rss>
