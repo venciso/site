@@ -1,4 +1,4 @@
-baseURL = "https://example.com"
+baseURL = "https://venciso.netlify.com/"
 languageCode = "en-us"
 title = "A stats website"
 theme = "minimal-bootstrap-hugo-theme"
