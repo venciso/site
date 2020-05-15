@@ -1,0 +1,146 @@
+---
+title: Grand Slam title history as an animated bar chart race
+author: Victor
+date: '2020-05-15'
+slug: grand-slam-title-history-as-an-animated-bar-chart-race
+categories:
+  - R
+  - Tennis
+tags:
+  - R
+  - tennis
+  - gganimate
+  - ggplot
+publishdate: '2020-05-15'
+lastmod: '2020-05-15'
+---
+
+```{r message=FALSE, warning=FALSE, cache=FALSE, include=FALSE}
+
+require(XML)
+require(data.table)
+library(httr)
+require(dplyr)
+require(stringr)
+require(RColorBrewer)
+require(ggplot2)
+require(gganimate)
+
+# url <- "https://en.wikipedia.org/wiki/List_of_Grand_Slam_men%27s_singles_champions"
+# 
+# r <- GET(url)
+# 
+# tabs <- readHTMLTable(doc=content(r, "text"))
+
+tabs<-readRDS("C:/Users/victor.enciso/Documents_notOneDrive/Projects/misc/wiki_html_mes_singles_gs_champs")
+```
+
+```{r message=FALSE, warning=FALSE, cache=FALSE}
+gs<-data.table(tabs[[3]])
+
+names(gs) <- as.character(unlist(gs[1,]))
+gs<-gs[-1]
+
+#1977 had to AOs. Fix manually.
+gs<-bind_rows(gs,
+data.table(Year="1977","Australian Open"="Vitas Gerulaitis"))
+
+gs<-gs[grep("[0-9]",Year)][order(Year)]
+
+gs <- melt(gs, id.vars = "Year")
+
+gs[grep("\\(([^)]+)\\)",gs[,value]),value]
+gs$winner <- gsub("\\(([^)]+)\\)","",gs$value)
+
+#gs[grep("[†]",value)]
+gs$winner<-gsub("[*]","",gs$winner)
+gs$winner<-gsub("[†]","",gs$winner)
+
+gs$winner<-gsub("Amateur Era ends","",gs$winner)
+gs$winner<-gsub("Open Era begins","",gs$winner)
+
+gs[,winner:=str_trim(winner)]
+
+gs[,.N,winner][order(-N)]
+
+#Exclude FO before 1925
+gs<-gs[!(variable=="French Open" & Year<1925)]
+
+gs[,win:=1]
+
+#gs[,gs_wins := cumsum(win), .(year,winner)]
+#gs[,gs_wins_tot := cumsum(win), .(winner)]
+
+gs<-gs[!grep("tournament|started|World W|occupation|Tournament|oronavir",winner)]
+#gets rid of nas too
+gs<-gs[winner!=""]
+
+
+###################################
+####  Get a cumulative table ######
+###################################
+
+#Get a list of all the years
+yearList<-gs[order(Year)][,unique(Year)]
+yearList[140:141]
+#Year>=2000 & 
+#Function fun calculates cumulative GS wins for all the players up to the current year
+fun<-function(year){ gs[Year<=year,.(win=sum(win),latestWin=max(Year)),.(winner)][,year:=year] }
+#Create a table that has all combinations of year/player
+gsfull<-lapply(yearList, fun) %>% rbindlist()
+
+gsfull<-gsfull[order(year,-win,-latestWin)]
+gsfull[,rank:=seq(1,.N),year]
+
+gsfull[,win_label := paste0(" ", win)]
+```
+
+```{r}
+y<-1877
+
+###################################
+############# ggplot ##############
+###################################
+sp<-ggplot(gsfull[year>=y & rank<=20],aes(x=rank,y=win,fill=winner)) + 
+  #geom_bar(stat="Identity",position="stack") + theme_bw() +
+  geom_tile(aes(y=win/2,height=win, width=0.95),alpha=0.9) + theme_bw() +
+  geom_text(aes(y=0,label = paste0(winner," ")), hjust = 1) +
+  geom_text(aes(y=win,label = win_label, hjust=0)) +
+  #scale_fill_manual(values=colors) +
+  #scale_fill_brewer(palette = "Paired", 12) +
+  #scale_fill_manual(values = mycolors) +
+  #coord_flip()+
+  coord_flip(clip = "off", expand = F) +
+  scale_x_reverse() +
+  guides(color = FALSE, fill = FALSE) +
+  theme(axis.line=element_blank(),
+        axis.text.x=element_blank(),
+        axis.text.y=element_blank(),
+        axis.ticks=element_blank(),
+        axis.title.x=element_blank(),
+        axis.title.y=element_blank(),
+        legend.position="bottom",
+        panel.background=element_blank(),
+        panel.border=element_blank(),
+        panel.grid.major=element_blank(),
+        panel.grid.minor=element_blank(),
+        panel.grid.major.x = element_line( size=.1, color="grey" ),
+        panel.grid.minor.x = element_line( size=.1, color="grey" )
+        ,
+        plot.margin = margin(5,5,5,5, "cm")
+        #plot.margin = margin(3,3,3,3, "cm")
+        )
+
+sp
+
+p <- sp + transition_states(year, transition_length = 4, state_length = 2) +
+  view_follow(fixed_x = TRUE)  +
+  labs(title = 'Grand Slam Titles : {closest_state}')  +
+   enter_drift(y_mod=10) + exit_shrink()  + 
+  ease_aes('linear')
+p
+
+
+#animate(p, 600, fps = 7,  width = 800, height = 600, 
+#        renderer = gifski_renderer("gganim5.gif"))
+```
