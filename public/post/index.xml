@@ -28,7 +28,7 @@
 	  <description>
 
 
-&lt;p&gt;&lt;img src=&#34;C:\Users\victor.enciso\Documents_notOneDrive\Projects\site\static\post\2020-05-15-grand-slam-title-history-as-an-animated-bar-chart-race_files/gganim.gif&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;/post/2020-05-15-grand-slam-title-history-as-an-animated-bar-chart-race_files/gganim.gif&#34; /&gt;&lt;/p&gt;
 &lt;p&gt;I’ve spoiled it by putting the gif at the start of the post but if you are interested in how it was made then read on!&lt;/p&gt;
 &lt;p&gt;I’ve seen this kind of charts around the web so I wanted to make a tennis-related one and what better than using Grand Slam wins since the very beginning; 1877.&lt;/p&gt;
 &lt;p&gt;The main package that is needed for the animation is gganimate. As the name suggests it integrates with ggplot to make an animation given many different charts and a transition variable.&lt;/p&gt;

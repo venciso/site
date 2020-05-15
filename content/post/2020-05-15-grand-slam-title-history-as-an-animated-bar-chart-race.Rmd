@@ -14,7 +14,9 @@ tags:
 publishdate: '2020-05-15'
 lastmod: '2020-05-15'
 ---
-![](C:\Users\victor.enciso\Documents_notOneDrive\Projects\site\static\post\2020-05-15-grand-slam-title-history-as-an-animated-bar-chart-race_files/gganim.gif)
+
+![](/post/2020-05-15-grand-slam-title-history-as-an-animated-bar-chart-race_files/gganim.gif)
+
 
 I've spoiled it by putting the gif at the start of the post but if you are interested in how it was made then read on! 
 
