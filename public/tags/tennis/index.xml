@@ -13,11 +13,850 @@
     <language>en-us</language>
 	
 	
-    <lastBuildDate>Mon, 04 May 2020 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Fri, 15 May 2020 00:00:00 +0000</lastBuildDate>
 	
     
         <atom:link href="/tags/tennis/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Grand Slam title history as an animated bar chart race</title>
+      <link>/2020-05-15-grand-slam-title-history-as-an-animated-bar-chart-race/</link>
+      <pubDate>Fri, 15 May 2020 00:00:00 +0000</pubDate>
+      
+      <guid>/2020-05-15-grand-slam-title-history-as-an-animated-bar-chart-race/</guid>
+	  <description>
+
+
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;gs&amp;lt;-data.table(tabs[[3]])
+
+names(gs) &amp;lt;- as.character(unlist(gs[1,]))
+gs&amp;lt;-gs[-1]
+
+#1977 had to AOs. Fix manually.
+gs&amp;lt;-bind_rows(gs,
+data.table(Year=&amp;quot;1977&amp;quot;,&amp;quot;Australian Open&amp;quot;=&amp;quot;Vitas Gerulaitis&amp;quot;))
+
+gs&amp;lt;-gs[grep(&amp;quot;[0-9]&amp;quot;,Year)][order(Year)]
+
+gs &amp;lt;- melt(gs, id.vars = &amp;quot;Year&amp;quot;)
+
+gs[grep(&amp;quot;\\(([^)]+)\\)&amp;quot;,gs[,value]),value]&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;##   [1] &amp;quot;Rodney Heath (1/2)&amp;quot;                 
+##   [2] &amp;quot;Anthony Wilding (1/6)&amp;quot;              
+##   [3] &amp;quot;Anthony Wilding (2/6)&amp;quot;              
+##   [4] &amp;quot;Rodney Heath (2/2)&amp;quot;                 
+##   [5] &amp;quot;Norman Brookes (2/3)&amp;quot;               
+##   [6] &amp;quot;Robert Lindley Murray (1/2)&amp;quot;        
+##   [7] &amp;quot;Robert Lindley Murray (2/2)&amp;quot;        
+##   [8] &amp;quot;Pat O&amp;#39;Hara Wood (1/2)&amp;quot;              
+##   [9] &amp;quot;James Anderson (1/3)&amp;quot;               
+##  [10] &amp;quot;Pat O&amp;#39;Hara Wood (2/2) ††&amp;quot;           
+##  [11] &amp;quot;James Anderson (2/3)&amp;quot;               
+##  [12] &amp;quot;James Anderson (3/3)&amp;quot;               
+##  [13] &amp;quot;Gerald Patterson (3/3)†††&amp;quot;          
+##  [14] &amp;quot;Jean Borotra (3/4)&amp;quot;                 
+##  [15] &amp;quot;Jack Crawford (1/6)&amp;quot;                
+##  [16] &amp;quot;Jack Crawford (2/6)&amp;quot;                
+##  [17] &amp;quot;Jack Crawford (3/6)&amp;quot;                
+##  [18] &amp;quot;Fred Perry (2/8)&amp;quot;                   
+##  [19] &amp;quot;Jack Crawford (6/6)&amp;quot;                
+##  [20] &amp;quot;Adrian Quist (1/3)&amp;quot;                 
+##  [21] &amp;quot;Don Budge (3/6)&amp;quot;                    
+##  [22] &amp;quot;John Bromwich (1/2)&amp;quot;                
+##  [23] &amp;quot;Adrian Quist (2/3)&amp;quot;                 
+##  [24] &amp;quot;Ted Schroeder (1/2)&amp;quot;                
+##  [25] &amp;quot;Frank Parker (1/4)&amp;quot;                 
+##  [26] &amp;quot;Yvon Petra (unrecognized)***&amp;quot;       
+##  [27] &amp;quot;John Bromwich (2/2)&amp;quot;                
+##  [28] &amp;quot;Adrian Quist (3/3)&amp;quot;                 
+##  [29] &amp;quot;Frank Sedgman (1/5)&amp;quot;                
+##  [30] &amp;quot;Frank Sedgman (2/5)&amp;quot;                
+##  [31] &amp;quot;Richard Savitt (1/2)&amp;quot;               
+##  [32] &amp;quot;Ken Rosewall (1/8)&amp;quot;                 
+##  [33] &amp;quot;Mervyn Rose (1/2)&amp;quot;                  
+##  [34] &amp;quot;Ken Rosewall (3/8)&amp;quot;                 
+##  [35] &amp;quot;Lew Hoad (1/4)&amp;quot;                     
+##  [36] &amp;quot;Ashley Cooper (1/4)&amp;quot;                
+##  [37] &amp;quot;Ashley Cooper (2/4)&amp;quot;                
+##  [38] &amp;quot;Alex Olmedo (1/2)&amp;quot;                  
+##  [39] &amp;quot;Rod Laver (1/11)&amp;quot;                   
+##  [40] &amp;quot;Roy Emerson (1/12)&amp;quot;                 
+##  [41] &amp;quot;Rod Laver (3/11)&amp;quot;                   
+##  [42] &amp;quot;Roy Emerson (3/12)&amp;quot;                 
+##  [43] &amp;quot;Roy Emerson (5/12)&amp;quot;                 
+##  [44] &amp;quot;Roy Emerson (8/12)&amp;quot;                 
+##  [45] &amp;quot;Roy Emerson (10/12)&amp;quot;                
+##  [46] &amp;quot;Roy Emerson (11/12)&amp;quot;                
+##  [47] &amp;quot;Rod Laver (8/11)&amp;quot;                   
+##  [48] &amp;quot;Arthur Ashe (2/3)&amp;quot;                  
+##  [49] &amp;quot;Ken Rosewall (7/8)&amp;quot;                 
+##  [50] &amp;quot;Ken Rosewall (8/8)&amp;quot;                 
+##  [51] &amp;quot;John Newcombe (5/7)&amp;quot;                
+##  [52] &amp;quot;Jimmy Connors (1/8)&amp;quot;                
+##  [53] &amp;quot;John Newcombe (7/7)&amp;quot;                
+##  [54] &amp;quot;Roscoe Tanner (Jan)&amp;quot;                
+##  [55] &amp;quot;Guillermo Vilas (3/4) ††††&amp;quot;         
+##  [56] &amp;quot;Guillermo Vilas (4/4) ††††&amp;quot;         
+##  [57] &amp;quot;Johan Kriek (1/2) ††††&amp;quot;             
+##  [58] &amp;quot;Johan Kriek (2/2) ††††&amp;quot;             
+##  [59] &amp;quot;Mats Wilander (2/7)††††&amp;quot;            
+##  [60] &amp;quot;Mats Wilander (3/7) ††††&amp;quot;           
+##  [61] &amp;quot;Stefan Edberg (1/6) ††††&amp;quot;           
+##  [62] &amp;quot;Stefan Edberg (2/6)&amp;quot;                
+##  [63] &amp;quot;Mats Wilander (5/7)&amp;quot;                
+##  [64] &amp;quot;Ivan Lendl (7/8)&amp;quot;                   
+##  [65] &amp;quot;Ivan Lendl (8/8)&amp;quot;                   
+##  [66] &amp;quot;Boris Becker (5/6)&amp;quot;                 
+##  [67] &amp;quot;Jim Courier (2/4)&amp;quot;                  
+##  [68] &amp;quot;Jim Courier (4/4)&amp;quot;                  
+##  [69] &amp;quot;Pete Sampras (4/14)&amp;quot;                
+##  [70] &amp;quot;Andre Agassi (3/8)&amp;quot;                 
+##  [71] &amp;quot;Boris Becker (6/6)&amp;quot;                 
+##  [72] &amp;quot;Pete Sampras (9/14)&amp;quot;                
+##  [73] &amp;quot;Yevgeny Kafelnikov (2/2)&amp;quot;           
+##  [74] &amp;quot;Andre Agassi (6/8)&amp;quot;                 
+##  [75] &amp;quot;Andre Agassi (7/8)&amp;quot;                 
+##  [76] &amp;quot;Andre Agassi (8/8)&amp;quot;                 
+##  [77] &amp;quot;Roger Federer (2/20)&amp;quot;               
+##  [78] &amp;quot;Marat Safin (2/2)&amp;quot;                  
+##  [79] &amp;quot;Roger Federer (7/20)&amp;quot;               
+##  [80] &amp;quot;Roger Federer (10/20)&amp;quot;              
+##  [81] &amp;quot;Novak Djokovic (1/17)&amp;quot;              
+##  [82] &amp;quot;Rafael Nadal (6/19)&amp;quot;                
+##  [83] &amp;quot;Roger Federer (16/20)&amp;quot;              
+##  [84] &amp;quot;Novak Djokovic (2/17)&amp;quot;              
+##  [85] &amp;quot;Novak Djokovic (5/17)&amp;quot;              
+##  [86] &amp;quot;Novak Djokovic (6/17)&amp;quot;              
+##  [87] &amp;quot;Stan Wawrinka (1/3)&amp;quot;                
+##  [88] &amp;quot;Novak Djokovic (8/17)&amp;quot;              
+##  [89] &amp;quot;Novak Djokovic (11/17)&amp;quot;             
+##  [90] &amp;quot;Roger Federer (18/20)&amp;quot;              
+##  [91] &amp;quot;Roger Federer (20/20)&amp;quot;              
+##  [92] &amp;quot;Novak Djokovic (15/17)&amp;quot;             
+##  [93] &amp;quot;Novak Djokovic (17/17)&amp;quot;             
+##  [94] &amp;quot;Richard Williams (2/2)&amp;quot;             
+##  [95] &amp;quot;Gerald Patterson (1/3)&amp;quot;             
+##  [96] &amp;quot;René Lacoste (1/7) **&amp;quot;              
+##  [97] &amp;quot;Henri Cochet (1/7)&amp;quot;                 
+##  [98] &amp;quot;René Lacoste (4/7)&amp;quot;                 
+##  [99] &amp;quot;Henri Cochet (3/7)&amp;quot;                 
+## [100] &amp;quot;René Lacoste (7/7)&amp;quot;                 
+## [101] &amp;quot;Henri Cochet (6/7)&amp;quot;                 
+## [102] &amp;quot;Jean Borotra (4/4)&amp;quot;                 
+## [103] &amp;quot;Henri Cochet (7/7)&amp;quot;                 
+## [104] &amp;quot;Jack Crawford (4/6)&amp;quot;                
+## [105] &amp;quot;Gottfried von Cramm (1/2)&amp;quot;          
+## [106] &amp;quot;Fred Perry (5/8)&amp;quot;                   
+## [107] &amp;quot;Gottfried von Cramm (2/2)&amp;quot;          
+## [108] &amp;quot;Don Budge (4/6)&amp;quot;                    
+## [109] &amp;quot;Don McNeill (1/2)&amp;quot;                  
+## [110] &amp;quot;Frank Parker (2/4)&amp;quot;                 
+## [111] &amp;quot;Frank Parker (3/4)&amp;quot;                 
+## [112] &amp;quot;Frank Parker (4/4)&amp;quot;                 
+## [113] &amp;quot;Budge Patty (1/2)&amp;quot;                  
+## [114] &amp;quot;Jaroslav Drobný (1/3)&amp;quot;              
+## [115] &amp;quot;Jaroslav Drobný (2/3)&amp;quot;              
+## [116] &amp;quot;Ken Rosewall (2/8)&amp;quot;                 
+## [117] &amp;quot;Tony Trabert (2/5)&amp;quot;                 
+## [118] &amp;quot;Tony Trabert (3/5)&amp;quot;                 
+## [119] &amp;quot;Lew Hoad (2/4)&amp;quot;                     
+## [120] &amp;quot;Mervyn Rose (2/2)&amp;quot;                  
+## [121] &amp;quot;Nicola Pietrangeli (1/2)&amp;quot;           
+## [122] &amp;quot;Nicola Pietrangeli (2/2)&amp;quot;           
+## [123] &amp;quot;Manuel Santana (1/4)&amp;quot;               
+## [124] &amp;quot;Rod Laver (4/11)&amp;quot;                   
+## [125] &amp;quot;Roy Emerson (4/12)&amp;quot;                 
+## [126] &amp;quot;Manuel Santana (2/4)&amp;quot;               
+## [127] &amp;quot;Fred Stolle (1/2)&amp;quot;                  
+## [128] &amp;quot;Roy Emerson (12/12)&amp;quot;                
+## [129] &amp;quot;Open Era begins  Ken Rosewall (5/8)&amp;quot;
+## [130] &amp;quot;Rod Laver (9/11)&amp;quot;                   
+## [131] &amp;quot;Jan Kodeš (1/3)&amp;quot;                    
+## [132] &amp;quot;Jan Kodeš (2/3)&amp;quot;                    
+## [133] &amp;quot;Ilie Nastase (2/2)&amp;quot;                 
+## [134] &amp;quot;Björn Borg (1/11)&amp;quot;                  
+## [135] &amp;quot;Björn Borg (2/11)&amp;quot;                  
+## [136] &amp;quot;Guillermo Vilas (1/4)&amp;quot;              
+## [137] &amp;quot;Björn Borg (5/11)&amp;quot;                  
+## [138] &amp;quot;Björn Borg (7/11)&amp;quot;                  
+## [139] &amp;quot;Björn Borg (9/11)&amp;quot;                  
+## [140] &amp;quot;Björn Borg (11/11)&amp;quot;                 
+## [141] &amp;quot;Mats Wilander (1/7)&amp;quot;                
+## [142] &amp;quot;Ivan Lendl (1/8)&amp;quot;                   
+## [143] &amp;quot;Mats Wilander (4/7)&amp;quot;                
+## [144] &amp;quot;Ivan Lendl (3/8)&amp;quot;                   
+## [145] &amp;quot;Ivan Lendl (5/8)&amp;quot;                   
+## [146] &amp;quot;Mats Wilander (6/7)&amp;quot;                
+## [147] &amp;quot;Jim Courier (1/4)&amp;quot;                  
+## [148] &amp;quot;Jim Courier (3/4)&amp;quot;                  
+## [149] &amp;quot;Sergi Bruguera (1/2)&amp;quot;               
+## [150] &amp;quot;Sergi Bruguera (2/2)&amp;quot;               
+## [151] &amp;quot;Yevgeny Kafelnikov (1/2)&amp;quot;           
+## [152] &amp;quot;Gustavo Kuerten (1/3)&amp;quot;              
+## [153] &amp;quot;Andre Agassi (4/8)&amp;quot;                 
+## [154] &amp;quot;Gustavo Kuerten (2/3)&amp;quot;              
+## [155] &amp;quot;Gustavo Kuerten (3/3)&amp;quot;              
+## [156] &amp;quot;Rafael Nadal (1/19)&amp;quot;                
+## [157] &amp;quot;Rafael Nadal (2/19)&amp;quot;                
+## [158] &amp;quot;Rafael Nadal (3/19)&amp;quot;                
+## [159] &amp;quot;Rafael Nadal (4/19)&amp;quot;                
+## [160] &amp;quot;Roger Federer (14/20)&amp;quot;              
+## [161] &amp;quot;Rafael Nadal  (7/19)&amp;quot;               
+## [162] &amp;quot;Rafael Nadal (10/19)&amp;quot;               
+## [163] &amp;quot;Rafael Nadal (11/19)&amp;quot;               
+## [164] &amp;quot;Rafael Nadal (12/19)&amp;quot;               
+## [165] &amp;quot;Rafael Nadal (14/19)&amp;quot;               
+## [166] &amp;quot;Stan Wawrinka (2/3)&amp;quot;                
+## [167] &amp;quot;Novak Djokovic (12/17)&amp;quot;             
+## [168] &amp;quot;Rafael Nadal (15/19)&amp;quot;               
+## [169] &amp;quot;Rafael Nadal (17/19)&amp;quot;               
+## [170] &amp;quot;Rafael Nadal (18/19)&amp;quot;               
+## [171] &amp;quot;John Hartley (1/2)&amp;quot;                 
+## [172] &amp;quot;John Hartley (2/2)&amp;quot;                 
+## [173] &amp;quot;William Renshaw (1/7)&amp;quot;              
+## [174] &amp;quot;William Renshaw (2/7)&amp;quot;              
+## [175] &amp;quot;William Renshaw (3/7)&amp;quot;              
+## [176] &amp;quot;William Renshaw (4/7)&amp;quot;              
+## [177] &amp;quot;William Renshaw (5/7)&amp;quot;              
+## [178] &amp;quot;William Renshaw (6/7)&amp;quot;              
+## [179] &amp;quot;William Renshaw (7/7)&amp;quot;              
+## [180] &amp;quot;Wilfred Baddeley (1/3)&amp;quot;             
+## [181] &amp;quot;Wilfred Baddeley (2/3)&amp;quot;             
+## [182] &amp;quot;Joshua Pim (1/2)&amp;quot;                   
+## [183] &amp;quot;Joshua Pim (2/2)&amp;quot;                   
+## [184] &amp;quot;Wilfred Baddeley (3/3)&amp;quot;             
+## [185] &amp;quot;Reginald Doherty (1/4)&amp;quot;             
+## [186] &amp;quot;Reginald Doherty (2/4)&amp;quot;             
+## [187] &amp;quot;Reginald Doherty (3/4)&amp;quot;             
+## [188] &amp;quot;Reginald Doherty (4/4)&amp;quot;             
+## [189] &amp;quot;Arthur Gore (1/3)&amp;quot;                  
+## [190] &amp;quot;Laurence Doherty (1/6)&amp;quot;             
+## [191] &amp;quot;Laurence Doherty (2/6)&amp;quot;             
+## [192] &amp;quot;Laurence Doherty (4/6)&amp;quot;             
+## [193] &amp;quot;Laurence Doherty (5/6)&amp;quot;             
+## [194] &amp;quot;Laurence Doherty (6/6)&amp;quot;             
+## [195] &amp;quot;Norman Brookes (1/3)&amp;quot;               
+## [196] &amp;quot;Arthur Gore (2/3)&amp;quot;                  
+## [197] &amp;quot;Arthur Gore (3/3)&amp;quot;                  
+## [198] &amp;quot;Anthony Wilding (3/6)&amp;quot;              
+## [199] &amp;quot;Anthony Wilding (4/6)&amp;quot;              
+## [200] &amp;quot;Anthony Wilding (5/6)&amp;quot;              
+## [201] &amp;quot;Anthony Wilding (6/6)&amp;quot;              
+## [202] &amp;quot;Norman Brookes (3/3)&amp;quot;               
+## [203] &amp;quot;William Johnston (2/3)&amp;quot;             
+## [204] &amp;quot;Bill Tilden (1/10)&amp;quot;                 
+## [205] &amp;quot;Bill Tilden (3/10)&amp;quot;                 
+## [206] &amp;quot;Gerald Patterson (2/3)&amp;quot;             
+## [207] &amp;quot;William Johnston (3/3)&amp;quot;             
+## [208] &amp;quot;Jean Borotra (1/4)&amp;quot;                 
+## [209] &amp;quot;René Lacoste (2/7)&amp;quot;                 
+## [210] &amp;quot;Jean Borotra (2/4)&amp;quot;                 
+## [211] &amp;quot;Henri Cochet (2/7)&amp;quot;                 
+## [212] &amp;quot;René Lacoste (6/7)&amp;quot;                 
+## [213] &amp;quot;Henri Cochet (5/7)&amp;quot;                 
+## [214] &amp;quot;Bill Tilden (10/10)&amp;quot;                
+## [215] &amp;quot;Ellsworth Vines (2/3)&amp;quot;              
+## [216] &amp;quot;Jack Crawford (5/6)&amp;quot;                
+## [217] &amp;quot;Fred Perry (3/8)&amp;quot;                   
+## [218] &amp;quot;Fred Perry (6/8)&amp;quot;                   
+## [219] &amp;quot;Fred Perry (7/8)&amp;quot;                   
+## [220] &amp;quot;Don Budge (1/6)&amp;quot;                    
+## [221] &amp;quot;Don Budge (5/6)&amp;quot;                    
+## [222] &amp;quot;Bobby Riggs (1/3)&amp;quot;                  
+## [223] &amp;quot;Bobby Riggs (3/3)&amp;quot;                  
+## [224] &amp;quot;Jack Kramer (2/3)&amp;quot;                  
+## [225] &amp;quot;Ted Schroeder (2/2)&amp;quot;                
+## [226] &amp;quot;Budge Patty (2/2)&amp;quot;                  
+## [227] &amp;quot;Richard Savitt (2/2)&amp;quot;               
+## [228] &amp;quot;Frank Sedgman (4/5)&amp;quot;                
+## [229] &amp;quot;Vic Seixas (1/2)&amp;quot;                   
+## [230] &amp;quot;Jaroslav Drobný (3/3)&amp;quot;              
+## [231] &amp;quot;Tony Trabert (4/5)&amp;quot;                 
+## [232] &amp;quot;Lew Hoad (3/4)&amp;quot;                     
+## [233] &amp;quot;Lew Hoad (4/4)&amp;quot;                     
+## [234] &amp;quot;Ashley Cooper (3/4)&amp;quot;                
+## [235] &amp;quot;Alex Olmedo (2/2)&amp;quot;                  
+## [236] &amp;quot;Neale Fraser (2/3)&amp;quot;                 
+## [237] &amp;quot;Rod Laver (2/11)&amp;quot;                   
+## [238] &amp;quot;Rod Laver (5/11)&amp;quot;                   
+## [239] &amp;quot;Roy Emerson (6/12)&amp;quot;                 
+## [240] &amp;quot;Roy Emerson (9/12)&amp;quot;                 
+## [241] &amp;quot;Manuel Santana (4/4)&amp;quot;               
+## [242] &amp;quot;John Newcombe (1/7)&amp;quot;                
+## [243] &amp;quot;Rod Laver (7/11)&amp;quot;                   
+## [244] &amp;quot;Rod Laver (10/11)&amp;quot;                  
+## [245] &amp;quot;John Newcombe (3/7)&amp;quot;                
+## [246] &amp;quot;John Newcombe (4/7)&amp;quot;                
+## [247] &amp;quot;Stan Smith (2/2)&amp;quot;                   
+## [248] &amp;quot;Jan Kodeš (3/3)&amp;quot;                    
+## [249] &amp;quot;Jimmy Connors (2/8)&amp;quot;                
+## [250] &amp;quot;Arthur Ashe (3/3)&amp;quot;                  
+## [251] &amp;quot;Björn Borg (3/11)&amp;quot;                  
+## [252] &amp;quot;Björn Borg (4/11)&amp;quot;                  
+## [253] &amp;quot;Björn Borg (6/11)&amp;quot;                  
+## [254] &amp;quot;Björn Borg (8/11)&amp;quot;                  
+## [255] &amp;quot;Björn Borg (10/11)&amp;quot;                 
+## [256] &amp;quot;John McEnroe (3/7)&amp;quot;                 
+## [257] &amp;quot;Jimmy Connors (6/8)&amp;quot;                
+## [258] &amp;quot;John McEnroe (5/7)&amp;quot;                 
+## [259] &amp;quot;John McEnroe (6/7)&amp;quot;                 
+## [260] &amp;quot;Boris Becker (1/6)&amp;quot;                 
+## [261] &amp;quot;Boris Becker (2/6)&amp;quot;                 
+## [262] &amp;quot;Stefan Edberg (3/6)&amp;quot;                
+## [263] &amp;quot;Boris Becker (3/6)&amp;quot;                 
+## [264] &amp;quot;Stefan Edberg (4/6)&amp;quot;                
+## [265] &amp;quot;Andre Agassi (1/8)&amp;quot;                 
+## [266] &amp;quot;Pete Sampras (2/14)&amp;quot;                
+## [267] &amp;quot;Pete Sampras (5/14)&amp;quot;                
+## [268] &amp;quot;Pete Sampras (6/14)&amp;quot;                
+## [269] &amp;quot;Pete Sampras (10/14)&amp;quot;               
+## [270] &amp;quot;Pete Sampras (11/14)&amp;quot;               
+## [271] &amp;quot;Pete Sampras (12/14)&amp;quot;               
+## [272] &amp;quot;Pete Sampras (13/14)&amp;quot;               
+## [273] &amp;quot;Lleyton Hewitt (2/2)&amp;quot;               
+## [274] &amp;quot;Roger Federer (1/20)&amp;quot;               
+## [275] &amp;quot;Roger Federer (3/20)&amp;quot;               
+## [276] &amp;quot;Roger Federer (5/20)&amp;quot;               
+## [277] &amp;quot;Roger Federer (8/20)&amp;quot;               
+## [278] &amp;quot;Roger Federer (11/20)&amp;quot;              
+## [279] &amp;quot;Rafael Nadal (5/19)&amp;quot;                
+## [280] &amp;quot;Roger Federer (15/20)&amp;quot;              
+## [281] &amp;quot;Rafael Nadal (8/19)&amp;quot;                
+## [282] &amp;quot;Novak Djokovic (3/17)&amp;quot;              
+## [283] &amp;quot;Roger Federer (17/20)&amp;quot;              
+## [284] &amp;quot;Andy Murray (2/3)&amp;quot;                  
+## [285] &amp;quot;Novak Djokovic (7/17)&amp;quot;              
+## [286] &amp;quot;Novak Djokovic (9/17)&amp;quot;              
+## [287] &amp;quot;Andy Murray (3/3)&amp;quot;                  
+## [288] &amp;quot;Roger Federer (19/20)&amp;quot;              
+## [289] &amp;quot;Novak Djokovic (13/17)&amp;quot;             
+## [290] &amp;quot;Novak Djokovic (16/17)&amp;quot;             
+## [291] &amp;quot;Richard Sears (1/7)&amp;quot;                
+## [292] &amp;quot;Richard Sears (2/7)&amp;quot;                
+## [293] &amp;quot;Richard Sears (3/7)&amp;quot;                
+## [294] &amp;quot;Richard Sears (4/7)&amp;quot;                
+## [295] &amp;quot;Richard Sears (5/7)&amp;quot;                
+## [296] &amp;quot;Richard Sears (6/7)&amp;quot;                
+## [297] &amp;quot;Richard Sears (7/7)&amp;quot;                
+## [298] &amp;quot;Henry Slocum (1/2)&amp;quot;                 
+## [299] &amp;quot;Henry Slocum (2/2)&amp;quot;                 
+## [300] &amp;quot;Oliver Campbell (1/3)&amp;quot;              
+## [301] &amp;quot;Oliver Campbell (2/3)&amp;quot;              
+## [302] &amp;quot;Oliver Campbell (3/3)&amp;quot;              
+## [303] &amp;quot;Robert Wrenn (1/4)&amp;quot;                 
+## [304] &amp;quot;Robert Wrenn (2/4)&amp;quot;                 
+## [305] &amp;quot;Robert Wrenn (3/4)&amp;quot;                 
+## [306] &amp;quot;Robert Wrenn (4/4)&amp;quot;                 
+## [307] &amp;quot;Malcolm Whitman (1/3)&amp;quot;              
+## [308] &amp;quot;Malcolm Whitman (2/3)&amp;quot;              
+## [309] &amp;quot;Malcolm Whitman (3/3)&amp;quot;              
+## [310] &amp;quot;William Larned (1/7)&amp;quot;               
+## [311] &amp;quot;William Larned (2/7)&amp;quot;               
+## [312] &amp;quot;Laurence Doherty (3/6)&amp;quot;             
+## [313] &amp;quot;William Larned (3/7)&amp;quot;               
+## [314] &amp;quot;William Larned (4/7)&amp;quot;               
+## [315] &amp;quot;William Larned (5/7)&amp;quot;               
+## [316] &amp;quot;William Larned (6/7)&amp;quot;               
+## [317] &amp;quot;William Larned (7/7)&amp;quot;               
+## [318] &amp;quot;Maurice McLoughlin (1/2)&amp;quot;           
+## [319] &amp;quot;Maurice McLoughlin (2/2)&amp;quot;           
+## [320] &amp;quot;Richard Williams (1/2)&amp;quot;             
+## [321] &amp;quot;William Johnston (1/3)&amp;quot;             
+## [322] &amp;quot;Bill Tilden (2/10)&amp;quot;                 
+## [323] &amp;quot;Bill Tilden (4/10)&amp;quot;                 
+## [324] &amp;quot;Bill Tilden (5/10)&amp;quot;                 
+## [325] &amp;quot;Bill Tilden (6/10)&amp;quot;                 
+## [326] &amp;quot;Bill Tilden (7/10)&amp;quot;                 
+## [327] &amp;quot;Bill Tilden (8/10)&amp;quot;                 
+## [328] &amp;quot;René Lacoste (3/7)&amp;quot;                 
+## [329] &amp;quot;René Lacoste (5/7)&amp;quot;                 
+## [330] &amp;quot;Henri Cochet (4/7)&amp;quot;                 
+## [331] &amp;quot;Bill Tilden (9/10)&amp;quot;                 
+## [332] &amp;quot;Ellsworth Vines (1/3)&amp;quot;              
+## [333] &amp;quot;Ellsworth Vines (3/3)&amp;quot;              
+## [334] &amp;quot;Fred Perry (1/8)&amp;quot;                   
+## [335] &amp;quot;Fred Perry (4/8)&amp;quot;                   
+## [336] &amp;quot;Fred Perry (8/8)&amp;quot;                   
+## [337] &amp;quot;Don Budge (2/6)&amp;quot;                    
+## [338] &amp;quot;Don Budge (6/6)&amp;quot;                    
+## [339] &amp;quot;Bobby Riggs (2/3)&amp;quot;                  
+## [340] &amp;quot;Don McNeill (2/2)&amp;quot;                  
+## [341] &amp;quot;Jack Kramer (1/3)&amp;quot;                  
+## [342] &amp;quot;Jack Kramer (3/3)&amp;quot;                  
+## [343] &amp;quot;Pancho Gonzales (1/2)&amp;quot;              
+## [344] &amp;quot;Pancho Gonzales (2/2)&amp;quot;              
+## [345] &amp;quot;Frank Sedgman (3/5)&amp;quot;                
+## [346] &amp;quot;Frank Sedgman (5/5)&amp;quot;                
+## [347] &amp;quot;Tony Trabert (1/5)&amp;quot;                 
+## [348] &amp;quot;Vic Seixas (2/2)&amp;quot;                   
+## [349] &amp;quot;Tony Trabert (5/5)&amp;quot;                 
+## [350] &amp;quot;Ken Rosewall (4/8)&amp;quot;                 
+## [351] &amp;quot;Ashley Cooper (4/4)&amp;quot;                
+## [352] &amp;quot;Neale Fraser (1/3)&amp;quot;                 
+## [353] &amp;quot;Neale Fraser (3/3)&amp;quot;                 
+## [354] &amp;quot;Roy Emerson (2/12)&amp;quot;                 
+## [355] &amp;quot;Rod Laver (6/11)&amp;quot;                   
+## [356] &amp;quot;Roy Emerson (7/12)&amp;quot;                 
+## [357] &amp;quot;Manuel Santana (3/4)&amp;quot;               
+## [358] &amp;quot;Fred Stolle (2/2)&amp;quot;                  
+## [359] &amp;quot;John Newcombe (2/7)&amp;quot;                
+## [360] &amp;quot;Arthur Ashe (1/3)&amp;quot;                  
+## [361] &amp;quot;Rod Laver (11/11)&amp;quot;                  
+## [362] &amp;quot;Ken Rosewall (6/8)&amp;quot;                 
+## [363] &amp;quot;Stan Smith (1/2)&amp;quot;                   
+## [364] &amp;quot;Ilie Nastase (1/2)&amp;quot;                 
+## [365] &amp;quot;John Newcombe (6/7)&amp;quot;                
+## [366] &amp;quot;Jimmy Connors (3/8)&amp;quot;                
+## [367] &amp;quot;Jimmy Connors (4/8)&amp;quot;                
+## [368] &amp;quot;Guillermo Vilas (2/4)&amp;quot;              
+## [369] &amp;quot;Jimmy Connors (5/8)&amp;quot;                
+## [370] &amp;quot;John McEnroe (1/7)&amp;quot;                 
+## [371] &amp;quot;John McEnroe (2/7)&amp;quot;                 
+## [372] &amp;quot;John McEnroe (4/7)&amp;quot;                 
+## [373] &amp;quot;Jimmy Connors (7/8)&amp;quot;                
+## [374] &amp;quot;Jimmy Connors (8/8)&amp;quot;                
+## [375] &amp;quot;John McEnroe (7/7)&amp;quot;                 
+## [376] &amp;quot;Ivan Lendl (2/8)&amp;quot;                   
+## [377] &amp;quot;Ivan Lendl (4/8)&amp;quot;                   
+## [378] &amp;quot;Ivan Lendl (6/8)&amp;quot;                   
+## [379] &amp;quot;Mats Wilander (7/7)&amp;quot;                
+## [380] &amp;quot;Boris Becker (4/6)&amp;quot;                 
+## [381] &amp;quot;Pete Sampras (1/14)&amp;quot;                
+## [382] &amp;quot;Stefan Edberg (5/6)&amp;quot;                
+## [383] &amp;quot;Stefan Edberg (6/6)&amp;quot;                
+## [384] &amp;quot;Pete Sampras (3/14)&amp;quot;                
+## [385] &amp;quot;Andre Agassi (2/8)&amp;quot;                 
+## [386] &amp;quot;Pete Sampras (7/14)&amp;quot;                
+## [387] &amp;quot;Pete Sampras (8/14)&amp;quot;                
+## [388] &amp;quot;Patrick Rafter (1/2)&amp;quot;               
+## [389] &amp;quot;Patrick Rafter (2/2)&amp;quot;               
+## [390] &amp;quot;Andre Agassi (5/8)&amp;quot;                 
+## [391] &amp;quot;Marat Safin (1/2)&amp;quot;                  
+## [392] &amp;quot;Lleyton Hewitt (1/2)&amp;quot;               
+## [393] &amp;quot;Pete Sampras (14/14)&amp;quot;               
+## [394] &amp;quot;Roger Federer (4/20)&amp;quot;               
+## [395] &amp;quot;Roger Federer (6/20)&amp;quot;               
+## [396] &amp;quot;Roger Federer (9/20)&amp;quot;               
+## [397] &amp;quot;Roger Federer (12/20)&amp;quot;              
+## [398] &amp;quot;Roger Federer (13/20)&amp;quot;              
+## [399] &amp;quot;Rafael Nadal (9/19)&amp;quot;                
+## [400] &amp;quot;Novak Djokovic (4/17)&amp;quot;              
+## [401] &amp;quot;Andy Murray (1/3)&amp;quot;                  
+## [402] &amp;quot;Rafael Nadal (13/19)&amp;quot;               
+## [403] &amp;quot;Novak Djokovic (10/17)&amp;quot;             
+## [404] &amp;quot;Stan Wawrinka (3/3)&amp;quot;                
+## [405] &amp;quot;Rafael Nadal (16/19)&amp;quot;               
+## [406] &amp;quot;Novak Djokovic (14/17)&amp;quot;             
+## [407] &amp;quot;Rafael Nadal (19/19)&amp;quot;&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;gs$winner &amp;lt;- gsub(&amp;quot;\\(([^)]+)\\)&amp;quot;,&amp;quot;&amp;quot;,gs$value)
+
+#gs[grep(&amp;quot;[†]&amp;quot;,value)]
+gs$winner&amp;lt;-gsub(&amp;quot;[*]&amp;quot;,&amp;quot;&amp;quot;,gs$winner)
+gs$winner&amp;lt;-gsub(&amp;quot;[†]&amp;quot;,&amp;quot;&amp;quot;,gs$winner)
+
+gs$winner&amp;lt;-gsub(&amp;quot;Amateur Era ends&amp;quot;,&amp;quot;&amp;quot;,gs$winner)
+gs$winner&amp;lt;-gsub(&amp;quot;Open Era begins&amp;quot;,&amp;quot;&amp;quot;,gs$winner)
+
+gs[,winner:=str_trim(winner)]
+
+gs[,.N,winner][order(-N)]&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;##                      winner  N
+##   1: tournament not created 43
+##   2:                   &amp;lt;NA&amp;gt; 24
+##   3:          Roger Federer 20
+##   4:           Rafael Nadal 19
+##   5:         Novak Djokovic 17
+##  ---                          
+## 167:           Rafael Osuna  1
+## 168:         Manuel Orantes  1
+## 169:           Andy Roddick  1
+## 170:  Juan Martín del Potro  1
+## 171:            Marin Cilic  1&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;#Exclude FO before 1925
+gs&amp;lt;-gs[!(variable==&amp;quot;French Open&amp;quot; &amp;amp; Year&amp;lt;1925)]
+
+gs[,win:=1]
+
+#gs[,gs_wins := cumsum(win), .(year,winner)]
+#gs[,gs_wins_tot := cumsum(win), .(winner)]
+
+gs&amp;lt;-gs[!grep(&amp;quot;tournament|started|World W|occupation|Tournament|oronavir&amp;quot;,winner)]
+#gets rid of nas too
+gs&amp;lt;-gs[winner!=&amp;quot;&amp;quot;]
+
+
+###################################
+####  Get a cumulative table ######
+###################################
+
+#Get a list of all the years
+yearList&amp;lt;-gs[order(Year)][,unique(Year)]
+yearList[140:141]&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## [1] &amp;quot;2017&amp;quot; &amp;quot;2018&amp;quot;&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;#Year&amp;gt;=2000 &amp;amp; 
+#Function fun calculates cumulative GS wins for all the players up to the current year
+fun&amp;lt;-function(year){ gs[Year&amp;lt;=year,.(win=sum(win),latestWin=max(Year)),.(winner)][,year:=year] }
+#Create a table that has all combinations of year/player
+gsfull&amp;lt;-lapply(yearList, fun) %&amp;gt;% rbindlist()
+
+gsfull&amp;lt;-gsfull[order(year,-win,-latestWin)]
+gsfull[,rank:=seq(1,.N),year]
+
+gsfull[,win_label := paste0(&amp;quot; &amp;quot;, win)]&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;y&amp;lt;-1877
+
+###################################
+############# ggplot ##############
+###################################
+sp&amp;lt;-ggplot(gsfull[year&amp;gt;=y &amp;amp; rank&amp;lt;=20],aes(x=rank,y=win,fill=winner)) + 
+  #geom_bar(stat=&amp;quot;Identity&amp;quot;,position=&amp;quot;stack&amp;quot;) + theme_bw() +
+  geom_tile(aes(y=win/2,height=win, width=0.95),alpha=0.9) + theme_bw() +
+  geom_text(aes(y=0,label = paste0(winner,&amp;quot; &amp;quot;)), hjust = 1) +
+  geom_text(aes(y=win,label = win_label, hjust=0)) +
+  #scale_fill_manual(values=colors) +
+  #scale_fill_brewer(palette = &amp;quot;Paired&amp;quot;, 12) +
+  #scale_fill_manual(values = mycolors) +
+  #coord_flip()+
+  coord_flip(clip = &amp;quot;off&amp;quot;, expand = F) +
+  scale_x_reverse() +
+  guides(color = FALSE, fill = FALSE) +
+  theme(axis.line=element_blank(),
+        axis.text.x=element_blank(),
+        axis.text.y=element_blank(),
+        axis.ticks=element_blank(),
+        axis.title.x=element_blank(),
+        axis.title.y=element_blank(),
+        legend.position=&amp;quot;bottom&amp;quot;,
+        panel.background=element_blank(),
+        panel.border=element_blank(),
+        panel.grid.major=element_blank(),
+        panel.grid.minor=element_blank(),
+        panel.grid.major.x = element_line( size=.1, color=&amp;quot;grey&amp;quot; ),
+        panel.grid.minor.x = element_line( size=.1, color=&amp;quot;grey&amp;quot; )
+        ,
+        plot.margin = margin(5,5,5,5, &amp;quot;cm&amp;quot;)
+        #plot.margin = margin(3,3,3,3, &amp;quot;cm&amp;quot;)
+        )
+
+sp&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;/post/2020-05-15-grand-slam-title-history-as-an-animated-bar-chart-race_files/figure-html/unnamed-chunk-3-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;p &amp;lt;- sp + transition_states(year, transition_length = 4, state_length = 2) +
+  view_follow(fixed_x = TRUE)  +
+  labs(title = &amp;#39;Grand Slam Titles : {closest_state}&amp;#39;)  +
+   enter_drift(y_mod=10) + exit_shrink()  + 
+  ease_aes(&amp;#39;linear&amp;#39;)
+p&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## Warning: Position guide is perpendicular to the intended axis. Did you mean to
+## specify a different guide `position`?
+
+## Warning: Position guide is perpendicular to the intended axis. Did you mean to
+## specify a different guide `position`?
+
+## Warning: Position guide is perpendicular to the intended axis. Did you mean to
+## specify a different guide `position`?
+
+## Warning: Position guide is perpendicular to the intended axis. Did you mean to
+## specify a different guide `position`?
+
+## Warning: Position guide is perpendicular to the intended axis. Did you mean to
+## specify a different guide `position`?
+
+## Warning: Position guide is perpendicular to the intended axis. Did you mean to
+## specify a different guide `position`?
+
+## Warning: Position guide is perpendicular to the intended axis. Did you mean to
+## specify a different guide `position`?
+
+## Warning: Position guide is perpendicular to the intended axis. Did you mean to
+## specify a different guide `position`?
+
+## Warning: Position guide is perpendicular to the intended axis. Did you mean to
+## specify a different guide `position`?
+
+## Warning: Position guide is perpendicular to the intended axis. Did you mean to
+## specify a different guide `position`?
+
+## Warning: Position guide is perpendicular to the intended axis. Did you mean to
+## specify a different guide `position`?
+
+## Warning: Position guide is perpendicular to the intended axis. Did you mean to
+## specify a different guide `position`?
+
+## Warning: Position guide is perpendicular to the intended axis. Did you mean to
+## specify a different guide `position`?
+
+## Warning: Position guide is perpendicular to the intended axis. Did you mean to
+## specify a different guide `position`?
+
+## Warning: Position guide is perpendicular to the intended axis. Did you mean to
+## specify a different guide `position`?
+
+## Warning: Position guide is perpendicular to the intended axis. Did you mean to
+## specify a different guide `position`?
+
+## Warning: Position guide is perpendicular to the intended axis. Did you mean to
+## specify a different guide `position`?
+
+## Warning: Position guide is perpendicular to the intended axis. Did you mean to
+## specify a different guide `position`?
+
+## Warning: Position guide is perpendicular to the intended axis. Did you mean to
+## specify a different guide `position`?
+
+## Warning: Position guide is perpendicular to the intended axis. Did you mean to
+## specify a different guide `position`?
+
+## Warning: Position guide is perpendicular to the intended axis. Did you mean to
+## specify a different guide `position`?
+
+## Warning: Position guide is perpendicular to the intended axis. Did you mean to
+## specify a different guide `position`?
+
+## Warning: Position guide is perpendicular to the intended axis. Did you mean to
+## specify a different guide `position`?
+
+## Warning: Position guide is perpendicular to the intended axis. Did you mean to
+## specify a different guide `position`?
+
+## Warning: Position guide is perpendicular to the intended axis. Did you mean to
+## specify a different guide `position`?
+
+## Warning: Position guide is perpendicular to the intended axis. Did you mean to
+## specify a different guide `position`?
+
+## Warning: Position guide is perpendicular to the intended axis. Did you mean to
+## specify a different guide `position`?
+
+## Warning: Position guide is perpendicular to the intended axis. Did you mean to
+## specify a different guide `position`?
+
+## Warning: Position guide is perpendicular to the intended axis. Did you mean to
+## specify a different guide `position`?
+
+## Warning: Position guide is perpendicular to the intended axis. Did you mean to
+## specify a different guide `position`?
+
+## Warning: Position guide is perpendicular to the intended axis. Did you mean to
+## specify a different guide `position`?
+
+## Warning: Position guide is perpendicular to the intended axis. Did you mean to
+## specify a different guide `position`?
+
+## Warning: Position guide is perpendicular to the intended axis. Did you mean to
+## specify a different guide `position`?
+
+## Warning: Position guide is perpendicular to the intended axis. Did you mean to
+## specify a different guide `position`?
+
+## Warning: Position guide is perpendicular to the intended axis. Did you mean to
+## specify a different guide `position`?
+
+## Warning: Position guide is perpendicular to the intended axis. Did you mean to
+## specify a different guide `position`?
+
+## Warning: Position guide is perpendicular to the intended axis. Did you mean to
+## specify a different guide `position`?
+
+## Warning: Position guide is perpendicular to the intended axis. Did you mean to
+## specify a different guide `position`?
+
+## Warning: Position guide is perpendicular to the intended axis. Did you mean to
+## specify a different guide `position`?
+
+## Warning: Position guide is perpendicular to the intended axis. Did you mean to
+## specify a different guide `position`?
+
+## Warning: Position guide is perpendicular to the intended axis. Did you mean to
+## specify a different guide `position`?
+
+## Warning: Position guide is perpendicular to the intended axis. Did you mean to
+## specify a different guide `position`?
+
+## Warning: Position guide is perpendicular to the intended axis. Did you mean to
+## specify a different guide `position`?
+
+## Warning: Position guide is perpendicular to the intended axis. Did you mean to
+## specify a different guide `position`?
+
+## Warning: Position guide is perpendicular to the intended axis. Did you mean to
+## specify a different guide `position`?
+
+## Warning: Position guide is perpendicular to the intended axis. Did you mean to
+## specify a different guide `position`?
+
+## Warning: Position guide is perpendicular to the intended axis. Did you mean to
+## specify a different guide `position`?
+
+## Warning: Position guide is perpendicular to the intended axis. Did you mean to
+## specify a different guide `position`?
+
+## Warning: Position guide is perpendicular to the intended axis. Did you mean to
+## specify a different guide `position`?
+
+## Warning: Position guide is perpendicular to the intended axis. Did you mean to
+## specify a different guide `position`?
+
+## Warning: Position guide is perpendicular to the intended axis. Did you mean to
+## specify a different guide `position`?
+
+## Warning: Position guide is perpendicular to the intended axis. Did you mean to
+## specify a different guide `position`?
+
+## Warning: Position guide is perpendicular to the intended axis. Did you mean to
+## specify a different guide `position`?
+
+## Warning: Position guide is perpendicular to the intended axis. Did you mean to
+## specify a different guide `position`?
+
+## Warning: Position guide is perpendicular to the intended axis. Did you mean to
+## specify a different guide `position`?
+
+## Warning: Position guide is perpendicular to the intended axis. Did you mean to
+## specify a different guide `position`?
+
+## Warning: Position guide is perpendicular to the intended axis. Did you mean to
+## specify a different guide `position`?
+
+## Warning: Position guide is perpendicular to the intended axis. Did you mean to
+## specify a different guide `position`?
+
+## Warning: Position guide is perpendicular to the intended axis. Did you mean to
+## specify a different guide `position`?
+
+## Warning: Position guide is perpendicular to the intended axis. Did you mean to
+## specify a different guide `position`?
+
+## Warning: Position guide is perpendicular to the intended axis. Did you mean to
+## specify a different guide `position`?
+
+## Warning: Position guide is perpendicular to the intended axis. Did you mean to
+## specify a different guide `position`?
+
+## Warning: Position guide is perpendicular to the intended axis. Did you mean to
+## specify a different guide `position`?
+
+## Warning: Position guide is perpendicular to the intended axis. Did you mean to
+## specify a different guide `position`?
+
+## Warning: Position guide is perpendicular to the intended axis. Did you mean to
+## specify a different guide `position`?
+
+## Warning: Position guide is perpendicular to the intended axis. Did you mean to
+## specify a different guide `position`?
+
+## Warning: Position guide is perpendicular to the intended axis. Did you mean to
+## specify a different guide `position`?
+
+## Warning: Position guide is perpendicular to the intended axis. Did you mean to
+## specify a different guide `position`?
+
+## Warning: Position guide is perpendicular to the intended axis. Did you mean to
+## specify a different guide `position`?
+
+## Warning: Position guide is perpendicular to the intended axis. Did you mean to
+## specify a different guide `position`?
+
+## Warning: Position guide is perpendicular to the intended axis. Did you mean to
+## specify a different guide `position`?
+
+## Warning: Position guide is perpendicular to the intended axis. Did you mean to
+## specify a different guide `position`?
+
+## Warning: Position guide is perpendicular to the intended axis. Did you mean to
+## specify a different guide `position`?
+
+## Warning: Position guide is perpendicular to the intended axis. Did you mean to
+## specify a different guide `position`?
+
+## Warning: Position guide is perpendicular to the intended axis. Did you mean to
+## specify a different guide `position`?
+
+## Warning: Position guide is perpendicular to the intended axis. Did you mean to
+## specify a different guide `position`?
+
+## Warning: Position guide is perpendicular to the intended axis. Did you mean to
+## specify a different guide `position`?
+
+## Warning: Position guide is perpendicular to the intended axis. Did you mean to
+## specify a different guide `position`?
+
+## Warning: Position guide is perpendicular to the intended axis. Did you mean to
+## specify a different guide `position`?
+
+## Warning: Position guide is perpendicular to the intended axis. Did you mean to
+## specify a different guide `position`?
+
+## Warning: Position guide is perpendicular to the intended axis. Did you mean to
+## specify a different guide `position`?
+
+## Warning: Position guide is perpendicular to the intended axis. Did you mean to
+## specify a different guide `position`?
+
+## Warning: Position guide is perpendicular to the intended axis. Did you mean to
+## specify a different guide `position`?
+
+## Warning: Position guide is perpendicular to the intended axis. Did you mean to
+## specify a different guide `position`?
+
+## Warning: Position guide is perpendicular to the intended axis. Did you mean to
+## specify a different guide `position`?
+
+## Warning: Position guide is perpendicular to the intended axis. Did you mean to
+## specify a different guide `position`?
+
+## Warning: Position guide is perpendicular to the intended axis. Did you mean to
+## specify a different guide `position`?
+
+## Warning: Position guide is perpendicular to the intended axis. Did you mean to
+## specify a different guide `position`?
+
+## Warning: Position guide is perpendicular to the intended axis. Did you mean to
+## specify a different guide `position`?
+
+## Warning: Position guide is perpendicular to the intended axis. Did you mean to
+## specify a different guide `position`?
+
+## Warning: Position guide is perpendicular to the intended axis. Did you mean to
+## specify a different guide `position`?
+
+## Warning: Position guide is perpendicular to the intended axis. Did you mean to
+## specify a different guide `position`?
+
+## Warning: Position guide is perpendicular to the intended axis. Did you mean to
+## specify a different guide `position`?
+
+## Warning: Position guide is perpendicular to the intended axis. Did you mean to
+## specify a different guide `position`?
+
+## Warning: Position guide is perpendicular to the intended axis. Did you mean to
+## specify a different guide `position`?
+
+## Warning: Position guide is perpendicular to the intended axis. Did you mean to
+## specify a different guide `position`?
+
+## Warning: Position guide is perpendicular to the intended axis. Did you mean to
+## specify a different guide `position`?
+
+## Warning: Position guide is perpendicular to the intended axis. Did you mean to
+## specify a different guide `position`?
+
+## Warning: Position guide is perpendicular to the intended axis. Did you mean to
+## specify a different guide `position`?
+
+## Warning: Position guide is perpendicular to the intended axis. Did you mean to
+## specify a different guide `position`?
+
+## Warning: Position guide is perpendicular to the intended axis. Did you mean to
+## specify a different guide `position`?
+
+## Warning: Position guide is perpendicular to the intended axis. Did you mean to
+## specify a different guide `position`?&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;/post/2020-05-15-grand-slam-title-history-as-an-animated-bar-chart-race_files/figure-html/unnamed-chunk-3-1.gif&#34; /&gt;&lt;!-- --&gt;&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;#animate(p, 600, fps = 7,  width = 800, height = 600, 
+#        renderer = gifski_renderer(&amp;quot;gganim5.gif&amp;quot;))&lt;/code&gt;&lt;/pre&gt;
+</description>
+    </item>
     
     <item>
       <title>Analysing  tweets from the Virtual Madrid Open</title>
