@@ -8,6 +8,9 @@ theme = "minimal-bootstrap-hugo-theme"
 
 [permalinks]
   post = "/:filename/"
+  
+[outputs]
+  home = [ "RSS" ]
 
 [params]
   description = "Some description"
