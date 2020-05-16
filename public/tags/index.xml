@@ -1,12 +1,14 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>
-	Tags on 
-	A stats website
+	Tags on A stats website
+	
 	</title>
     <link>/tags/</link>
-    <description>Recent content in Tags 
-	on A stats website</description>
+    <description>Recent content 
+	
+	in Tags on A stats website
+	</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
 	
@@ -16,78 +18,6 @@
     
         <atom:link href="/tags/index.xml" rel="self" type="application/rss+xml" />
     
-    
-    <item>
-      <title>gganimate</title>
-      <link>/tags/gganimate/</link>
-      <pubDate>Sat, 16 May 2020 00:00:00 +0000</pubDate>
-      
-      <guid>/tags/gganimate/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>ggplot</title>
-      <link>/tags/ggplot/</link>
-      <pubDate>Sat, 16 May 2020 00:00:00 +0000</pubDate>
-      
-      <guid>/tags/ggplot/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>R</title>
-      <link>/tags/r/</link>
-      <pubDate>Sat, 16 May 2020 00:00:00 +0000</pubDate>
-      
-      <guid>/tags/r/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>tennis</title>
-      <link>/tags/tennis/</link>
-      <pubDate>Sat, 16 May 2020 00:00:00 +0000</pubDate>
-      
-      <guid>/tags/tennis/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>leaflet</title>
-      <link>/tags/leaflet/</link>
-      <pubDate>Mon, 04 May 2020 00:00:00 +0000</pubDate>
-      
-      <guid>/tags/leaflet/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>sentiment analysis</title>
-      <link>/tags/sentiment-analysis/</link>
-      <pubDate>Mon, 04 May 2020 00:00:00 +0000</pubDate>
-      
-      <guid>/tags/sentiment-analysis/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>twitter</title>
-      <link>/tags/twitter/</link>
-      <pubDate>Mon, 04 May 2020 00:00:00 +0000</pubDate>
-      
-      <guid>/tags/twitter/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>wordcloud</title>
-      <link>/tags/wordcloud/</link>
-      <pubDate>Mon, 04 May 2020 00:00:00 +0000</pubDate>
-      
-      <guid>/tags/wordcloud/</guid>
-      <description></description>
-    </item>
     
   </channel>
 </rss>

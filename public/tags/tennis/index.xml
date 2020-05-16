@@ -1,12 +1,14 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>
-	tennis on 
-	A stats website
+	tennis on A stats website
+	
 	</title>
     <link>/tags/tennis/</link>
-    <description>Recent content in tennis 
-	on A stats website</description>
+    <description>Recent content 
+	
+	in tennis on A stats website
+	</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
 	
@@ -23,7 +25,7 @@
       <pubDate>Sat, 16 May 2020 00:00:00 +0000</pubDate>
       
       <guid>/2020-05-15-grand-slam-title-history-as-an-animated-bar-chart-race/</guid>
-      <description>
+	  <description>
 
 
 &lt;p&gt;&lt;img src=&#34;/post/2020-05-15-grand-slam-title-history-as-an-animated-bar-chart-race_files/gganim6.gif&#34; /&gt;&lt;/p&gt;
@@ -145,7 +147,7 @@ sp&amp;lt;-ggplot(gsfull[year&amp;gt;=y &amp;amp; rank&amp;lt;=30],aes(x=rank,y=
       <pubDate>Mon, 04 May 2020 00:00:00 +0000</pubDate>
       
       <guid>/2020-05-01-analysing-tweets-from-the-virtual-madrid-open/</guid>
-      <description>
+	  <description>
 &lt;script src=&#34;/rmarkdown-libs/htmlwidgets/htmlwidgets.js&#34;&gt;&lt;/script&gt;
 &lt;script src=&#34;/rmarkdown-libs/jquery/jquery.min.js&#34;&gt;&lt;/script&gt;
 &lt;link href=&#34;/rmarkdown-libs/leaflet/leaflet.css&#34; rel=&#34;stylesheet&#34; /&gt;

@@ -1,12 +1,14 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>
-	wordcloud on 
-	A stats website
+	wordcloud on A stats website
+	
 	</title>
     <link>/tags/wordcloud/</link>
-    <description>Recent content in wordcloud 
-	on A stats website</description>
+    <description>Recent content 
+	
+	in wordcloud on A stats website
+	</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
 	
@@ -23,7 +25,7 @@
       <pubDate>Mon, 04 May 2020 00:00:00 +0000</pubDate>
       
       <guid>/2020-05-01-analysing-tweets-from-the-virtual-madrid-open/</guid>
-      <description>
+	  <description>
 &lt;script src=&#34;/rmarkdown-libs/htmlwidgets/htmlwidgets.js&#34;&gt;&lt;/script&gt;
 &lt;script src=&#34;/rmarkdown-libs/jquery/jquery.min.js&#34;&gt;&lt;/script&gt;
 &lt;link href=&#34;/rmarkdown-libs/leaflet/leaflet.css&#34; rel=&#34;stylesheet&#34; /&gt;
