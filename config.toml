@@ -7,7 +7,7 @@ theme = "minimal-bootstrap-hugo-theme"
   tag = "tags"
 
 [permalinks]
-  post = "/:filename/"
+  post = "/:year/:month/:slug/"
 
 [params]
   description = "Some description"
