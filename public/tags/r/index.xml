@@ -1,14 +1,12 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>
-	R on A stats website
-	
+	R on 
+	A stats website
 	</title>
-    <link>/tags/r/</link>
-    <description>Recent content 
-	
-	in R on A stats website
-	</description>
+    <link>https://venciso.netlify.com/tags/r/</link>
+    <description>Recent content in R 
+	on A stats website</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
 	
@@ -16,19 +14,19 @@
     <lastBuildDate>Fri, 15 May 2020 00:00:00 +0000</lastBuildDate>
 	
     
-        <atom:link href="/tags/r/index.xml" rel="self" type="application/rss+xml" />
+        <atom:link href="https://venciso.netlify.com/tags/r/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
       <title>Grand Slam title history as an animated bar chart race</title>
-      <link>/2020-05-15-grand-slam-title-history-as-an-animated-bar-chart-race/</link>
+      <link>https://venciso.netlify.com/2020-05-15-grand-slam-title-history-as-an-animated-bar-chart-race/</link>
       <pubDate>Fri, 15 May 2020 00:00:00 +0000</pubDate>
       
-      <guid>/2020-05-15-grand-slam-title-history-as-an-animated-bar-chart-race/</guid>
-	  <description>
+      <guid>https://venciso.netlify.com/2020-05-15-grand-slam-title-history-as-an-animated-bar-chart-race/</guid>
+      <description>
 
 
-&lt;p&gt;&lt;img src=&#34;/post/2020-05-15-grand-slam-title-history-as-an-animated-bar-chart-race_files/gganim.gif&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://venciso.netlify.com/post/2020-05-15-grand-slam-title-history-as-an-animated-bar-chart-race_files/gganim.gif&#34; /&gt;&lt;/p&gt;
 &lt;p&gt;I’ve spoiled it by putting the gif at the start of the post but if you are interested in how it was made then read on!&lt;/p&gt;
 &lt;p&gt;I’ve seen this kind of charts around the web so I wanted to make a tennis-related one and what better than using Grand Slam wins since the very beginning; 1877.&lt;/p&gt;
 &lt;p&gt;The main package that is needed for the animation is gganimate. As the name suggests it integrates with ggplot to make an animation given many different charts and a transition variable.&lt;/p&gt;
@@ -142,21 +140,21 @@ p &amp;lt;- sp + transition_states(year, transition_length = 4, state_length = 2
     
     <item>
       <title>Analysing  tweets from the Virtual Madrid Open</title>
-      <link>/2020-05-01-analysing-tweets-from-the-virtual-madrid-open/</link>
+      <link>https://venciso.netlify.com/2020-05-01-analysing-tweets-from-the-virtual-madrid-open/</link>
       <pubDate>Mon, 04 May 2020 00:00:00 +0000</pubDate>
       
-      <guid>/2020-05-01-analysing-tweets-from-the-virtual-madrid-open/</guid>
-	  <description>
-&lt;script src=&#34;/rmarkdown-libs/htmlwidgets/htmlwidgets.js&#34;&gt;&lt;/script&gt;
-&lt;script src=&#34;/rmarkdown-libs/jquery/jquery.min.js&#34;&gt;&lt;/script&gt;
-&lt;link href=&#34;/rmarkdown-libs/leaflet/leaflet.css&#34; rel=&#34;stylesheet&#34; /&gt;
-&lt;script src=&#34;/rmarkdown-libs/leaflet/leaflet.js&#34;&gt;&lt;/script&gt;
-&lt;link href=&#34;/rmarkdown-libs/leafletfix/leafletfix.css&#34; rel=&#34;stylesheet&#34; /&gt;
-&lt;script src=&#34;/rmarkdown-libs/Proj4Leaflet/proj4-compressed.js&#34;&gt;&lt;/script&gt;
-&lt;script src=&#34;/rmarkdown-libs/Proj4Leaflet/proj4leaflet.js&#34;&gt;&lt;/script&gt;
-&lt;link href=&#34;/rmarkdown-libs/rstudio_leaflet/rstudio_leaflet.css&#34; rel=&#34;stylesheet&#34; /&gt;
-&lt;script src=&#34;/rmarkdown-libs/leaflet-binding/leaflet.js&#34;&gt;&lt;/script&gt;
-&lt;script src=&#34;/rmarkdown-libs/kePrint/kePrint.js&#34;&gt;&lt;/script&gt;
+      <guid>https://venciso.netlify.com/2020-05-01-analysing-tweets-from-the-virtual-madrid-open/</guid>
+      <description>
+&lt;script src=&#34;https://venciso.netlify.com/rmarkdown-libs/htmlwidgets/htmlwidgets.js&#34;&gt;&lt;/script&gt;
+&lt;script src=&#34;https://venciso.netlify.com/rmarkdown-libs/jquery/jquery.min.js&#34;&gt;&lt;/script&gt;
+&lt;link href=&#34;https://venciso.netlify.com/rmarkdown-libs/leaflet/leaflet.css&#34; rel=&#34;stylesheet&#34; /&gt;
+&lt;script src=&#34;https://venciso.netlify.com/rmarkdown-libs/leaflet/leaflet.js&#34;&gt;&lt;/script&gt;
+&lt;link href=&#34;https://venciso.netlify.com/rmarkdown-libs/leafletfix/leafletfix.css&#34; rel=&#34;stylesheet&#34; /&gt;
+&lt;script src=&#34;https://venciso.netlify.com/rmarkdown-libs/Proj4Leaflet/proj4-compressed.js&#34;&gt;&lt;/script&gt;
+&lt;script src=&#34;https://venciso.netlify.com/rmarkdown-libs/Proj4Leaflet/proj4leaflet.js&#34;&gt;&lt;/script&gt;
+&lt;link href=&#34;https://venciso.netlify.com/rmarkdown-libs/rstudio_leaflet/rstudio_leaflet.css&#34; rel=&#34;stylesheet&#34; /&gt;
+&lt;script src=&#34;https://venciso.netlify.com/rmarkdown-libs/leaflet-binding/leaflet.js&#34;&gt;&lt;/script&gt;
+&lt;script src=&#34;https://venciso.netlify.com/rmarkdown-libs/kePrint/kePrint.js&#34;&gt;&lt;/script&gt;
 
 
 &lt;p&gt;With the world in lockdown and no live tennis in the horizon in the near future the Madrid Open decided to organise an online tournament with male and female players facing each other using the Tennis World Tour video game.&lt;/p&gt;
@@ -182,7 +180,7 @@ Even with the small proportion of tweets we can get an idea of where the audienc
 &lt;h3&gt;Global audience&lt;/h3&gt;
 &lt;p&gt;Tennis is known to be a very interantional sport with fans all around the world. Separately from mapping the tweet locations we can examine which languages are most represented in the tweet set.&lt;/p&gt;
 &lt;pre class=&#34;r&#34;&gt;&lt;code&gt;ggplot(tw[,.N,lang][N&amp;gt;50], aes(x=lang,y=N)) + geom_bar(stat=&amp;quot;Identity&amp;quot;) + theme_bw()&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;/post/2020-05-01-analysing-tweets-from-the-virtual-madrid-open_files/figure-html/unnamed-chunk-3-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://venciso.netlify.com/post/2020-05-01-analysing-tweets-from-the-virtual-madrid-open_files/figure-html/unnamed-chunk-3-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
 &lt;p&gt;As expected English is the most represented language followed by Spanish. Not a big surprise since the tournament took place in Spain. Japanese comes in a surprising 3rd place due to the presence of Kei Nishikori.&lt;/p&gt;
 &lt;/div&gt;
 &lt;div id=&#34;sentiment-analysis&#34; class=&#34;section level3&#34;&gt;
@@ -231,13 +229,13 @@ twen&amp;lt;-twen[!grep(&amp;quot;tHome|thome&amp;quot;,text)]
 sent &amp;lt;- sentiment_by(get_sentences(twen[,(text)]))&lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;How is the sentiment distributed?&lt;/p&gt;
 &lt;pre class=&#34;r&#34;&gt;&lt;code&gt;ggplot(sent,aes(ave_sentiment)) + geom_histogram(bins=50) + theme_bw()&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;/post/2020-05-01-analysing-tweets-from-the-virtual-madrid-open_files/figure-html/unnamed-chunk-9-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://venciso.netlify.com/post/2020-05-01-analysing-tweets-from-the-virtual-madrid-open_files/figure-html/unnamed-chunk-9-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
 &lt;p&gt;There is a big peak at 0 which represents neutral tweets. The distributions to either side of 0 show that sentiment is more positive than negative. So it seems that in general people liked the idea of the virtual Madrid Open.&lt;/p&gt;
 &lt;p&gt;Let’s remove the neutral-sentiment tweets and plot the histogram again this time looking at the evolution per day.&lt;/p&gt;
 &lt;pre class=&#34;r&#34;&gt;&lt;code&gt;twen&amp;lt;-bind_cols(twen,sent)
 twen[,sent_dir:=ifelse(ave_sentiment&amp;lt;0,&amp;quot;Negative&amp;quot;,ifelse(ave_sentiment&amp;gt;0,&amp;quot;Positive&amp;quot;,&amp;quot;Neutral&amp;quot;))]
 ggplot(twen[abs(ave_sentiment)&amp;gt;0 &amp;amp; date(created_at)&amp;lt;&amp;quot;2020-05-01&amp;quot;],aes(ave_sentiment, fill=sent_dir)) + geom_histogram(bins = 50) + facet_wrap(.~date(created_at)) + theme_bw()&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;/post/2020-05-01-analysing-tweets-from-the-virtual-madrid-open_files/figure-html/unnamed-chunk-10-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://venciso.netlify.com/post/2020-05-01-analysing-tweets-from-the-virtual-madrid-open_files/figure-html/unnamed-chunk-10-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
 &lt;p&gt;The tournament started on the 27th. From these charts we can see how interest starts building up in the days prior and then peaks on the day the tournament starts. The number of tweets then decreases each day before having a bump on the final day.&lt;/p&gt;
 &lt;p&gt;In terms of sentiment we can see that positive outweights negative every day but from the histograms it is not easy to see if the proportion changes.&lt;/p&gt;
 &lt;p&gt;We can tabulate the proportion of postive and negative tweets.&lt;/p&gt;
@@ -351,13 +349,13 @@ u&amp;lt;-data.table(words=unlist(terms[,positive]))[,.N,words][order(-N)]
 u&amp;lt;-u[!words %in% my_sw]
 par(mfrow=c(1,2))
 wc_pos&amp;lt;-wordcloud(words = u$words, freq = u$N, min.freq = 1,max.words=200, random.order=FALSE, rot.per=0.35,colors=brewer.pal(8, &amp;quot;Dark2&amp;quot;))&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;/post/2020-05-01-analysing-tweets-from-the-virtual-madrid-open_files/figure-html/unnamed-chunk-13-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://venciso.netlify.com/post/2020-05-01-analysing-tweets-from-the-virtual-madrid-open_files/figure-html/unnamed-chunk-13-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
 &lt;p&gt;Positive terms are what you would expect with things like “win”, “fun”, “luck” and “congrats” having the biggest size.&lt;/p&gt;
 &lt;p&gt;The negative-term cloud:&lt;/p&gt;
 &lt;pre class=&#34;r&#34;&gt;&lt;code&gt;u&amp;lt;-data.table(words=unlist(terms[,negative]))[,.N,words][order(-N)]
 u&amp;lt;-u[!words %in% my_sw]
 wc_neg&amp;lt;-wordcloud(words = u$words, freq = u$N, min.freq = 1,max.words=200, random.order=FALSE, rot.per=0.35,colors=brewer.pal(8, &amp;quot;Dark2&amp;quot;))&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;/post/2020-05-01-analysing-tweets-from-the-virtual-madrid-open_files/figure-html/unnamed-chunk-14-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://venciso.netlify.com/post/2020-05-01-analysing-tweets-from-the-virtual-madrid-open_files/figure-html/unnamed-chunk-14-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
 &lt;p&gt;Regarding negative terms apart from traditionally negative words it is interesting to see things like “issues”, “twitch”, “controller”. “Twitch” could be fans aluding to the fact that it would have been better to hold the tournament in that platform.&lt;/p&gt;
 &lt;/div&gt;
 &lt;div id=&#34;wordclouds-from-tweets&#34; class=&#34;section level3&#34;&gt;
@@ -374,12 +372,12 @@ twen[,text2 := gsub(&amp;quot;[[:punct:]]&amp;quot;, &amp;quot;&amp;quot;, text2
 &lt;pre class=&#34;r&#34;&gt;&lt;code&gt;u&amp;lt;-unnest_tokens(twen[!grep(&amp;quot;atHome&amp;quot;,text)][ave_sentiment&amp;gt;0,.(text2)],words,text2)[,.N,words][order(-N)]
 u&amp;lt;-u[!words %in% my_sw]
 wordcloud(words = u$words, freq = u$N, min.freq = 5,max.words=200, random.order=FALSE, rot.per=0.35,colors=brewer.pal(8, &amp;quot;Dark2&amp;quot;),scale = c(1.5,0.5))&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;/post/2020-05-01-analysing-tweets-from-the-virtual-madrid-open_files/figure-html/unnamed-chunk-16-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://venciso.netlify.com/post/2020-05-01-analysing-tweets-from-the-virtual-madrid-open_files/figure-html/unnamed-chunk-16-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
 &lt;p&gt;This time there’s a lot more terms in the wordcloud because the tweets are richer than the extracted term data. Many of the extra terms are realted to player names. Otherwise we see similar type of words as in the extracted term cloud.&lt;/p&gt;
 &lt;pre class=&#34;r&#34;&gt;&lt;code&gt;u&amp;lt;-unnest_tokens(twen[!grep(&amp;quot;atHome&amp;quot;,text)][ave_sentiment&amp;lt;0,.(text2)],words,text2)[,.N,words][order(-N)]
 u&amp;lt;-u[!words %in% my_sw]
 wordcloud(words = u$words, freq = u$N, min.freq = 3,max.words=200, random.order=FALSE, rot.per=0.35,colors=brewer.pal(8, &amp;quot;Dark2&amp;quot;), scale = c(1.5,0.5))&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;/post/2020-05-01-analysing-tweets-from-the-virtual-madrid-open_files/figure-html/unnamed-chunk-17-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://venciso.netlify.com/post/2020-05-01-analysing-tweets-from-the-virtual-madrid-open_files/figure-html/unnamed-chunk-17-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
 &lt;p&gt;The negative-tweet word cloud also now includes a lot of player names but we can see more hints of what poeple didn’t like so much, i.e., terms like “commentators”,&#34; internet“,”wait&#34; and “facebook”.&lt;/p&gt;
 &lt;/div&gt;
 &lt;div id=&#34;conclusion&#34; class=&#34;section level3&#34;&gt;
