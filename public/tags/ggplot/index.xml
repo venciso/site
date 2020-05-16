@@ -4,29 +4,29 @@
 	ggplot on 
 	A stats website
 	</title>
-    <link>https://venciso.netlify.com/tags/ggplot/</link>
+    <link>/tags/ggplot/</link>
     <description>Recent content in ggplot 
 	on A stats website</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
 	
 	
-    <lastBuildDate>Fri, 15 May 2020 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Sat, 16 May 2020 00:00:00 +0000</lastBuildDate>
 	
     
-        <atom:link href="https://venciso.netlify.com/tags/ggplot/index.xml" rel="self" type="application/rss+xml" />
+        <atom:link href="/tags/ggplot/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
       <title>Grand Slam title history as an animated bar chart race</title>
-      <link>https://venciso.netlify.com/2020-05-15-grand-slam-title-history-as-an-animated-bar-chart-race/</link>
-      <pubDate>Fri, 15 May 2020 00:00:00 +0000</pubDate>
+      <link>/2020-05-15-grand-slam-title-history-as-an-animated-bar-chart-race/</link>
+      <pubDate>Sat, 16 May 2020 00:00:00 +0000</pubDate>
       
-      <guid>https://venciso.netlify.com/2020-05-15-grand-slam-title-history-as-an-animated-bar-chart-race/</guid>
+      <guid>/2020-05-15-grand-slam-title-history-as-an-animated-bar-chart-race/</guid>
       <description>
 
 
-&lt;p&gt;&lt;img src=&#34;https://venciso.netlify.com/post/2020-05-15-grand-slam-title-history-as-an-animated-bar-chart-race_files/gganim.gif&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;/post/2020-05-15-grand-slam-title-history-as-an-animated-bar-chart-race_files/gganim6.gif&#34; /&gt;&lt;/p&gt;
 &lt;p&gt;I’ve spoiled it by putting the gif at the start of the post but if you are interested in how it was made then read on!&lt;/p&gt;
 &lt;p&gt;I’ve seen this kind of charts around the web so I wanted to make a tennis-related one and what better than using Grand Slam wins since the very beginning; 1877.&lt;/p&gt;
 &lt;p&gt;The main package that is needed for the animation is gganimate. As the name suggests it integrates with ggplot to make an animation given many different charts and a transition variable.&lt;/p&gt;
@@ -98,6 +98,8 @@ gsfull&amp;lt;-gsfull[order(year,-win,-latestWin)]
 gsfull[,rank:=seq(1,.N),year]
 
 gsfull[,win_label := paste0(&amp;quot; &amp;quot;, win)]&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;We can now start plotting our data. First create a tile plot with ggplot. Tiles work better than plot for this case because they slide into position in a nicer way when the plot transitions between years.&lt;/p&gt;
+&lt;p&gt;A lot of the code I’m using I found over here in &lt;a href=&#34;https://stackoverflow.com/questions/53162821/animated-sorted-bar-chart-with-bars-overtaking-each-other&#34;&gt;stack overflow&lt;/a&gt;.&lt;/p&gt;
 &lt;pre class=&#34;r&#34;&gt;&lt;code&gt;y&amp;lt;-1877
 
 sp&amp;lt;-ggplot(gsfull[year&amp;gt;=y &amp;amp; rank&amp;lt;=30],aes(x=rank,y=win,fill=winner)) + 
@@ -121,20 +123,19 @@ sp&amp;lt;-ggplot(gsfull[year&amp;gt;=y &amp;amp; rank&amp;lt;=30],aes(x=rank,y=
         panel.grid.major.x = element_line( size=.1, color=&amp;quot;grey&amp;quot; ),
         panel.grid.minor.x = element_line( size=.1, color=&amp;quot;grey&amp;quot; ),
         plot.margin = margin(5,5,5,5, &amp;quot;cm&amp;quot;)
-        )
-
-#sp
-
-p &amp;lt;- sp + transition_states(year, transition_length = 4, state_length = 2) +
+        )&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;With the base plot made it’s time to actually animate it. This is where &lt;code&gt;gganimate&lt;/code&gt; comes into play. The main funtion needed is &lt;code&gt;transition_states&lt;/code&gt; which takes a transition parameter, &lt;code&gt;year&lt;/code&gt; in our case, and animates the plot based on it.&lt;/p&gt;
+&lt;p&gt;There’s a few extra bits in there; &lt;code&gt;enter_drift&lt;/code&gt; and &lt;code&gt;exit_shrink&lt;/code&gt; govern how the bars enter and leave the plot and &lt;code&gt;ease_aes&lt;/code&gt; controls how the bars switch around. There are many other options that &lt;code&gt;gganimate&lt;/code&gt; provides so this is just scratching the surface.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;p &amp;lt;- sp + transition_states(year, transition_length = 4, state_length = 2) +
   view_follow(fixed_x = TRUE)  +
   labs(title = &amp;#39;Grand Slam Titles : {closest_state}&amp;#39;)  +
    enter_drift(y_mod=10) + exit_shrink()  + 
-  ease_aes(&amp;#39;linear&amp;#39;)
-#p
-
-
-#animate(p, 600, fps = 7,  width = 800, height = 600, 
-#        renderer = gifski_renderer(&amp;quot;gganim5.gif&amp;quot;))&lt;/code&gt;&lt;/pre&gt;
+  ease_aes(&amp;#39;linear&amp;#39;)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Finally once the transitions are defined &lt;code&gt;animate&lt;/code&gt; takes the object and turns it into a gif or a video if you want depending on the renderer that you choose. The code below is what renders the plot at the start of this post.&lt;/p&gt;
+&lt;p&gt;Duration and size parameters are passed by the user. Here I would like to note that if you call the plot &lt;code&gt;p&lt;/code&gt; it does get rendered but it looks different than the output you get with animate so I’d recommend always running &lt;code&gt;animate&lt;/code&gt; to see what the actual final output will be.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;animate(p, 1200, fps = 10,  width = 800, height = 600, 
+        renderer = gifski_renderer(&amp;quot;gs_chart.gif&amp;quot;))&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;And that’s it! As with most projects the trickiest part was getting the data in the format I needed it and then spent some time with aesthetic choices. The point being that once you have your data ready &lt;code&gt;ggplot&lt;/code&gt; and &lt;code&gt;gganimate&lt;/code&gt; provide an intuitive framework to create cool looking charts.&lt;/p&gt;
 </description>
     </item>
     

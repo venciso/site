@@ -1,7 +1,7 @@
 ---
 title: Grand Slam title history as an animated bar chart race
 author: ''
-date: '2020-05-15'
+date: '2020-05-16'
 slug: grand-slam-title-history-as-an-animated-bar-chart-race
 categories:
   - R
@@ -11,13 +11,13 @@ tags:
   - tennis
   - gganimate
   - ggplot
-publishdate: '2020-05-15'
-lastmod: '2020-05-15'
+publishdate: '2020-05-16'
+lastmod: '2020-05-16'
 ---
 
 
 
-<p><img src="/post/2020-05-15-grand-slam-title-history-as-an-animated-bar-chart-race_files/gganim.gif" /></p>
+<p><img src="/post/2020-05-15-grand-slam-title-history-as-an-animated-bar-chart-race_files/gganim6.gif" /></p>
 <p>I’ve spoiled it by putting the gif at the start of the post but if you are interested in how it was made then read on!</p>
 <p>I’ve seen this kind of charts around the web so I wanted to make a tennis-related one and what better than using Grand Slam wins since the very beginning; 1877.</p>
 <p>The main package that is needed for the animation is gganimate. As the name suggests it integrates with ggplot to make an animation given many different charts and a transition variable.</p>
@@ -89,6 +89,8 @@ gsfull&lt;-gsfull[order(year,-win,-latestWin)]
 gsfull[,rank:=seq(1,.N),year]
 
 gsfull[,win_label := paste0(&quot; &quot;, win)]</code></pre>
+<p>We can now start plotting our data. First create a tile plot with ggplot. Tiles work better than plot for this case because they slide into position in a nicer way when the plot transitions between years.</p>
+<p>A lot of the code I’m using I found over here in <a href="https://stackoverflow.com/questions/53162821/animated-sorted-bar-chart-with-bars-overtaking-each-other">stack overflow</a>.</p>
 <pre class="r"><code>y&lt;-1877
 
 sp&lt;-ggplot(gsfull[year&gt;=y &amp; rank&lt;=30],aes(x=rank,y=win,fill=winner)) + 
@@ -112,17 +114,16 @@ sp&lt;-ggplot(gsfull[year&gt;=y &amp; rank&lt;=30],aes(x=rank,y=win,fill=winner)
         panel.grid.major.x = element_line( size=.1, color=&quot;grey&quot; ),
         panel.grid.minor.x = element_line( size=.1, color=&quot;grey&quot; ),
         plot.margin = margin(5,5,5,5, &quot;cm&quot;)
-        )
-
-#sp
-
-p &lt;- sp + transition_states(year, transition_length = 4, state_length = 2) +
+        )</code></pre>
+<p>With the base plot made it’s time to actually animate it. This is where <code>gganimate</code> comes into play. The main funtion needed is <code>transition_states</code> which takes a transition parameter, <code>year</code> in our case, and animates the plot based on it.</p>
+<p>There’s a few extra bits in there; <code>enter_drift</code> and <code>exit_shrink</code> govern how the bars enter and leave the plot and <code>ease_aes</code> controls how the bars switch around. There are many other options that <code>gganimate</code> provides so this is just scratching the surface.</p>
+<pre class="r"><code>p &lt;- sp + transition_states(year, transition_length = 4, state_length = 2) +
   view_follow(fixed_x = TRUE)  +
   labs(title = &#39;Grand Slam Titles : {closest_state}&#39;)  +
    enter_drift(y_mod=10) + exit_shrink()  + 
-  ease_aes(&#39;linear&#39;)
-#p
-
-
-#animate(p, 600, fps = 7,  width = 800, height = 600, 
-#        renderer = gifski_renderer(&quot;gganim5.gif&quot;))</code></pre>
+  ease_aes(&#39;linear&#39;)</code></pre>
+<p>Finally once the transitions are defined <code>animate</code> takes the object and turns it into a gif or a video if you want depending on the renderer that you choose. The code below is what renders the plot at the start of this post.</p>
+<p>Duration and size parameters are passed by the user. Here I would like to note that if you call the plot <code>p</code> it does get rendered but it looks different than the output you get with animate so I’d recommend always running <code>animate</code> to see what the actual final output will be.</p>
+<pre class="r"><code>animate(p, 1200, fps = 10,  width = 800, height = 600, 
+        renderer = gifski_renderer(&quot;gs_chart.gif&quot;))</code></pre>
+<p>And that’s it! As with most projects the trickiest part was getting the data in the format I needed it and then spent some time with aesthetic choices. The point being that once you have your data ready <code>ggplot</code> and <code>gganimate</code> provide an intuitive framework to create cool looking charts.</p>

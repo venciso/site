@@ -3,33 +3,33 @@
     <title>
 	A stats website
 	</title>
-    <link>https://venciso.netlify.com/index.xml</link>
+    <link>/</link>
     <description>Recent content on A stats website</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
 	
 	
-    <lastBuildDate>Wed, 09 Apr 2014 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Fri, 01 May 2020 00:00:00 +0000</lastBuildDate>
 	
     
-        <atom:link href="https://venciso.netlify.com/index.xml" rel="self" type="application/rss+xml" />
+        <atom:link href="/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
       <title>Posts</title>
-      <link>https://venciso.netlify.com/post/</link>
-      <pubDate>Fri, 15 May 2020 00:00:00 +0000</pubDate>
+      <link>/post/</link>
+      <pubDate>Sat, 16 May 2020 00:00:00 +0000</pubDate>
       
-      <guid>https://venciso.netlify.com/post/</guid>
+      <guid>/post/</guid>
       <description></description>
     </item>
     
     <item>
       <title>About</title>
-      <link>https://venciso.netlify.com/about/</link>
-      <pubDate>Wed, 09 Apr 2014 00:00:00 +0000</pubDate>
+      <link>/about/</link>
+      <pubDate>Fri, 01 May 2020 00:00:00 +0000</pubDate>
       
-      <guid>https://venciso.netlify.com/about/</guid>
+      <guid>/about/</guid>
       <description>&lt;p&gt;This site is updated and maintained by &lt;a href=&#34;vmenciso@gmail.com&#34;&gt;Victor Enciso&lt;/a&gt;.&lt;/p&gt;
 &lt;p&gt;All views and opinions are my own.&lt;/p&gt;
 &lt;p&gt;This site is being aggregated with permission by &lt;a href=&#34;https://www.r-bloggers.com/&#34;&gt;r-bloggers&lt;/a&gt;.&lt;/p&gt;

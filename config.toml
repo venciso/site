@@ -8,14 +8,11 @@ theme = "minimal-bootstrap-hugo-theme"
 
 [permalinks]
   post = "/:filename/"
-  
-[outputs]
-  home = [ "RSS" ]
 
 [params]
   description = "Some description"
   contentBackgroundColor = "#fff"
-  contentTextColor = "#212529"   #black
+  contentTextColor = "#7d7d7d"   #"#212529"   #black
   contentLinkColor = "#38a130"   #blue  "#007bff"
   contentLinkHoverColor = "#287322"    #darker blue  "#0056b3"
   navbarBackgroundColor = "#212529" #black
@@ -46,6 +43,10 @@ theme = "minimal-bootstrap-hugo-theme"
   name = "About"
   url = "/about/"
   weight = 3
+  [[menu.nav]]
+  name = "RSS"
+  url = "/index.xml"
+  weight = 4
 
 
 [markup]

@@ -4,88 +4,88 @@
 	Tags on 
 	A stats website
 	</title>
-    <link>https://venciso.netlify.com/tags/</link>
+    <link>/tags/</link>
     <description>Recent content in Tags 
 	on A stats website</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
 	
 	
-    <lastBuildDate>Fri, 15 May 2020 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Sat, 16 May 2020 00:00:00 +0000</lastBuildDate>
 	
     
-        <atom:link href="https://venciso.netlify.com/tags/index.xml" rel="self" type="application/rss+xml" />
+        <atom:link href="/tags/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
       <title>gganimate</title>
-      <link>https://venciso.netlify.com/tags/gganimate/</link>
-      <pubDate>Fri, 15 May 2020 00:00:00 +0000</pubDate>
+      <link>/tags/gganimate/</link>
+      <pubDate>Sat, 16 May 2020 00:00:00 +0000</pubDate>
       
-      <guid>https://venciso.netlify.com/tags/gganimate/</guid>
+      <guid>/tags/gganimate/</guid>
       <description></description>
     </item>
     
     <item>
       <title>ggplot</title>
-      <link>https://venciso.netlify.com/tags/ggplot/</link>
-      <pubDate>Fri, 15 May 2020 00:00:00 +0000</pubDate>
+      <link>/tags/ggplot/</link>
+      <pubDate>Sat, 16 May 2020 00:00:00 +0000</pubDate>
       
-      <guid>https://venciso.netlify.com/tags/ggplot/</guid>
+      <guid>/tags/ggplot/</guid>
       <description></description>
     </item>
     
     <item>
       <title>R</title>
-      <link>https://venciso.netlify.com/tags/r/</link>
-      <pubDate>Fri, 15 May 2020 00:00:00 +0000</pubDate>
+      <link>/tags/r/</link>
+      <pubDate>Sat, 16 May 2020 00:00:00 +0000</pubDate>
       
-      <guid>https://venciso.netlify.com/tags/r/</guid>
+      <guid>/tags/r/</guid>
       <description></description>
     </item>
     
     <item>
       <title>tennis</title>
-      <link>https://venciso.netlify.com/tags/tennis/</link>
-      <pubDate>Fri, 15 May 2020 00:00:00 +0000</pubDate>
+      <link>/tags/tennis/</link>
+      <pubDate>Sat, 16 May 2020 00:00:00 +0000</pubDate>
       
-      <guid>https://venciso.netlify.com/tags/tennis/</guid>
+      <guid>/tags/tennis/</guid>
       <description></description>
     </item>
     
     <item>
       <title>leaflet</title>
-      <link>https://venciso.netlify.com/tags/leaflet/</link>
+      <link>/tags/leaflet/</link>
       <pubDate>Mon, 04 May 2020 00:00:00 +0000</pubDate>
       
-      <guid>https://venciso.netlify.com/tags/leaflet/</guid>
+      <guid>/tags/leaflet/</guid>
       <description></description>
     </item>
     
     <item>
       <title>sentiment analysis</title>
-      <link>https://venciso.netlify.com/tags/sentiment-analysis/</link>
+      <link>/tags/sentiment-analysis/</link>
       <pubDate>Mon, 04 May 2020 00:00:00 +0000</pubDate>
       
-      <guid>https://venciso.netlify.com/tags/sentiment-analysis/</guid>
+      <guid>/tags/sentiment-analysis/</guid>
       <description></description>
     </item>
     
     <item>
       <title>twitter</title>
-      <link>https://venciso.netlify.com/tags/twitter/</link>
+      <link>/tags/twitter/</link>
       <pubDate>Mon, 04 May 2020 00:00:00 +0000</pubDate>
       
-      <guid>https://venciso.netlify.com/tags/twitter/</guid>
+      <guid>/tags/twitter/</guid>
       <description></description>
     </item>
     
     <item>
       <title>wordcloud</title>
-      <link>https://venciso.netlify.com/tags/wordcloud/</link>
+      <link>/tags/wordcloud/</link>
       <pubDate>Mon, 04 May 2020 00:00:00 +0000</pubDate>
       
-      <guid>https://venciso.netlify.com/tags/wordcloud/</guid>
+      <guid>/tags/wordcloud/</guid>
       <description></description>
     </item>
     
