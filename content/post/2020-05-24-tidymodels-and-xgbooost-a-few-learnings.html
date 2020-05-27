@@ -17,7 +17,7 @@ lastmod: '2020-05-27'
 
 
 <p>This post will look at how to fit an XGBoost model using the <code>tidymodels</code> framework rather than using the <code>XGBoost</code> package directly.</p>
-<p>Tidymodels is a collection of packages that aims to standardise model creation by providing commands that can be applied across different R packages. For example, once the code is written to fit an XGBoost model a large amount of the same code could be used to fit a C.50 algorithm.</p>
+<p>Tidymodels is a collection of packages that aims to standardise model creation by providing commands that can be applied across different R packages. For example, once the code is written to fit an XGBoost model a large amount of the same code could be used to fit a C5.0 algorithm.</p>
 <p>I will look at a dataset which I have analysed before so I know what to expect and I can compare the <code>tidymodels</code> steps with the ones I implemented originally.</p>
 <p>First let’s load the necessary packages. I’ll go through what each of the <code>tidymodels</code> packages does as we go along. We also call <code>doParallel</code> to enable parallelisation.</p>
 <pre class="r"><code>require(dplyr)
