@@ -12,9 +12,9 @@ theme = "minimal-bootstrap-hugo-theme"
 [params]
   description = "Some description"
   contentBackgroundColor = "#fff"
-  contentTextColor = "#7d7d7d"   #"#212529"   #black
-  contentLinkColor = "#38a130"   #blue  "#007bff"
-  contentLinkHoverColor = "#287322"    #darker blue  "#0056b3"
+  contentTextColor = "#4a4545"    #"#7d7d7d" #gray   #"#212529"   #black
+  contentLinkColor = "#025ec2" #"#0052ab"   #"#38a130"   #blue  "#007bff"
+  contentLinkHoverColor = "#142940"         #"#287322"    #darker blue  "#0056b3"
   navbarBackgroundColor = "#212529" #black
   navbarLinkColor = "rgba(255, 255, 255, 0.75)"
   navbarLinkHoverColor = "rgba(255, 255, 255, 1)"
@@ -30,6 +30,7 @@ theme = "minimal-bootstrap-hugo-theme"
   faviconMsApplicationTileColor = "#da532c"
   faviconThemeColor = "#ffffff"
   AuthorName = "V. Enciso"
+
 
 [menu]
   [[menu.nav]]
@@ -71,7 +72,7 @@ theme = "minimal-bootstrap-hugo-theme"
     lineNos = false
     lineNumbersInTable = true
     noClasses = true
-    style = "monokai"
+    style = "solarized-dark"
     tabWidth = 4
   [markup.tableOfContents]
     endLevel = 6

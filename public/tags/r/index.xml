@@ -25,62 +25,55 @@
       <pubDate>Wed, 27 May 2020 00:00:00 +0000</pubDate>
       
       <guid>/2020/05/tidymodels-xgboost/</guid>
-	  <description>
-&lt;script src=&#34;/rmarkdown-libs/kePrint/kePrint.js&#34;&gt;&lt;/script&gt;
-
-
-&lt;p&gt;This post will look at how to fit an XGBoost model using the &lt;code&gt;tidymodels&lt;/code&gt; framework rather than using the &lt;code&gt;XGBoost&lt;/code&gt; package directly.&lt;/p&gt;
+	  <description>&lt;p&gt;This post will look at how to fit an XGBoost model using the &lt;code&gt;tidymodels&lt;/code&gt; framework rather than using the &lt;code&gt;XGBoost&lt;/code&gt; package directly.&lt;/p&gt;
 &lt;p&gt;Tidymodels is a collection of packages that aims to standardise model creation by providing commands that can be applied across different R packages. For example, once the code is written to fit an XGBoost model a large amount of the same code could be used to fit a C5.0 algorithm.&lt;/p&gt;
 &lt;p&gt;I will look at a dataset which I have analysed before so I know what to expect and I can compare the &lt;code&gt;tidymodels&lt;/code&gt; steps with the ones I implemented originally.&lt;/p&gt;
-&lt;p&gt;First let’s load the necessary packages. I’ll go through what each of the &lt;code&gt;tidymodels&lt;/code&gt; packages does as we go along. We also call &lt;code&gt;doParallel&lt;/code&gt; to enable parallelisation.&lt;/p&gt;
-&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;require(dplyr)
-require(rsample)
-require(recipes)
-require(parsnip)
-require(tune)
-require(dials)
-require(workflows)
-require(yardstick)
-require(knitr)
-require(kableExtra)
-require(xgboost)
-require(ggplot2)
-require(data.table)
+&lt;p&gt;First let&amp;rsquo;s load the necessary packages. I&amp;rsquo;ll go through what each of the &lt;code&gt;tidymodels&lt;/code&gt; packages does as we go along. We also call &lt;code&gt;doParallel&lt;/code&gt; to enable parallelisation.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#93a1a1;background-color:#002b36;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-r&#34; data-lang=&#34;r&#34;&gt;&lt;span style=&#34;color:#268bd2&#34;&gt;require&lt;/span&gt;(dplyr)
+&lt;span style=&#34;color:#268bd2&#34;&gt;require&lt;/span&gt;(rsample)
+&lt;span style=&#34;color:#268bd2&#34;&gt;require&lt;/span&gt;(recipes)
+&lt;span style=&#34;color:#268bd2&#34;&gt;require&lt;/span&gt;(parsnip)
+&lt;span style=&#34;color:#268bd2&#34;&gt;require&lt;/span&gt;(tune)
+&lt;span style=&#34;color:#268bd2&#34;&gt;require&lt;/span&gt;(dials)
+&lt;span style=&#34;color:#268bd2&#34;&gt;require&lt;/span&gt;(workflows)
+&lt;span style=&#34;color:#268bd2&#34;&gt;require&lt;/span&gt;(yardstick)
+&lt;span style=&#34;color:#268bd2&#34;&gt;require&lt;/span&gt;(knitr)
+&lt;span style=&#34;color:#268bd2&#34;&gt;require&lt;/span&gt;(kableExtra)
+&lt;span style=&#34;color:#268bd2&#34;&gt;require&lt;/span&gt;(xgboost)
+&lt;span style=&#34;color:#268bd2&#34;&gt;require&lt;/span&gt;(ggplot2)
+&lt;span style=&#34;color:#268bd2&#34;&gt;require&lt;/span&gt;(data.table)
 
-#Parallelisation
-require(doParallel)
-cores &amp;lt;- parallel::detectCores(logical = FALSE)
-registerDoParallel(cores = cores)&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The first step is to load in the data and apply any relevant pre-processing steps. Here I won’t focus on exploring the data, I’m more interested in following the &lt;code&gt;tidymodels&lt;/code&gt; workflow. Also, I can’t talk about the details of this dataset too much for privacy reasons.&lt;/p&gt;
+&lt;span style=&#34;color:#586e75&#34;&gt;#Parallelisation&lt;/span&gt;
+&lt;span style=&#34;color:#268bd2&#34;&gt;require&lt;/span&gt;(doParallel)
+cores &lt;span style=&#34;color:#719e07&#34;&gt;&amp;lt;-&lt;/span&gt; parallel&lt;span style=&#34;color:#719e07&#34;&gt;::&lt;/span&gt;&lt;span style=&#34;color:#268bd2&#34;&gt;detectCores&lt;/span&gt;(logical &lt;span style=&#34;color:#719e07&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#cb4b16&#34;&gt;FALSE&lt;/span&gt;)
+&lt;span style=&#34;color:#268bd2&#34;&gt;registerDoParallel&lt;/span&gt;(cores &lt;span style=&#34;color:#719e07&#34;&gt;=&lt;/span&gt; cores)
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;The first step is to load in the data and apply any relevant pre-processing steps. Here I won&amp;rsquo;t focus on exploring the data, I&amp;rsquo;m more interested in following the &lt;code&gt;tidymodels&lt;/code&gt; workflow. Also, I can&amp;rsquo;t talk about the details of this dataset too much for privacy reasons.&lt;/p&gt;
 &lt;p&gt;This dataset is already split in training and testing.&lt;/p&gt;
-&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;dim(mwTrainSet)&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;## [1] 10000    28&lt;/code&gt;&lt;/pre&gt;
-&lt;div id=&#34;preprocessing&#34; class=&#34;section level3&#34;&gt;
-&lt;h3&gt;Preprocessing&lt;/h3&gt;
-&lt;p&gt;The &lt;code&gt;recipes&lt;/code&gt; package can be used to handle preprocessing. You need to build a recipe object that will contain a number of different steps to be followed. This recipe can then be applied to other data, e.g. testing data or new data from the same source.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#93a1a1;background-color:#002b36;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-r&#34; data-lang=&#34;r&#34;&gt;&lt;span style=&#34;color:#268bd2&#34;&gt;dim&lt;/span&gt;(mwTrainSet)
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;pre&gt;&lt;code&gt;## [1] 10000    28
+&lt;/code&gt;&lt;/pre&gt;&lt;h3 id=&#34;preprocessing&#34;&gt;Preprocessing&lt;/h3&gt;
+&lt;p&gt;The &lt;code&gt;recipes&lt;/code&gt; package can be used to handle preprocessing. You need to build a recipe object that will contain a number of different steps to be followed. This recipe can then be applied to other data, e.g. testing data or new data from the same source.&lt;/p&gt;
 &lt;p&gt;&lt;code&gt;recipes&lt;/code&gt; contains a large number of &lt;code&gt;step&lt;/code&gt; functions that aim to account for any necessity you will need in your preprocessing.&lt;/p&gt;
-&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;myRecipe&amp;lt;- recipes::recipe(outcome ~ ., data=mwTrainSet) %&amp;gt;% 
-  recipes::step_mutate(os = as.factor(os)) %&amp;gt;%
-  recipes::step_mutate(ob = as.factor(ob)) %&amp;gt;%
-  step_rm(id) %&amp;gt;%
-  step_mutate(w50s = ifelse(ds&amp;lt;=0.5,&amp;#39;TRUE&amp;#39;,&amp;#39;FALSE&amp;#39;)) %&amp;gt;%
-  prep()&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;This is not my recipe in full but you can see how the process works. &lt;code&gt;os&lt;/code&gt; and &lt;code&gt;ob&lt;/code&gt; are logical variables and I want to convert them to factors as required by XGBoost. I’m also removing the &lt;code&gt;id&lt;/code&gt; variable and creating a new variable &lt;code&gt;w50s&lt;/code&gt;.&lt;/p&gt;
-&lt;p&gt;Here I would like to note that if the logical variables were categorical instead I could have used a step like &lt;code&gt;step_string2factor(all_nominal())&lt;/code&gt; to convert them all into factors at the same time. However, at this time I’m not aware that the required &lt;code&gt;all_logical&lt;/code&gt; or &lt;code&gt;step_logic2factor&lt;/code&gt; exist so I mutate the variables one by one. There is an open issue with this request &lt;a href=&#34;https://github.com/tidymodels/recipes/issues/193&#34;&gt;here&lt;/a&gt;.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#93a1a1;background-color:#002b36;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-r&#34; data-lang=&#34;r&#34;&gt;myRecipe&lt;span style=&#34;color:#719e07&#34;&gt;&amp;lt;-&lt;/span&gt; recipes&lt;span style=&#34;color:#719e07&#34;&gt;::&lt;/span&gt;&lt;span style=&#34;color:#268bd2&#34;&gt;recipe&lt;/span&gt;(outcome &lt;span style=&#34;color:#719e07&#34;&gt;~&lt;/span&gt; ., data&lt;span style=&#34;color:#719e07&#34;&gt;=&lt;/span&gt;mwTrainSet) &lt;span style=&#34;color:#719e07&#34;&gt;%&amp;gt;%&lt;/span&gt; 
+  recipes&lt;span style=&#34;color:#719e07&#34;&gt;::&lt;/span&gt;&lt;span style=&#34;color:#268bd2&#34;&gt;step_mutate&lt;/span&gt;(os &lt;span style=&#34;color:#719e07&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#268bd2&#34;&gt;as.factor&lt;/span&gt;(os)) &lt;span style=&#34;color:#719e07&#34;&gt;%&amp;gt;%&lt;/span&gt;
+  recipes&lt;span style=&#34;color:#719e07&#34;&gt;::&lt;/span&gt;&lt;span style=&#34;color:#268bd2&#34;&gt;step_mutate&lt;/span&gt;(ob &lt;span style=&#34;color:#719e07&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#268bd2&#34;&gt;as.factor&lt;/span&gt;(ob)) &lt;span style=&#34;color:#719e07&#34;&gt;%&amp;gt;%&lt;/span&gt;
+  &lt;span style=&#34;color:#268bd2&#34;&gt;step_rm&lt;/span&gt;(id) &lt;span style=&#34;color:#719e07&#34;&gt;%&amp;gt;%&lt;/span&gt;
+  &lt;span style=&#34;color:#268bd2&#34;&gt;step_mutate&lt;/span&gt;(w50s &lt;span style=&#34;color:#719e07&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#268bd2&#34;&gt;ifelse&lt;/span&gt;(ds&lt;span style=&#34;color:#719e07&#34;&gt;&amp;lt;=&lt;/span&gt;&lt;span style=&#34;color:#2aa198&#34;&gt;0.5&lt;/span&gt;,&lt;span style=&#34;color:#2aa198&#34;&gt;&amp;#39;TRUE&amp;#39;&lt;/span&gt;,&lt;span style=&#34;color:#2aa198&#34;&gt;&amp;#39;FALSE&amp;#39;&lt;/span&gt;)) &lt;span style=&#34;color:#719e07&#34;&gt;%&amp;gt;%&lt;/span&gt;
+  &lt;span style=&#34;color:#268bd2&#34;&gt;prep&lt;/span&gt;()
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;This is not my recipe in full but you can see how the process works. &lt;code&gt;os&lt;/code&gt; and &lt;code&gt;ob&lt;/code&gt; are logical variables and I want to convert them to factors as required by XGBoost. I&amp;rsquo;m also removing the &lt;code&gt;id&lt;/code&gt; variable and creating a new variable &lt;code&gt;w50s&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;Here I would like to note that if the logical variables were categorical instead I could have used a step like &lt;code&gt;step_string2factor(all_nominal())&lt;/code&gt; to convert them all into factors at the same time. However, at this time I&amp;rsquo;m not aware that the required &lt;code&gt;all_logical&lt;/code&gt; or &lt;code&gt;step_logic2factor&lt;/code&gt; exist so I mutate the variables one by one. There is an open issue with this request &lt;a href=&#34;https://github.com/tidymodels/recipes/issues/193&#34;&gt;here&lt;/a&gt;.&lt;/p&gt;
 &lt;p&gt;You can find a list of all step functions available &lt;a href=&#34;https://recipes.tidymodels.org/reference/&#34;&gt;here&lt;/a&gt;.&lt;/p&gt;
 &lt;p&gt;Now that the recipe is built we can use the &lt;code&gt;bake&lt;/code&gt; function to actually run our data through it. I will save the modified dataset in a new object.&lt;/p&gt;
-&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;proc_mwTrainSet &amp;lt;- myRecipe %&amp;gt;% bake(mwTrainSet)&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
-&lt;div id=&#34;cross-validation&#34; class=&#34;section level3&#34;&gt;
-&lt;h3&gt;Cross-validation&lt;/h3&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#93a1a1;background-color:#002b36;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-r&#34; data-lang=&#34;r&#34;&gt;proc_mwTrainSet &lt;span style=&#34;color:#719e07&#34;&gt;&amp;lt;-&lt;/span&gt; myRecipe &lt;span style=&#34;color:#719e07&#34;&gt;%&amp;gt;%&lt;/span&gt; &lt;span style=&#34;color:#268bd2&#34;&gt;bake&lt;/span&gt;(mwTrainSet)
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id=&#34;cross-validation&#34;&gt;Cross-validation&lt;/h3&gt;
 &lt;p&gt;Moving along the model-building pipeline we want to create some cross-validation folds from our training set. We will use these folds during the tuning process. For this purpose I use the &lt;code&gt;vfold_cv&lt;/code&gt; function from &lt;code&gt;rsample&lt;/code&gt; which in my case creates 5 folds of the processed data with each fold split with an 80/20 ratio. I also set the seed for reproducibility.&lt;/p&gt;
-&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;set.seed(2020)
-cvFolds &amp;lt;- mwTrainSet %&amp;gt;% 
-  bake(myRecipe, new_data = .) %&amp;gt;%
-  rsample::vfold_cv(v = 5)
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#93a1a1;background-color:#002b36;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-r&#34; data-lang=&#34;r&#34;&gt;&lt;span style=&#34;color:#268bd2&#34;&gt;set.seed&lt;/span&gt;(&lt;span style=&#34;color:#2aa198&#34;&gt;2020&lt;/span&gt;)
+cvFolds &lt;span style=&#34;color:#719e07&#34;&gt;&amp;lt;-&lt;/span&gt; mwTrainSet &lt;span style=&#34;color:#719e07&#34;&gt;%&amp;gt;%&lt;/span&gt; 
+  &lt;span style=&#34;color:#268bd2&#34;&gt;bake&lt;/span&gt;(myRecipe, new_data &lt;span style=&#34;color:#719e07&#34;&gt;=&lt;/span&gt; .) &lt;span style=&#34;color:#719e07&#34;&gt;%&amp;gt;%&lt;/span&gt;
+  rsample&lt;span style=&#34;color:#719e07&#34;&gt;::&lt;/span&gt;&lt;span style=&#34;color:#268bd2&#34;&gt;vfold_cv&lt;/span&gt;(v &lt;span style=&#34;color:#719e07&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#2aa198&#34;&gt;5&lt;/span&gt;)
 
-cvFolds&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;## #  5-fold cross-validation 
+cvFolds
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;pre&gt;&lt;code&gt;## #  5-fold cross-validation 
 ## # A tibble: 5 x 2
 ##   splits          id   
 ##   &amp;lt;named list&amp;gt;    &amp;lt;chr&amp;gt;
@@ -88,25 +81,23 @@ cvFolds&lt;/code&gt;&lt;/pre&gt;
 ## 2 &amp;lt;split [8K/2K]&amp;gt; Fold2
 ## 3 &amp;lt;split [8K/2K]&amp;gt; Fold3
 ## 4 &amp;lt;split [8K/2K]&amp;gt; Fold4
-## 5 &amp;lt;split [8K/2K]&amp;gt; Fold5&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
-&lt;div id=&#34;model-specification&#34; class=&#34;section level3&#34;&gt;
-&lt;h3&gt;Model specification&lt;/h3&gt;
+## 5 &amp;lt;split [8K/2K]&amp;gt; Fold5
+&lt;/code&gt;&lt;/pre&gt;&lt;h3 id=&#34;model-specification&#34;&gt;Model specification&lt;/h3&gt;
 &lt;p&gt;We have a processed dataset and we know how we want to validate it so we can now specify the model we want to fit to the data.&lt;/p&gt;
-&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;xgmodel&amp;lt;-parsnip::boost_tree(
-  mode = &amp;quot;classification&amp;quot;,
-  trees = 1000, #nrounds
-  learn_rate = tune(), #eta
-  sample_size = tune(), #subsample
-  mtry = tune(), #colsample_bytree
-  min_n = tune(), #min_child_weight
-  tree_depth = tune() #max_depth
-) %&amp;gt;%
-  set_engine(&amp;quot;xgboost&amp;quot;, objective = &amp;quot;multi:softprob&amp;quot;,
-             lambda=0, alpha=1, num_class=3,verbose=1)
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#93a1a1;background-color:#002b36;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-r&#34; data-lang=&#34;r&#34;&gt;xgmodel&lt;span style=&#34;color:#719e07&#34;&gt;&amp;lt;-&lt;/span&gt;parsnip&lt;span style=&#34;color:#719e07&#34;&gt;::&lt;/span&gt;&lt;span style=&#34;color:#268bd2&#34;&gt;boost_tree&lt;/span&gt;(
+  mode &lt;span style=&#34;color:#719e07&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#2aa198&#34;&gt;&amp;#34;classification&amp;#34;&lt;/span&gt;,
+  trees &lt;span style=&#34;color:#719e07&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#2aa198&#34;&gt;1000&lt;/span&gt;, &lt;span style=&#34;color:#586e75&#34;&gt;#nrounds&lt;/span&gt;
+  learn_rate &lt;span style=&#34;color:#719e07&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#268bd2&#34;&gt;tune&lt;/span&gt;(), &lt;span style=&#34;color:#586e75&#34;&gt;#eta&lt;/span&gt;
+  sample_size &lt;span style=&#34;color:#719e07&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#268bd2&#34;&gt;tune&lt;/span&gt;(), &lt;span style=&#34;color:#586e75&#34;&gt;#subsample&lt;/span&gt;
+  mtry &lt;span style=&#34;color:#719e07&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#268bd2&#34;&gt;tune&lt;/span&gt;(), &lt;span style=&#34;color:#586e75&#34;&gt;#colsample_bytree&lt;/span&gt;
+  min_n &lt;span style=&#34;color:#719e07&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#268bd2&#34;&gt;tune&lt;/span&gt;(), &lt;span style=&#34;color:#586e75&#34;&gt;#min_child_weight&lt;/span&gt;
+  tree_depth &lt;span style=&#34;color:#719e07&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#268bd2&#34;&gt;tune&lt;/span&gt;() &lt;span style=&#34;color:#586e75&#34;&gt;#max_depth&lt;/span&gt;
+) &lt;span style=&#34;color:#719e07&#34;&gt;%&amp;gt;%&lt;/span&gt;
+  &lt;span style=&#34;color:#268bd2&#34;&gt;set_engine&lt;/span&gt;(&lt;span style=&#34;color:#2aa198&#34;&gt;&amp;#34;xgboost&amp;#34;&lt;/span&gt;, objective &lt;span style=&#34;color:#719e07&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#2aa198&#34;&gt;&amp;#34;multi:softprob&amp;#34;&lt;/span&gt;,
+             lambda&lt;span style=&#34;color:#719e07&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#2aa198&#34;&gt;0&lt;/span&gt;, alpha&lt;span style=&#34;color:#719e07&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#2aa198&#34;&gt;1&lt;/span&gt;, num_class&lt;span style=&#34;color:#719e07&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#2aa198&#34;&gt;3&lt;/span&gt;,verbose&lt;span style=&#34;color:#719e07&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#2aa198&#34;&gt;1&lt;/span&gt;)
 
-xgmodel&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;## Boosted Tree Model Specification (classification)
+xgmodel
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;pre&gt;&lt;code&gt;## Boosted Tree Model Specification (classification)
 ## 
 ## Main Arguments:
 ##   mtry = tune()
@@ -123,423 +114,239 @@ xgmodel&lt;/code&gt;&lt;/pre&gt;
 ##   num_class = 3
 ##   verbose = 1
 ## 
-## Computational engine: xgboost&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The &lt;code&gt;parsnip&lt;/code&gt; package provides an interface for many types of models and the different types of packages that fall into those types. For example, because XGBoost is a boosted tree type of model we use the &lt;code&gt;boost_tree&lt;/code&gt; function.&lt;/p&gt;
+## Computational engine: xgboost
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;The &lt;code&gt;parsnip&lt;/code&gt; package provides an interface for many types of models and the different types of packages that fall into those types. For example, because XGBoost is a boosted tree type of model we use the &lt;code&gt;boost_tree&lt;/code&gt; function.&lt;/p&gt;
 &lt;p&gt;&lt;code&gt;boost_tree&lt;/code&gt; provides general parameters that can be used on other boosted tree models. In my specification below I included the XGBoost translation of the &lt;code&gt;boost_tree&lt;/code&gt; names.&lt;/p&gt;
 &lt;p&gt;Many of the parameters have a &lt;code&gt;tune()&lt;/code&gt; value assigned to them. This is because later we are going to construct a parameter grid with which we will be able to search what the best parameters are.&lt;/p&gt;
 &lt;p&gt;Also note that &lt;code&gt;set_engine&lt;/code&gt; is where we set that we are using XGBoost and that we can pass XGBoost specific options into this function as well.&lt;/p&gt;
 &lt;p&gt;By using &lt;code&gt;parsnip&lt;/code&gt; you avoid many of the pecularities that XGBoost has. If you used XGBoost directly you would find that you need to encode categorical variables as dummies, you also need to use the specific XGBoost format for matrices &lt;code&gt;xgb.DMatrix&lt;/code&gt; and you need to separate out the labels from the predictors.&lt;/p&gt;
-&lt;p&gt;Here I didn’t need to do any of that because &lt;code&gt;parsnip&lt;/code&gt; handles those requirements internally. I think the &lt;code&gt;tidymodels&lt;/code&gt; framework makes your life easier but it’s wise to still know how the underlying engines work if you are going to use them.&lt;/p&gt;
-&lt;/div&gt;
-&lt;div id=&#34;tuning-the-model&#34; class=&#34;section level3&#34;&gt;
-&lt;h3&gt;Tuning the model&lt;/h3&gt;
+&lt;p&gt;Here I didn&amp;rsquo;t need to do any of that because &lt;code&gt;parsnip&lt;/code&gt; handles those requirements internally. I think the &lt;code&gt;tidymodels&lt;/code&gt; framework makes your life easier but it&amp;rsquo;s wise to still know how the underlying engines work if you are going to use them.&lt;/p&gt;
+&lt;h3 id=&#34;tuning-the-model&#34;&gt;Tuning the model&lt;/h3&gt;
 &lt;p&gt;We now turn to the &lt;code&gt;dials&lt;/code&gt; package. To me this is where &lt;code&gt;tiymodels&lt;/code&gt; provides its biggest benefits. It gives the user the ability to tune models in a reproducible manner that is easy to replicate.&lt;/p&gt;
 &lt;p&gt;First, we need to set up a &lt;code&gt;parameters&lt;/code&gt; object with the parameters we want to be tuned.&lt;/p&gt;
-&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;xgboostParams &amp;lt;- dials::parameters(
-  min_n(),
-  tree_depth(),
-  learn_rate(),
-  finalize(mtry(),select(proc_mwTrainSet,-outcome)),
-  sample_size = sample_prop(c(0.4, 0.9))
-)&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Note that, &lt;code&gt;mtry&lt;/code&gt; had to be treated differently and we had to ‘finalize’ it. The reason being that for parameters whose range depends on the data set the user has to provide the range. As &lt;code&gt;mtry()&lt;/code&gt; is the number of variables used in the making of each tree we need to bound it by the number of variables available.&lt;/p&gt;
-&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;mtry()&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;## # Randomly Selected Predictors  (quantitative)
-## Range: [1, ?]&lt;/code&gt;&lt;/pre&gt;
-&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;finalize(mtry(),select(proc_mwTrainSet,-outcome))&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;## # Randomly Selected Predictors  (quantitative)
-## Range: [1, 49]&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Another quirk we encounter here is that &lt;code&gt;boost_tree&lt;/code&gt; takes the parameter &lt;code&gt;sample_size&lt;/code&gt; as integer but XGBoost requires this parameter as a proportion, hence we use &lt;code&gt;sample_prop&lt;/code&gt; to specify the range.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#93a1a1;background-color:#002b36;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-r&#34; data-lang=&#34;r&#34;&gt;xgboostParams &lt;span style=&#34;color:#719e07&#34;&gt;&amp;lt;-&lt;/span&gt; dials&lt;span style=&#34;color:#719e07&#34;&gt;::&lt;/span&gt;&lt;span style=&#34;color:#268bd2&#34;&gt;parameters&lt;/span&gt;(
+  &lt;span style=&#34;color:#268bd2&#34;&gt;min_n&lt;/span&gt;(),
+  &lt;span style=&#34;color:#268bd2&#34;&gt;tree_depth&lt;/span&gt;(),
+  &lt;span style=&#34;color:#268bd2&#34;&gt;learn_rate&lt;/span&gt;(),
+  &lt;span style=&#34;color:#268bd2&#34;&gt;finalize&lt;/span&gt;(&lt;span style=&#34;color:#268bd2&#34;&gt;mtry&lt;/span&gt;(),&lt;span style=&#34;color:#268bd2&#34;&gt;select&lt;/span&gt;(proc_mwTrainSet,&lt;span style=&#34;color:#719e07&#34;&gt;-&lt;/span&gt;outcome)),
+  sample_size &lt;span style=&#34;color:#719e07&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#268bd2&#34;&gt;sample_prop&lt;/span&gt;(&lt;span style=&#34;color:#268bd2&#34;&gt;c&lt;/span&gt;(&lt;span style=&#34;color:#2aa198&#34;&gt;0.4&lt;/span&gt;, &lt;span style=&#34;color:#2aa198&#34;&gt;0.9&lt;/span&gt;))
+)
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Note that, &lt;code&gt;mtry&lt;/code&gt; had to be treated differently and we had to &amp;lsquo;finalize&amp;rsquo; it. The reason being that for parameters whose range depends on the data set the user has to provide the range. As &lt;code&gt;mtry()&lt;/code&gt; is the number of variables used in the making of each tree we need to bound it by the number of variables available.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#93a1a1;background-color:#002b36;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-r&#34; data-lang=&#34;r&#34;&gt;&lt;span style=&#34;color:#268bd2&#34;&gt;mtry&lt;/span&gt;()
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;pre&gt;&lt;code&gt;## # Randomly Selected Predictors  (quantitative)
+## Range: [1, ?]
+&lt;/code&gt;&lt;/pre&gt;&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#93a1a1;background-color:#002b36;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-r&#34; data-lang=&#34;r&#34;&gt;&lt;span style=&#34;color:#268bd2&#34;&gt;finalize&lt;/span&gt;(&lt;span style=&#34;color:#268bd2&#34;&gt;mtry&lt;/span&gt;(),&lt;span style=&#34;color:#268bd2&#34;&gt;select&lt;/span&gt;(proc_mwTrainSet,&lt;span style=&#34;color:#719e07&#34;&gt;-&lt;/span&gt;outcome))
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;pre&gt;&lt;code&gt;## # Randomly Selected Predictors  (quantitative)
+## Range: [1, 49]
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;Another quirk we encounter here is that &lt;code&gt;boost_tree&lt;/code&gt; takes the parameter &lt;code&gt;sample_size&lt;/code&gt; as integer but XGBoost requires this parameter as a proportion, hence we use &lt;code&gt;sample_prop&lt;/code&gt; to specify the range.&lt;/p&gt;
 &lt;p&gt;Once the parameters to be tuned are defined we can use the &lt;code&gt;grid_max_entropy&lt;/code&gt; function to create the grid that will be explored. The max entropy grid is defined like so in the documentation:&lt;/p&gt;
 &lt;blockquote&gt;
 &lt;p&gt;Experimental designs for computer experiments are used to construct parameter grids that try to cover the parameter space such that any portion of the space has an observed combination that is not too far from it.&lt;/p&gt;
 &lt;/blockquote&gt;
 &lt;p&gt;So, we are letting &lt;code&gt;dials&lt;/code&gt; define a grid for us that will explore as much as the parameter space as possible. I will set the number of combinations to 100.&lt;/p&gt;
-&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;set.seed(2020)
-xgGrid &amp;lt;- dials::grid_max_entropy(xgboostParams, size = 100)
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#93a1a1;background-color:#002b36;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-r&#34; data-lang=&#34;r&#34;&gt;&lt;span style=&#34;color:#268bd2&#34;&gt;set.seed&lt;/span&gt;(&lt;span style=&#34;color:#2aa198&#34;&gt;2020&lt;/span&gt;)
+xgGrid &lt;span style=&#34;color:#719e07&#34;&gt;&amp;lt;-&lt;/span&gt; dials&lt;span style=&#34;color:#719e07&#34;&gt;::&lt;/span&gt;&lt;span style=&#34;color:#268bd2&#34;&gt;grid_max_entropy&lt;/span&gt;(xgboostParams, size &lt;span style=&#34;color:#719e07&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#2aa198&#34;&gt;100&lt;/span&gt;)
 
-#knitr::kable(head(xgGrid))
-kablify(xgGrid[1:5,])&lt;/code&gt;&lt;/pre&gt;
-&lt;table class=&#34;table table-striped&#34; style=&#34;margin-left: auto; margin-right: auto;&#34;&gt;
-&lt;thead&gt;
-&lt;tr&gt;
-&lt;th style=&#34;text-align:right;&#34;&gt;
-min_n
-&lt;/th&gt;
-&lt;th style=&#34;text-align:right;&#34;&gt;
-tree_depth
-&lt;/th&gt;
-&lt;th style=&#34;text-align:right;&#34;&gt;
-learn_rate
-&lt;/th&gt;
-&lt;th style=&#34;text-align:right;&#34;&gt;
-mtry
-&lt;/th&gt;
-&lt;th style=&#34;text-align:right;&#34;&gt;
-sample_size
-&lt;/th&gt;
-&lt;/tr&gt;
-&lt;/thead&gt;
+&lt;span style=&#34;color:#586e75&#34;&gt;#knitr::kable(head(xgGrid))&lt;/span&gt;
+&lt;span style=&#34;color:#268bd2&#34;&gt;kablify&lt;/span&gt;(xgGrid[1&lt;span style=&#34;color:#719e07&#34;&gt;:&lt;/span&gt;&lt;span style=&#34;color:#2aa198&#34;&gt;5&lt;/span&gt;,])
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;table class=&#34;table table-striped&#34; style=&#34;margin-left: auto; margin-right: auto;&#34;&gt;
+ &lt;thead&gt;
+  &lt;tr&gt;
+   &lt;th style=&#34;text-align:right;&#34;&gt; min_n &lt;/th&gt;
+   &lt;th style=&#34;text-align:right;&#34;&gt; tree_depth &lt;/th&gt;
+   &lt;th style=&#34;text-align:right;&#34;&gt; learn_rate &lt;/th&gt;
+   &lt;th style=&#34;text-align:right;&#34;&gt; mtry &lt;/th&gt;
+   &lt;th style=&#34;text-align:right;&#34;&gt; sample_size &lt;/th&gt;
+  &lt;/tr&gt;
+ &lt;/thead&gt;
 &lt;tbody&gt;
-&lt;tr&gt;
-&lt;td style=&#34;text-align:right;&#34;&gt;
-40
-&lt;/td&gt;
-&lt;td style=&#34;text-align:right;&#34;&gt;
-8
-&lt;/td&gt;
-&lt;td style=&#34;text-align:right;&#34;&gt;
-0.0017557
-&lt;/td&gt;
-&lt;td style=&#34;text-align:right;&#34;&gt;
-22
-&lt;/td&gt;
-&lt;td style=&#34;text-align:right;&#34;&gt;
-0.4202777
-&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td style=&#34;text-align:right;&#34;&gt;
-12
-&lt;/td&gt;
-&lt;td style=&#34;text-align:right;&#34;&gt;
-9
-&lt;/td&gt;
-&lt;td style=&#34;text-align:right;&#34;&gt;
-0.0000007
-&lt;/td&gt;
-&lt;td style=&#34;text-align:right;&#34;&gt;
-9
-&lt;/td&gt;
-&lt;td style=&#34;text-align:right;&#34;&gt;
-0.8233843
-&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td style=&#34;text-align:right;&#34;&gt;
-22
-&lt;/td&gt;
-&lt;td style=&#34;text-align:right;&#34;&gt;
-14
-&lt;/td&gt;
-&lt;td style=&#34;text-align:right;&#34;&gt;
-0.0000141
-&lt;/td&gt;
-&lt;td style=&#34;text-align:right;&#34;&gt;
-24
-&lt;/td&gt;
-&lt;td style=&#34;text-align:right;&#34;&gt;
-0.6387196
-&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td style=&#34;text-align:right;&#34;&gt;
-31
-&lt;/td&gt;
-&lt;td style=&#34;text-align:right;&#34;&gt;
-8
-&lt;/td&gt;
-&lt;td style=&#34;text-align:right;&#34;&gt;
-0.0000006
-&lt;/td&gt;
-&lt;td style=&#34;text-align:right;&#34;&gt;
-16
-&lt;/td&gt;
-&lt;td style=&#34;text-align:right;&#34;&gt;
-0.8828089
-&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td style=&#34;text-align:right;&#34;&gt;
-32
-&lt;/td&gt;
-&lt;td style=&#34;text-align:right;&#34;&gt;
-6
-&lt;/td&gt;
-&lt;td style=&#34;text-align:right;&#34;&gt;
-0.0001357
-&lt;/td&gt;
-&lt;td style=&#34;text-align:right;&#34;&gt;
-41
-&lt;/td&gt;
-&lt;td style=&#34;text-align:right;&#34;&gt;
-0.7991674
-&lt;/td&gt;
-&lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style=&#34;text-align:right;&#34;&gt; 40 &lt;/td&gt;
+   &lt;td style=&#34;text-align:right;&#34;&gt; 8 &lt;/td&gt;
+   &lt;td style=&#34;text-align:right;&#34;&gt; 0.0017557 &lt;/td&gt;
+   &lt;td style=&#34;text-align:right;&#34;&gt; 22 &lt;/td&gt;
+   &lt;td style=&#34;text-align:right;&#34;&gt; 0.4202777 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style=&#34;text-align:right;&#34;&gt; 12 &lt;/td&gt;
+   &lt;td style=&#34;text-align:right;&#34;&gt; 9 &lt;/td&gt;
+   &lt;td style=&#34;text-align:right;&#34;&gt; 0.0000007 &lt;/td&gt;
+   &lt;td style=&#34;text-align:right;&#34;&gt; 9 &lt;/td&gt;
+   &lt;td style=&#34;text-align:right;&#34;&gt; 0.8233843 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style=&#34;text-align:right;&#34;&gt; 22 &lt;/td&gt;
+   &lt;td style=&#34;text-align:right;&#34;&gt; 14 &lt;/td&gt;
+   &lt;td style=&#34;text-align:right;&#34;&gt; 0.0000141 &lt;/td&gt;
+   &lt;td style=&#34;text-align:right;&#34;&gt; 24 &lt;/td&gt;
+   &lt;td style=&#34;text-align:right;&#34;&gt; 0.6387196 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style=&#34;text-align:right;&#34;&gt; 31 &lt;/td&gt;
+   &lt;td style=&#34;text-align:right;&#34;&gt; 8 &lt;/td&gt;
+   &lt;td style=&#34;text-align:right;&#34;&gt; 0.0000006 &lt;/td&gt;
+   &lt;td style=&#34;text-align:right;&#34;&gt; 16 &lt;/td&gt;
+   &lt;td style=&#34;text-align:right;&#34;&gt; 0.8828089 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style=&#34;text-align:right;&#34;&gt; 32 &lt;/td&gt;
+   &lt;td style=&#34;text-align:right;&#34;&gt; 6 &lt;/td&gt;
+   &lt;td style=&#34;text-align:right;&#34;&gt; 0.0001357 &lt;/td&gt;
+   &lt;td style=&#34;text-align:right;&#34;&gt; 41 &lt;/td&gt;
+   &lt;td style=&#34;text-align:right;&#34;&gt; 0.7991674 &lt;/td&gt;
+  &lt;/tr&gt;
 &lt;/tbody&gt;
 &lt;/table&gt;
 &lt;p&gt;This is great. When I first fit this model I was using a custom built function for tuning that I found on stackoverflow.&lt;/p&gt;
-&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;set.seed(1234)
-searchGridSubCol &amp;lt;- expand.grid(min_child_weight=c(2),
-                                subsample = c(0.75,0.6,0.9), 
-                                colsample_bytree = c(0.6,0.8),
-                                lam = c(2),
-                                alph=c(0),
-                                depth=c(6,10,3),
-                                etaa=c(0.009,0.011,0.013,0.014)
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#93a1a1;background-color:#002b36;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-r&#34; data-lang=&#34;r&#34;&gt;&lt;span style=&#34;color:#268bd2&#34;&gt;set.seed&lt;/span&gt;(&lt;span style=&#34;color:#2aa198&#34;&gt;1234&lt;/span&gt;)
+searchGridSubCol &lt;span style=&#34;color:#719e07&#34;&gt;&amp;lt;-&lt;/span&gt; &lt;span style=&#34;color:#268bd2&#34;&gt;expand.grid&lt;/span&gt;(min_child_weight&lt;span style=&#34;color:#719e07&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#268bd2&#34;&gt;c&lt;/span&gt;(&lt;span style=&#34;color:#2aa198&#34;&gt;2&lt;/span&gt;),
+                                subsample &lt;span style=&#34;color:#719e07&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#268bd2&#34;&gt;c&lt;/span&gt;(&lt;span style=&#34;color:#2aa198&#34;&gt;0.75&lt;/span&gt;,&lt;span style=&#34;color:#2aa198&#34;&gt;0.6&lt;/span&gt;,&lt;span style=&#34;color:#2aa198&#34;&gt;0.9&lt;/span&gt;), 
+                                colsample_bytree &lt;span style=&#34;color:#719e07&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#268bd2&#34;&gt;c&lt;/span&gt;(&lt;span style=&#34;color:#2aa198&#34;&gt;0.6&lt;/span&gt;,&lt;span style=&#34;color:#2aa198&#34;&gt;0.8&lt;/span&gt;),
+                                lam &lt;span style=&#34;color:#719e07&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#268bd2&#34;&gt;c&lt;/span&gt;(&lt;span style=&#34;color:#2aa198&#34;&gt;2&lt;/span&gt;),
+                                alph&lt;span style=&#34;color:#719e07&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#268bd2&#34;&gt;c&lt;/span&gt;(&lt;span style=&#34;color:#2aa198&#34;&gt;0&lt;/span&gt;),
+                                depth&lt;span style=&#34;color:#719e07&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#268bd2&#34;&gt;c&lt;/span&gt;(&lt;span style=&#34;color:#2aa198&#34;&gt;6&lt;/span&gt;,&lt;span style=&#34;color:#2aa198&#34;&gt;10&lt;/span&gt;,&lt;span style=&#34;color:#2aa198&#34;&gt;3&lt;/span&gt;),
+                                etaa&lt;span style=&#34;color:#719e07&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#268bd2&#34;&gt;c&lt;/span&gt;(&lt;span style=&#34;color:#2aa198&#34;&gt;0.009&lt;/span&gt;,&lt;span style=&#34;color:#2aa198&#34;&gt;0.011&lt;/span&gt;,&lt;span style=&#34;color:#2aa198&#34;&gt;0.013&lt;/span&gt;,&lt;span style=&#34;color:#2aa198&#34;&gt;0.014&lt;/span&gt;)
                                 )
-ntrees &amp;lt;- 5000
-mllHyperparameters &amp;lt;- apply(searchGridSubCol, 1, function(parameterList){
+ntrees &lt;span style=&#34;color:#719e07&#34;&gt;&amp;lt;-&lt;/span&gt; &lt;span style=&#34;color:#2aa198&#34;&gt;5000&lt;/span&gt;
+mllHyperparameters &lt;span style=&#34;color:#719e07&#34;&gt;&amp;lt;-&lt;/span&gt; &lt;span style=&#34;color:#268bd2&#34;&gt;apply&lt;/span&gt;(searchGridSubCol, &lt;span style=&#34;color:#2aa198&#34;&gt;1&lt;/span&gt;, &lt;span style=&#34;color:#268bd2&#34;&gt;function&lt;/span&gt;(parameterList){
   
-  #Extract Parameters to test
-  currentSubsampleRate &amp;lt;- parameterList[[&amp;quot;subsample&amp;quot;]]
-  currentColsampleRate &amp;lt;- parameterList[[&amp;quot;colsample_bytree&amp;quot;]]
-  currentMCW &amp;lt;- parameterList[[&amp;quot;min_child_weight&amp;quot;]]
-  currentLambda &amp;lt;- parameterList[[&amp;quot;lam&amp;quot;]]
-  currentAlpha &amp;lt;- parameterList[[&amp;quot;alph&amp;quot;]]
-  currentDepth &amp;lt;- parameterList[[&amp;quot;depth&amp;quot;]]
-  currentEta &amp;lt;- parameterList[[&amp;quot;etaa&amp;quot;]]
+  &lt;span style=&#34;color:#586e75&#34;&gt;#Extract Parameters to test&lt;/span&gt;
+  currentSubsampleRate &lt;span style=&#34;color:#719e07&#34;&gt;&amp;lt;-&lt;/span&gt; parameterList[[&lt;span style=&#34;color:#2aa198&#34;&gt;&amp;#34;subsample&amp;#34;&lt;/span&gt;]]
+  currentColsampleRate &lt;span style=&#34;color:#719e07&#34;&gt;&amp;lt;-&lt;/span&gt; parameterList[[&lt;span style=&#34;color:#2aa198&#34;&gt;&amp;#34;colsample_bytree&amp;#34;&lt;/span&gt;]]
+  currentMCW &lt;span style=&#34;color:#719e07&#34;&gt;&amp;lt;-&lt;/span&gt; parameterList[[&lt;span style=&#34;color:#2aa198&#34;&gt;&amp;#34;min_child_weight&amp;#34;&lt;/span&gt;]]
+  currentLambda &lt;span style=&#34;color:#719e07&#34;&gt;&amp;lt;-&lt;/span&gt; parameterList[[&lt;span style=&#34;color:#2aa198&#34;&gt;&amp;#34;lam&amp;#34;&lt;/span&gt;]]
+  currentAlpha &lt;span style=&#34;color:#719e07&#34;&gt;&amp;lt;-&lt;/span&gt; parameterList[[&lt;span style=&#34;color:#2aa198&#34;&gt;&amp;#34;alph&amp;#34;&lt;/span&gt;]]
+  currentDepth &lt;span style=&#34;color:#719e07&#34;&gt;&amp;lt;-&lt;/span&gt; parameterList[[&lt;span style=&#34;color:#2aa198&#34;&gt;&amp;#34;depth&amp;#34;&lt;/span&gt;]]
+  currentEta &lt;span style=&#34;color:#719e07&#34;&gt;&amp;lt;-&lt;/span&gt; parameterList[[&lt;span style=&#34;color:#2aa198&#34;&gt;&amp;#34;etaa&amp;#34;&lt;/span&gt;]]
   
-  xgb_params &amp;lt;- list(&amp;quot;objective&amp;quot; = &amp;quot;multi:softprob&amp;quot;,
-                     &amp;quot;eval_metric&amp;quot; = &amp;quot;mlogloss&amp;quot;,
-                     &amp;quot;num_class&amp;quot; = 3,
-                     &amp;quot;eta&amp;quot; = currentEta,
-                     subsample = currentSubsampleRate,
-                     colsample_bytree= currentColsampleRate,
-                     min_child_weight=currentMCW,
-                     lambda=currentLambda,
-                     alpha=currentAlpha,
-                     max_depth=currentDepth)
-})&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;I did quite an extensive search but I always chose values in incremental steps, e.g., for &lt;code&gt;eta&lt;/code&gt; I would try 0.1,0.15,0.2,… Using &lt;code&gt;dials&lt;/code&gt; you might get to combinations that you didn’t think about but mostly it’ll optimise how to set the parameter combinations given the size parameter.&lt;/p&gt;
+  xgb_params &lt;span style=&#34;color:#719e07&#34;&gt;&amp;lt;-&lt;/span&gt; &lt;span style=&#34;color:#268bd2&#34;&gt;list&lt;/span&gt;(&lt;span style=&#34;color:#2aa198&#34;&gt;&amp;#34;objective&amp;#34;&lt;/span&gt; &lt;span style=&#34;color:#719e07&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#2aa198&#34;&gt;&amp;#34;multi:softprob&amp;#34;&lt;/span&gt;,
+                     &lt;span style=&#34;color:#2aa198&#34;&gt;&amp;#34;eval_metric&amp;#34;&lt;/span&gt; &lt;span style=&#34;color:#719e07&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#2aa198&#34;&gt;&amp;#34;mlogloss&amp;#34;&lt;/span&gt;,
+                     &lt;span style=&#34;color:#2aa198&#34;&gt;&amp;#34;num_class&amp;#34;&lt;/span&gt; &lt;span style=&#34;color:#719e07&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#2aa198&#34;&gt;3&lt;/span&gt;,
+                     &lt;span style=&#34;color:#2aa198&#34;&gt;&amp;#34;eta&amp;#34;&lt;/span&gt; &lt;span style=&#34;color:#719e07&#34;&gt;=&lt;/span&gt; currentEta,
+                     subsample &lt;span style=&#34;color:#719e07&#34;&gt;=&lt;/span&gt; currentSubsampleRate,
+                     colsample_bytree&lt;span style=&#34;color:#719e07&#34;&gt;=&lt;/span&gt; currentColsampleRate,
+                     min_child_weight&lt;span style=&#34;color:#719e07&#34;&gt;=&lt;/span&gt;currentMCW,
+                     lambda&lt;span style=&#34;color:#719e07&#34;&gt;=&lt;/span&gt;currentLambda,
+                     alpha&lt;span style=&#34;color:#719e07&#34;&gt;=&lt;/span&gt;currentAlpha,
+                     max_depth&lt;span style=&#34;color:#719e07&#34;&gt;=&lt;/span&gt;currentDepth)
+})
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;I did quite an extensive search but I always chose values in incremental steps, e.g., for &lt;code&gt;eta&lt;/code&gt; I would try 0.1,0.15,0.2,&amp;hellip; Using &lt;code&gt;dials&lt;/code&gt; you might get to combinations that you didn&amp;rsquo;t think about but mostly it&amp;rsquo;ll optimise how to set the parameter combinations given the size parameter.&lt;/p&gt;
 &lt;p&gt;Next, we create a workflow from &lt;code&gt;workflows&lt;/code&gt; that we will pass into the tuning object in the following step. We specify the formula for the model we want to fit based on the dependent variable &lt;code&gt;outcome&lt;/code&gt;.&lt;/p&gt;
-&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;xgWorkflow &amp;lt;- 
-  workflows::workflow() %&amp;gt;%
-  add_model(xgmodel) %&amp;gt;% 
-  add_formula(outcome ~ .)&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;We can finally tune the model! We pass the workflow, cross-validation folds, grid of parameters to test and the metric we want to save from each model output. Note that &lt;code&gt;metric_set&lt;/code&gt; comes from the &lt;code&gt;yardstick&lt;/code&gt; package.&lt;/p&gt;
-&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;xgTuned &amp;lt;- tune_grid(
-  object = xgWorkflow,
-  resamples = cvFolds,
-  grid      = xgGrid,
-  metrics   = metric_set(mn_log_loss),
-  control   = control_grid(verbose = TRUE))&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Tuning the model on that grid took a while, around 90 minutes in a 8-core machine runing in parallel.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#93a1a1;background-color:#002b36;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-r&#34; data-lang=&#34;r&#34;&gt;xgWorkflow &lt;span style=&#34;color:#719e07&#34;&gt;&amp;lt;-&lt;/span&gt; 
+  workflows&lt;span style=&#34;color:#719e07&#34;&gt;::&lt;/span&gt;&lt;span style=&#34;color:#268bd2&#34;&gt;workflow&lt;/span&gt;() &lt;span style=&#34;color:#719e07&#34;&gt;%&amp;gt;%&lt;/span&gt;
+  &lt;span style=&#34;color:#268bd2&#34;&gt;add_model&lt;/span&gt;(xgmodel) &lt;span style=&#34;color:#719e07&#34;&gt;%&amp;gt;%&lt;/span&gt; 
+  &lt;span style=&#34;color:#268bd2&#34;&gt;add_formula&lt;/span&gt;(outcome &lt;span style=&#34;color:#719e07&#34;&gt;~&lt;/span&gt; .)
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;We can finally tune the model! We pass the workflow, cross-validation folds, grid of parameters to test and the metric we want to save from each model output. Note that &lt;code&gt;metric_set&lt;/code&gt; comes from the &lt;code&gt;yardstick&lt;/code&gt; package.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#93a1a1;background-color:#002b36;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-r&#34; data-lang=&#34;r&#34;&gt;xgTuned &lt;span style=&#34;color:#719e07&#34;&gt;&amp;lt;-&lt;/span&gt; &lt;span style=&#34;color:#268bd2&#34;&gt;tune_grid&lt;/span&gt;(
+  object &lt;span style=&#34;color:#719e07&#34;&gt;=&lt;/span&gt; xgWorkflow,
+  resamples &lt;span style=&#34;color:#719e07&#34;&gt;=&lt;/span&gt; cvFolds,
+  grid      &lt;span style=&#34;color:#719e07&#34;&gt;=&lt;/span&gt; xgGrid,
+  metrics   &lt;span style=&#34;color:#719e07&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#268bd2&#34;&gt;metric_set&lt;/span&gt;(mn_log_loss),
+  control   &lt;span style=&#34;color:#719e07&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#268bd2&#34;&gt;control_grid&lt;/span&gt;(verbose &lt;span style=&#34;color:#719e07&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#cb4b16&#34;&gt;TRUE&lt;/span&gt;))
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Tuning the model on that grid took a while, around 90 minutes in a 8-core machine runing in parallel.&lt;/p&gt;
 &lt;p&gt;Since we are running parallelised code there is no progress output shown even though verbose is set to True.&lt;/p&gt;
 &lt;p&gt;Also, note that I set the &lt;code&gt;trees&lt;/code&gt; parameter to 1000 in the model specification. This means that we are fitting 100 different XGBoost model and each one of those will build 1000 trees. XGBoost supports early stopping, i.e., you can specify a parameter that tells the model to stop if there has been no log-loss improvement in the last &lt;code&gt;N&lt;/code&gt; trees.&lt;/p&gt;
-&lt;p&gt;Setting an early stopping criterion can save computation time. If there’s a parameter combination that is not performing well the model will stop well before reaching the 1000th tree.&lt;/p&gt;
+&lt;p&gt;Setting an early stopping criterion can save computation time. If there&amp;rsquo;s a parameter combination that is not performing well the model will stop well before reaching the 1000th tree.&lt;/p&gt;
 &lt;p&gt;Early stopping is currently not supported in the &lt;code&gt;boost_tree&lt;/code&gt; function. However, according to this &lt;a href=&#34;https://github.com/topepo/caret/issues/641&#34;&gt;post&lt;/a&gt; it has been very recently implemented in the development version so you could give it a try if you were so inclined.&lt;/p&gt;
 &lt;p&gt;The &lt;code&gt;xgTuned&lt;/code&gt; object contains the 100 combinations of parameters we tested and the corresponding mean log-loss from the cross-validation.&lt;/p&gt;
 &lt;p&gt;The &lt;code&gt;show_best&lt;/code&gt; function outputs the best performing combinations.&lt;/p&gt;
-&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;xgTuned %&amp;gt;% tune::show_best(metric = &amp;quot;mn_log_loss&amp;quot;) %&amp;gt;% kablify()&lt;/code&gt;&lt;/pre&gt;
-&lt;table class=&#34;table table-striped&#34; style=&#34;margin-left: auto; margin-right: auto;&#34;&gt;
-&lt;thead&gt;
-&lt;tr&gt;
-&lt;th style=&#34;text-align:right;&#34;&gt;
-mtry
-&lt;/th&gt;
-&lt;th style=&#34;text-align:right;&#34;&gt;
-min_n
-&lt;/th&gt;
-&lt;th style=&#34;text-align:right;&#34;&gt;
-tree_depth
-&lt;/th&gt;
-&lt;th style=&#34;text-align:right;&#34;&gt;
-learn_rate
-&lt;/th&gt;
-&lt;th style=&#34;text-align:right;&#34;&gt;
-sample_size
-&lt;/th&gt;
-&lt;th style=&#34;text-align:left;&#34;&gt;
-.metric
-&lt;/th&gt;
-&lt;th style=&#34;text-align:left;&#34;&gt;
-.estimator
-&lt;/th&gt;
-&lt;th style=&#34;text-align:right;&#34;&gt;
-mean
-&lt;/th&gt;
-&lt;th style=&#34;text-align:right;&#34;&gt;
-n
-&lt;/th&gt;
-&lt;th style=&#34;text-align:right;&#34;&gt;
-std_err
-&lt;/th&gt;
-&lt;/tr&gt;
-&lt;/thead&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#93a1a1;background-color:#002b36;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-r&#34; data-lang=&#34;r&#34;&gt;xgTuned &lt;span style=&#34;color:#719e07&#34;&gt;%&amp;gt;%&lt;/span&gt; tune&lt;span style=&#34;color:#719e07&#34;&gt;::&lt;/span&gt;&lt;span style=&#34;color:#268bd2&#34;&gt;show_best&lt;/span&gt;(metric &lt;span style=&#34;color:#719e07&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#2aa198&#34;&gt;&amp;#34;mn_log_loss&amp;#34;&lt;/span&gt;) &lt;span style=&#34;color:#719e07&#34;&gt;%&amp;gt;%&lt;/span&gt; &lt;span style=&#34;color:#268bd2&#34;&gt;kablify&lt;/span&gt;()
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;table class=&#34;table table-striped&#34; style=&#34;margin-left: auto; margin-right: auto;&#34;&gt;
+ &lt;thead&gt;
+  &lt;tr&gt;
+   &lt;th style=&#34;text-align:right;&#34;&gt; mtry &lt;/th&gt;
+   &lt;th style=&#34;text-align:right;&#34;&gt; min_n &lt;/th&gt;
+   &lt;th style=&#34;text-align:right;&#34;&gt; tree_depth &lt;/th&gt;
+   &lt;th style=&#34;text-align:right;&#34;&gt; learn_rate &lt;/th&gt;
+   &lt;th style=&#34;text-align:right;&#34;&gt; sample_size &lt;/th&gt;
+   &lt;th style=&#34;text-align:left;&#34;&gt; .metric &lt;/th&gt;
+   &lt;th style=&#34;text-align:left;&#34;&gt; .estimator &lt;/th&gt;
+   &lt;th style=&#34;text-align:right;&#34;&gt; mean &lt;/th&gt;
+   &lt;th style=&#34;text-align:right;&#34;&gt; n &lt;/th&gt;
+   &lt;th style=&#34;text-align:right;&#34;&gt; std_err &lt;/th&gt;
+  &lt;/tr&gt;
+ &lt;/thead&gt;
 &lt;tbody&gt;
-&lt;tr&gt;
-&lt;td style=&#34;text-align:right;&#34;&gt;
-19
-&lt;/td&gt;
-&lt;td style=&#34;text-align:right;&#34;&gt;
-8
-&lt;/td&gt;
-&lt;td style=&#34;text-align:right;&#34;&gt;
-6
-&lt;/td&gt;
-&lt;td style=&#34;text-align:right;&#34;&gt;
-0.0086232
-&lt;/td&gt;
-&lt;td style=&#34;text-align:right;&#34;&gt;
-0.8386232
-&lt;/td&gt;
-&lt;td style=&#34;text-align:left;&#34;&gt;
-mn_log_loss
-&lt;/td&gt;
-&lt;td style=&#34;text-align:left;&#34;&gt;
-multiclass
-&lt;/td&gt;
-&lt;td style=&#34;text-align:right;&#34;&gt;
-0.3126151
-&lt;/td&gt;
-&lt;td style=&#34;text-align:right;&#34;&gt;
-5
-&lt;/td&gt;
-&lt;td style=&#34;text-align:right;&#34;&gt;
-0.0056380
-&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td style=&#34;text-align:right;&#34;&gt;
-16
-&lt;/td&gt;
-&lt;td style=&#34;text-align:right;&#34;&gt;
-9
-&lt;/td&gt;
-&lt;td style=&#34;text-align:right;&#34;&gt;
-14
-&lt;/td&gt;
-&lt;td style=&#34;text-align:right;&#34;&gt;
-0.0153090
-&lt;/td&gt;
-&lt;td style=&#34;text-align:right;&#34;&gt;
-0.7279057
-&lt;/td&gt;
-&lt;td style=&#34;text-align:left;&#34;&gt;
-mn_log_loss
-&lt;/td&gt;
-&lt;td style=&#34;text-align:left;&#34;&gt;
-multiclass
-&lt;/td&gt;
-&lt;td style=&#34;text-align:right;&#34;&gt;
-0.3130304
-&lt;/td&gt;
-&lt;td style=&#34;text-align:right;&#34;&gt;
-5
-&lt;/td&gt;
-&lt;td style=&#34;text-align:right;&#34;&gt;
-0.0073298
-&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td style=&#34;text-align:right;&#34;&gt;
-42
-&lt;/td&gt;
-&lt;td style=&#34;text-align:right;&#34;&gt;
-19
-&lt;/td&gt;
-&lt;td style=&#34;text-align:right;&#34;&gt;
-12
-&lt;/td&gt;
-&lt;td style=&#34;text-align:right;&#34;&gt;
-0.0148805
-&lt;/td&gt;
-&lt;td style=&#34;text-align:right;&#34;&gt;
-0.7756686
-&lt;/td&gt;
-&lt;td style=&#34;text-align:left;&#34;&gt;
-mn_log_loss
-&lt;/td&gt;
-&lt;td style=&#34;text-align:left;&#34;&gt;
-multiclass
-&lt;/td&gt;
-&lt;td style=&#34;text-align:right;&#34;&gt;
-0.3147089
-&lt;/td&gt;
-&lt;td style=&#34;text-align:right;&#34;&gt;
-5
-&lt;/td&gt;
-&lt;td style=&#34;text-align:right;&#34;&gt;
-0.0067372
-&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td style=&#34;text-align:right;&#34;&gt;
-16
-&lt;/td&gt;
-&lt;td style=&#34;text-align:right;&#34;&gt;
-17
-&lt;/td&gt;
-&lt;td style=&#34;text-align:right;&#34;&gt;
-4
-&lt;/td&gt;
-&lt;td style=&#34;text-align:right;&#34;&gt;
-0.0147389
-&lt;/td&gt;
-&lt;td style=&#34;text-align:right;&#34;&gt;
-0.5218267
-&lt;/td&gt;
-&lt;td style=&#34;text-align:left;&#34;&gt;
-mn_log_loss
-&lt;/td&gt;
-&lt;td style=&#34;text-align:left;&#34;&gt;
-multiclass
-&lt;/td&gt;
-&lt;td style=&#34;text-align:right;&#34;&gt;
-0.3196296
-&lt;/td&gt;
-&lt;td style=&#34;text-align:right;&#34;&gt;
-5
-&lt;/td&gt;
-&lt;td style=&#34;text-align:right;&#34;&gt;
-0.0051067
-&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td style=&#34;text-align:right;&#34;&gt;
-39
-&lt;/td&gt;
-&lt;td style=&#34;text-align:right;&#34;&gt;
-26
-&lt;/td&gt;
-&lt;td style=&#34;text-align:right;&#34;&gt;
-9
-&lt;/td&gt;
-&lt;td style=&#34;text-align:right;&#34;&gt;
-0.0178508
-&lt;/td&gt;
-&lt;td style=&#34;text-align:right;&#34;&gt;
-0.4542553
-&lt;/td&gt;
-&lt;td style=&#34;text-align:left;&#34;&gt;
-mn_log_loss
-&lt;/td&gt;
-&lt;td style=&#34;text-align:left;&#34;&gt;
-multiclass
-&lt;/td&gt;
-&lt;td style=&#34;text-align:right;&#34;&gt;
-0.3210408
-&lt;/td&gt;
-&lt;td style=&#34;text-align:right;&#34;&gt;
-5
-&lt;/td&gt;
-&lt;td style=&#34;text-align:right;&#34;&gt;
-0.0061055
-&lt;/td&gt;
-&lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style=&#34;text-align:right;&#34;&gt; 19 &lt;/td&gt;
+   &lt;td style=&#34;text-align:right;&#34;&gt; 8 &lt;/td&gt;
+   &lt;td style=&#34;text-align:right;&#34;&gt; 6 &lt;/td&gt;
+   &lt;td style=&#34;text-align:right;&#34;&gt; 0.0086232 &lt;/td&gt;
+   &lt;td style=&#34;text-align:right;&#34;&gt; 0.8386232 &lt;/td&gt;
+   &lt;td style=&#34;text-align:left;&#34;&gt; mn_log_loss &lt;/td&gt;
+   &lt;td style=&#34;text-align:left;&#34;&gt; multiclass &lt;/td&gt;
+   &lt;td style=&#34;text-align:right;&#34;&gt; 0.3126151 &lt;/td&gt;
+   &lt;td style=&#34;text-align:right;&#34;&gt; 5 &lt;/td&gt;
+   &lt;td style=&#34;text-align:right;&#34;&gt; 0.0056380 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style=&#34;text-align:right;&#34;&gt; 16 &lt;/td&gt;
+   &lt;td style=&#34;text-align:right;&#34;&gt; 9 &lt;/td&gt;
+   &lt;td style=&#34;text-align:right;&#34;&gt; 14 &lt;/td&gt;
+   &lt;td style=&#34;text-align:right;&#34;&gt; 0.0153090 &lt;/td&gt;
+   &lt;td style=&#34;text-align:right;&#34;&gt; 0.7279057 &lt;/td&gt;
+   &lt;td style=&#34;text-align:left;&#34;&gt; mn_log_loss &lt;/td&gt;
+   &lt;td style=&#34;text-align:left;&#34;&gt; multiclass &lt;/td&gt;
+   &lt;td style=&#34;text-align:right;&#34;&gt; 0.3130304 &lt;/td&gt;
+   &lt;td style=&#34;text-align:right;&#34;&gt; 5 &lt;/td&gt;
+   &lt;td style=&#34;text-align:right;&#34;&gt; 0.0073298 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style=&#34;text-align:right;&#34;&gt; 42 &lt;/td&gt;
+   &lt;td style=&#34;text-align:right;&#34;&gt; 19 &lt;/td&gt;
+   &lt;td style=&#34;text-align:right;&#34;&gt; 12 &lt;/td&gt;
+   &lt;td style=&#34;text-align:right;&#34;&gt; 0.0148805 &lt;/td&gt;
+   &lt;td style=&#34;text-align:right;&#34;&gt; 0.7756686 &lt;/td&gt;
+   &lt;td style=&#34;text-align:left;&#34;&gt; mn_log_loss &lt;/td&gt;
+   &lt;td style=&#34;text-align:left;&#34;&gt; multiclass &lt;/td&gt;
+   &lt;td style=&#34;text-align:right;&#34;&gt; 0.3147089 &lt;/td&gt;
+   &lt;td style=&#34;text-align:right;&#34;&gt; 5 &lt;/td&gt;
+   &lt;td style=&#34;text-align:right;&#34;&gt; 0.0067372 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style=&#34;text-align:right;&#34;&gt; 16 &lt;/td&gt;
+   &lt;td style=&#34;text-align:right;&#34;&gt; 17 &lt;/td&gt;
+   &lt;td style=&#34;text-align:right;&#34;&gt; 4 &lt;/td&gt;
+   &lt;td style=&#34;text-align:right;&#34;&gt; 0.0147389 &lt;/td&gt;
+   &lt;td style=&#34;text-align:right;&#34;&gt; 0.5218267 &lt;/td&gt;
+   &lt;td style=&#34;text-align:left;&#34;&gt; mn_log_loss &lt;/td&gt;
+   &lt;td style=&#34;text-align:left;&#34;&gt; multiclass &lt;/td&gt;
+   &lt;td style=&#34;text-align:right;&#34;&gt; 0.3196296 &lt;/td&gt;
+   &lt;td style=&#34;text-align:right;&#34;&gt; 5 &lt;/td&gt;
+   &lt;td style=&#34;text-align:right;&#34;&gt; 0.0051067 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style=&#34;text-align:right;&#34;&gt; 39 &lt;/td&gt;
+   &lt;td style=&#34;text-align:right;&#34;&gt; 26 &lt;/td&gt;
+   &lt;td style=&#34;text-align:right;&#34;&gt; 9 &lt;/td&gt;
+   &lt;td style=&#34;text-align:right;&#34;&gt; 0.0178508 &lt;/td&gt;
+   &lt;td style=&#34;text-align:right;&#34;&gt; 0.4542553 &lt;/td&gt;
+   &lt;td style=&#34;text-align:left;&#34;&gt; mn_log_loss &lt;/td&gt;
+   &lt;td style=&#34;text-align:left;&#34;&gt; multiclass &lt;/td&gt;
+   &lt;td style=&#34;text-align:right;&#34;&gt; 0.3210408 &lt;/td&gt;
+   &lt;td style=&#34;text-align:right;&#34;&gt; 5 &lt;/td&gt;
+   &lt;td style=&#34;text-align:right;&#34;&gt; 0.0061055 &lt;/td&gt;
+  &lt;/tr&gt;
 &lt;/tbody&gt;
 &lt;/table&gt;
 &lt;p&gt;We can also get all the combinations with &lt;code&gt;collect_metrics&lt;/code&gt; and we can plot them against mean log-loss.&lt;/p&gt;
-&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;xgTuned %&amp;gt;% collect_metrics() %&amp;gt;% 
-  select(mean,mtry:sample_size) %&amp;gt;% data.table %&amp;gt;% 
-  melt(id=&amp;quot;mean&amp;quot;) %&amp;gt;% 
-  ggplot(aes(y=mean,x=value,colour=variable)) + 
-  geom_point(show.legend = FALSE) + 
-  facet_wrap(variable~. , scales=&amp;quot;free&amp;quot;) + theme_bw() +
-  labs(y=&amp;quot;Mean log-loss&amp;quot;, x = &amp;quot;Parameter&amp;quot;)&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;/post/2020-05-24-tidymodels-and-xgbooost-a-few-learnings_files/figure-html/unnamed-chunk-19-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
-&lt;p&gt;No clear patterns emerge from looking at the plots except that very small learn rate values lead to high log-loss. Having a grid that covers the parameter space as extensively as possible leads to many combinations that aren’t so great but the important point is that we get also get the ones that perform very well.&lt;/p&gt;
-&lt;/div&gt;
-&lt;div id=&#34;fitting-the-best-model&#34; class=&#34;section level3&#34;&gt;
-&lt;h3&gt;Fitting the best model&lt;/h3&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#93a1a1;background-color:#002b36;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-r&#34; data-lang=&#34;r&#34;&gt;xgTuned &lt;span style=&#34;color:#719e07&#34;&gt;%&amp;gt;%&lt;/span&gt; &lt;span style=&#34;color:#268bd2&#34;&gt;collect_metrics&lt;/span&gt;() &lt;span style=&#34;color:#719e07&#34;&gt;%&amp;gt;%&lt;/span&gt; 
+  &lt;span style=&#34;color:#268bd2&#34;&gt;select&lt;/span&gt;(mean,mtry&lt;span style=&#34;color:#719e07&#34;&gt;:&lt;/span&gt;sample_size) &lt;span style=&#34;color:#719e07&#34;&gt;%&amp;gt;%&lt;/span&gt; data.table &lt;span style=&#34;color:#719e07&#34;&gt;%&amp;gt;%&lt;/span&gt; 
+  &lt;span style=&#34;color:#268bd2&#34;&gt;melt&lt;/span&gt;(id&lt;span style=&#34;color:#719e07&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#2aa198&#34;&gt;&amp;#34;mean&amp;#34;&lt;/span&gt;) &lt;span style=&#34;color:#719e07&#34;&gt;%&amp;gt;%&lt;/span&gt; 
+  &lt;span style=&#34;color:#268bd2&#34;&gt;ggplot&lt;/span&gt;(&lt;span style=&#34;color:#268bd2&#34;&gt;aes&lt;/span&gt;(y&lt;span style=&#34;color:#719e07&#34;&gt;=&lt;/span&gt;mean,x&lt;span style=&#34;color:#719e07&#34;&gt;=&lt;/span&gt;value,colour&lt;span style=&#34;color:#719e07&#34;&gt;=&lt;/span&gt;variable)) &lt;span style=&#34;color:#719e07&#34;&gt;+&lt;/span&gt; 
+  &lt;span style=&#34;color:#268bd2&#34;&gt;geom_point&lt;/span&gt;(show.legend &lt;span style=&#34;color:#719e07&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#cb4b16&#34;&gt;FALSE&lt;/span&gt;) &lt;span style=&#34;color:#719e07&#34;&gt;+&lt;/span&gt; 
+  &lt;span style=&#34;color:#268bd2&#34;&gt;facet_wrap&lt;/span&gt;(variable&lt;span style=&#34;color:#719e07&#34;&gt;~&lt;/span&gt;. , scales&lt;span style=&#34;color:#719e07&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#2aa198&#34;&gt;&amp;#34;free&amp;#34;&lt;/span&gt;) &lt;span style=&#34;color:#719e07&#34;&gt;+&lt;/span&gt; &lt;span style=&#34;color:#268bd2&#34;&gt;theme_bw&lt;/span&gt;() &lt;span style=&#34;color:#719e07&#34;&gt;+&lt;/span&gt;
+  &lt;span style=&#34;color:#268bd2&#34;&gt;labs&lt;/span&gt;(y&lt;span style=&#34;color:#719e07&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#2aa198&#34;&gt;&amp;#34;Mean log-loss&amp;#34;&lt;/span&gt;, x &lt;span style=&#34;color:#719e07&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#2aa198&#34;&gt;&amp;#34;Parameter&amp;#34;&lt;/span&gt;)
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;img src=&#34;/post/2020-05-24-tidymodels-and-xgbooost-a-few-learnings_files/figure-html/unnamed-chunk-19-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;No clear patterns emerge from looking at the plots except that very small learn rate values lead to high log-loss. Having a grid that covers the parameter space as extensively as possible leads to many combinations that aren&amp;rsquo;t so great but the important point is that we get also get the ones that perform very well.&lt;/p&gt;
+&lt;h3 id=&#34;fitting-the-best-model&#34;&gt;Fitting the best model&lt;/h3&gt;
 &lt;p&gt;We can pick the best combination of parameters with &lt;code&gt;select_best&lt;/code&gt;.&lt;/p&gt;
-&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;xgBestParams &amp;lt;- xgTuned %&amp;gt;% select_best(&amp;quot;mn_log_loss&amp;quot;)&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The model is then finalised with those parameters with &lt;code&gt;finalize_model&lt;/code&gt; and then the training data can be fit to it using &lt;code&gt;fit&lt;/code&gt;&lt;/p&gt;
-&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;xgboost_model_final &amp;lt;- xgmodel %&amp;gt;% finalize_model(xgBestParams)
-xgTrainFit&amp;lt;-xgboost_model_final %&amp;gt;% fit(outcome~., data=proc_mwTrainSet)
-xgTrainFit&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;## parsnip model object
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#93a1a1;background-color:#002b36;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-r&#34; data-lang=&#34;r&#34;&gt;xgBestParams &lt;span style=&#34;color:#719e07&#34;&gt;&amp;lt;-&lt;/span&gt; xgTuned &lt;span style=&#34;color:#719e07&#34;&gt;%&amp;gt;%&lt;/span&gt; &lt;span style=&#34;color:#268bd2&#34;&gt;select_best&lt;/span&gt;(&lt;span style=&#34;color:#2aa198&#34;&gt;&amp;#34;mn_log_loss&amp;#34;&lt;/span&gt;)
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;The model is then finalised with those parameters with &lt;code&gt;finalize_model&lt;/code&gt; and then the training data can be fit to it using &lt;code&gt;fit&lt;/code&gt;&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#93a1a1;background-color:#002b36;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-r&#34; data-lang=&#34;r&#34;&gt;xgboost_model_final &lt;span style=&#34;color:#719e07&#34;&gt;&amp;lt;-&lt;/span&gt; xgmodel &lt;span style=&#34;color:#719e07&#34;&gt;%&amp;gt;%&lt;/span&gt; &lt;span style=&#34;color:#268bd2&#34;&gt;finalize_model&lt;/span&gt;(xgBestParams)
+xgTrainFit&lt;span style=&#34;color:#719e07&#34;&gt;&amp;lt;-&lt;/span&gt;xgboost_model_final &lt;span style=&#34;color:#719e07&#34;&gt;%&amp;gt;%&lt;/span&gt; &lt;span style=&#34;color:#268bd2&#34;&gt;fit&lt;/span&gt;(outcome&lt;span style=&#34;color:#719e07&#34;&gt;~&lt;/span&gt;., data&lt;span style=&#34;color:#719e07&#34;&gt;=&lt;/span&gt;proc_mwTrainSet)
+xgTrainFit
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;pre&gt;&lt;code&gt;## parsnip model object
 ## 
 ## Fit time:  1m 2.2s 
 ## ##### xgb.Booster
@@ -558,218 +365,113 @@ xgTrainFit&lt;/code&gt;&lt;/pre&gt;
 ##   cb.print.evaluation(period = print_every_n)
 ## # of features: 53 
 ## niter: 1000
-## nfeatures : 53&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;We can also get predictions on the training set; &lt;code&gt;predict&lt;/code&gt; outputs the predicted classes while &lt;code&gt;predict_classprob.model_fit&lt;/code&gt; outputs the class probabilities for each of the 3 classes.&lt;/p&gt;
-&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;xgTrainPreds&amp;lt;- xgTrainFit %&amp;gt;% predict(new_data=proc_mwTrainSet)
-xgTrainPredProbs &amp;lt;- xgTrainFit %&amp;gt;% predict_classprob.model_fit(new_data=proc_mwTrainSet)
-proc_mwTrainSet &amp;lt;- bind_cols(proc_mwTrainSet,xgTrainPreds,xgTrainPredProbs)&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;In the table below &lt;code&gt;outcome&lt;/code&gt; is the dependent variable, &lt;code&gt;.pred_class&lt;/code&gt; the predicted class and &lt;code&gt;Type*&lt;/code&gt; are the class probabilities. As an example, in the first row Type2 has the highest probability so the prediction is assingnd to this class.&lt;/p&gt;
-&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;proc_mwTrainSet %&amp;gt;% select(Type1:outcome) %&amp;gt;% head %&amp;gt;% kablify()&lt;/code&gt;&lt;/pre&gt;
-&lt;table class=&#34;table table-striped&#34; style=&#34;margin-left: auto; margin-right: auto;&#34;&gt;
-&lt;thead&gt;
-&lt;tr&gt;
-&lt;th style=&#34;text-align:right;&#34;&gt;
-Type1
-&lt;/th&gt;
-&lt;th style=&#34;text-align:right;&#34;&gt;
-Type2
-&lt;/th&gt;
-&lt;th style=&#34;text-align:right;&#34;&gt;
-Type3
-&lt;/th&gt;
-&lt;th style=&#34;text-align:left;&#34;&gt;
-.pred_class
-&lt;/th&gt;
-&lt;th style=&#34;text-align:left;&#34;&gt;
-outcome
-&lt;/th&gt;
-&lt;/tr&gt;
-&lt;/thead&gt;
+## nfeatures : 53
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;We can also get predictions on the training set; &lt;code&gt;predict&lt;/code&gt; outputs the predicted classes while &lt;code&gt;predict_classprob.model_fit&lt;/code&gt; outputs the class probabilities for each of the 3 classes.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#93a1a1;background-color:#002b36;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-r&#34; data-lang=&#34;r&#34;&gt;xgTrainPreds&lt;span style=&#34;color:#719e07&#34;&gt;&amp;lt;-&lt;/span&gt; xgTrainFit &lt;span style=&#34;color:#719e07&#34;&gt;%&amp;gt;%&lt;/span&gt; &lt;span style=&#34;color:#268bd2&#34;&gt;predict&lt;/span&gt;(new_data&lt;span style=&#34;color:#719e07&#34;&gt;=&lt;/span&gt;proc_mwTrainSet)
+xgTrainPredProbs &lt;span style=&#34;color:#719e07&#34;&gt;&amp;lt;-&lt;/span&gt; xgTrainFit &lt;span style=&#34;color:#719e07&#34;&gt;%&amp;gt;%&lt;/span&gt; &lt;span style=&#34;color:#268bd2&#34;&gt;predict_classprob.model_fit&lt;/span&gt;(new_data&lt;span style=&#34;color:#719e07&#34;&gt;=&lt;/span&gt;proc_mwTrainSet)
+proc_mwTrainSet &lt;span style=&#34;color:#719e07&#34;&gt;&amp;lt;-&lt;/span&gt; &lt;span style=&#34;color:#268bd2&#34;&gt;bind_cols&lt;/span&gt;(proc_mwTrainSet,xgTrainPreds,xgTrainPredProbs)
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;In the table below &lt;code&gt;outcome&lt;/code&gt; is the dependent variable, &lt;code&gt;.pred_class&lt;/code&gt; the predicted class and &lt;code&gt;Type*&lt;/code&gt; are the class probabilities. As an example, in the first row Type2 has the highest probability so the prediction is assingnd to this class.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#93a1a1;background-color:#002b36;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-r&#34; data-lang=&#34;r&#34;&gt;proc_mwTrainSet &lt;span style=&#34;color:#719e07&#34;&gt;%&amp;gt;%&lt;/span&gt; &lt;span style=&#34;color:#268bd2&#34;&gt;select&lt;/span&gt;(Type1&lt;span style=&#34;color:#719e07&#34;&gt;:&lt;/span&gt;outcome) &lt;span style=&#34;color:#719e07&#34;&gt;%&amp;gt;%&lt;/span&gt; head &lt;span style=&#34;color:#719e07&#34;&gt;%&amp;gt;%&lt;/span&gt; &lt;span style=&#34;color:#268bd2&#34;&gt;kablify&lt;/span&gt;()
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;table class=&#34;table table-striped&#34; style=&#34;margin-left: auto; margin-right: auto;&#34;&gt;
+ &lt;thead&gt;
+  &lt;tr&gt;
+   &lt;th style=&#34;text-align:right;&#34;&gt; Type1 &lt;/th&gt;
+   &lt;th style=&#34;text-align:right;&#34;&gt; Type2 &lt;/th&gt;
+   &lt;th style=&#34;text-align:right;&#34;&gt; Type3 &lt;/th&gt;
+   &lt;th style=&#34;text-align:left;&#34;&gt; .pred_class &lt;/th&gt;
+   &lt;th style=&#34;text-align:left;&#34;&gt; outcome &lt;/th&gt;
+  &lt;/tr&gt;
+ &lt;/thead&gt;
 &lt;tbody&gt;
-&lt;tr&gt;
-&lt;td style=&#34;text-align:right;&#34;&gt;
-0.0591691
-&lt;/td&gt;
-&lt;td style=&#34;text-align:right;&#34;&gt;
-0.9169078
-&lt;/td&gt;
-&lt;td style=&#34;text-align:right;&#34;&gt;
-0.0239230
-&lt;/td&gt;
-&lt;td style=&#34;text-align:left;&#34;&gt;
-Type2
-&lt;/td&gt;
-&lt;td style=&#34;text-align:left;&#34;&gt;
-Type2
-&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td style=&#34;text-align:right;&#34;&gt;
-0.4554967
-&lt;/td&gt;
-&lt;td style=&#34;text-align:right;&#34;&gt;
-0.5316201
-&lt;/td&gt;
-&lt;td style=&#34;text-align:right;&#34;&gt;
-0.0128832
-&lt;/td&gt;
-&lt;td style=&#34;text-align:left;&#34;&gt;
-Type2
-&lt;/td&gt;
-&lt;td style=&#34;text-align:left;&#34;&gt;
-Type1
-&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td style=&#34;text-align:right;&#34;&gt;
-0.9568088
-&lt;/td&gt;
-&lt;td style=&#34;text-align:right;&#34;&gt;
-0.0382318
-&lt;/td&gt;
-&lt;td style=&#34;text-align:right;&#34;&gt;
-0.0049593
-&lt;/td&gt;
-&lt;td style=&#34;text-align:left;&#34;&gt;
-Type1
-&lt;/td&gt;
-&lt;td style=&#34;text-align:left;&#34;&gt;
-Type1
-&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td style=&#34;text-align:right;&#34;&gt;
-0.0451100
-&lt;/td&gt;
-&lt;td style=&#34;text-align:right;&#34;&gt;
-0.9463689
-&lt;/td&gt;
-&lt;td style=&#34;text-align:right;&#34;&gt;
-0.0085212
-&lt;/td&gt;
-&lt;td style=&#34;text-align:left;&#34;&gt;
-Type2
-&lt;/td&gt;
-&lt;td style=&#34;text-align:left;&#34;&gt;
-Type2
-&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td style=&#34;text-align:right;&#34;&gt;
-0.0335070
-&lt;/td&gt;
-&lt;td style=&#34;text-align:right;&#34;&gt;
-0.0201417
-&lt;/td&gt;
-&lt;td style=&#34;text-align:right;&#34;&gt;
-0.9463512
-&lt;/td&gt;
-&lt;td style=&#34;text-align:left;&#34;&gt;
-Type3
-&lt;/td&gt;
-&lt;td style=&#34;text-align:left;&#34;&gt;
-Type3
-&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td style=&#34;text-align:right;&#34;&gt;
-0.0105972
-&lt;/td&gt;
-&lt;td style=&#34;text-align:right;&#34;&gt;
-0.9814348
-&lt;/td&gt;
-&lt;td style=&#34;text-align:right;&#34;&gt;
-0.0079681
-&lt;/td&gt;
-&lt;td style=&#34;text-align:left;&#34;&gt;
-Type2
-&lt;/td&gt;
-&lt;td style=&#34;text-align:left;&#34;&gt;
-Type2
-&lt;/td&gt;
-&lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style=&#34;text-align:right;&#34;&gt; 0.0591691 &lt;/td&gt;
+   &lt;td style=&#34;text-align:right;&#34;&gt; 0.9169078 &lt;/td&gt;
+   &lt;td style=&#34;text-align:right;&#34;&gt; 0.0239230 &lt;/td&gt;
+   &lt;td style=&#34;text-align:left;&#34;&gt; Type2 &lt;/td&gt;
+   &lt;td style=&#34;text-align:left;&#34;&gt; Type2 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style=&#34;text-align:right;&#34;&gt; 0.4554967 &lt;/td&gt;
+   &lt;td style=&#34;text-align:right;&#34;&gt; 0.5316201 &lt;/td&gt;
+   &lt;td style=&#34;text-align:right;&#34;&gt; 0.0128832 &lt;/td&gt;
+   &lt;td style=&#34;text-align:left;&#34;&gt; Type2 &lt;/td&gt;
+   &lt;td style=&#34;text-align:left;&#34;&gt; Type1 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style=&#34;text-align:right;&#34;&gt; 0.9568088 &lt;/td&gt;
+   &lt;td style=&#34;text-align:right;&#34;&gt; 0.0382318 &lt;/td&gt;
+   &lt;td style=&#34;text-align:right;&#34;&gt; 0.0049593 &lt;/td&gt;
+   &lt;td style=&#34;text-align:left;&#34;&gt; Type1 &lt;/td&gt;
+   &lt;td style=&#34;text-align:left;&#34;&gt; Type1 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style=&#34;text-align:right;&#34;&gt; 0.0451100 &lt;/td&gt;
+   &lt;td style=&#34;text-align:right;&#34;&gt; 0.9463689 &lt;/td&gt;
+   &lt;td style=&#34;text-align:right;&#34;&gt; 0.0085212 &lt;/td&gt;
+   &lt;td style=&#34;text-align:left;&#34;&gt; Type2 &lt;/td&gt;
+   &lt;td style=&#34;text-align:left;&#34;&gt; Type2 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style=&#34;text-align:right;&#34;&gt; 0.0335070 &lt;/td&gt;
+   &lt;td style=&#34;text-align:right;&#34;&gt; 0.0201417 &lt;/td&gt;
+   &lt;td style=&#34;text-align:right;&#34;&gt; 0.9463512 &lt;/td&gt;
+   &lt;td style=&#34;text-align:left;&#34;&gt; Type3 &lt;/td&gt;
+   &lt;td style=&#34;text-align:left;&#34;&gt; Type3 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style=&#34;text-align:right;&#34;&gt; 0.0105972 &lt;/td&gt;
+   &lt;td style=&#34;text-align:right;&#34;&gt; 0.9814348 &lt;/td&gt;
+   &lt;td style=&#34;text-align:right;&#34;&gt; 0.0079681 &lt;/td&gt;
+   &lt;td style=&#34;text-align:left;&#34;&gt; Type2 &lt;/td&gt;
+   &lt;td style=&#34;text-align:left;&#34;&gt; Type2 &lt;/td&gt;
+  &lt;/tr&gt;
 &lt;/tbody&gt;
 &lt;/table&gt;
-&lt;/div&gt;
-&lt;div id=&#34;model-evaluation&#34; class=&#34;section level3&#34;&gt;
-&lt;h3&gt;Model evaluation&lt;/h3&gt;
+&lt;h3 id=&#34;model-evaluation&#34;&gt;Model evaluation&lt;/h3&gt;
 &lt;p&gt;We can evaluate the model using the &lt;code&gt;yardstick&lt;/code&gt; package. The &lt;code&gt;metrics&lt;/code&gt; function takes parameters &lt;code&gt;truth&lt;/code&gt; and &lt;code&gt;estimate&lt;/code&gt; and will output the accuracy and kappa metrics. If you pass the class probabilities it also calculates mean log-loss and roc_auc.&lt;/p&gt;
-&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;proc_mwTrainSet %&amp;gt;% yardstick::metrics(truth=outcome,estimate=.pred_class,Type1,Type2,Type3) %&amp;gt;% kablify()&lt;/code&gt;&lt;/pre&gt;
-&lt;table class=&#34;table table-striped&#34; style=&#34;margin-left: auto; margin-right: auto;&#34;&gt;
-&lt;thead&gt;
-&lt;tr&gt;
-&lt;th style=&#34;text-align:left;&#34;&gt;
-.metric
-&lt;/th&gt;
-&lt;th style=&#34;text-align:left;&#34;&gt;
-.estimator
-&lt;/th&gt;
-&lt;th style=&#34;text-align:right;&#34;&gt;
-.estimate
-&lt;/th&gt;
-&lt;/tr&gt;
-&lt;/thead&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#93a1a1;background-color:#002b36;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-r&#34; data-lang=&#34;r&#34;&gt;proc_mwTrainSet &lt;span style=&#34;color:#719e07&#34;&gt;%&amp;gt;%&lt;/span&gt; yardstick&lt;span style=&#34;color:#719e07&#34;&gt;::&lt;/span&gt;&lt;span style=&#34;color:#268bd2&#34;&gt;metrics&lt;/span&gt;(truth&lt;span style=&#34;color:#719e07&#34;&gt;=&lt;/span&gt;outcome,estimate&lt;span style=&#34;color:#719e07&#34;&gt;=&lt;/span&gt;.pred_class,Type1,Type2,Type3) &lt;span style=&#34;color:#719e07&#34;&gt;%&amp;gt;%&lt;/span&gt; &lt;span style=&#34;color:#268bd2&#34;&gt;kablify&lt;/span&gt;()
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;table class=&#34;table table-striped&#34; style=&#34;margin-left: auto; margin-right: auto;&#34;&gt;
+ &lt;thead&gt;
+  &lt;tr&gt;
+   &lt;th style=&#34;text-align:left;&#34;&gt; .metric &lt;/th&gt;
+   &lt;th style=&#34;text-align:left;&#34;&gt; .estimator &lt;/th&gt;
+   &lt;th style=&#34;text-align:right;&#34;&gt; .estimate &lt;/th&gt;
+  &lt;/tr&gt;
+ &lt;/thead&gt;
 &lt;tbody&gt;
-&lt;tr&gt;
-&lt;td style=&#34;text-align:left;&#34;&gt;
-accuracy
-&lt;/td&gt;
-&lt;td style=&#34;text-align:left;&#34;&gt;
-multiclass
-&lt;/td&gt;
-&lt;td style=&#34;text-align:right;&#34;&gt;
-0.9432000
-&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td style=&#34;text-align:left;&#34;&gt;
-kap
-&lt;/td&gt;
-&lt;td style=&#34;text-align:left;&#34;&gt;
-multiclass
-&lt;/td&gt;
-&lt;td style=&#34;text-align:right;&#34;&gt;
-0.9116029
-&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td style=&#34;text-align:left;&#34;&gt;
-mn_log_loss
-&lt;/td&gt;
-&lt;td style=&#34;text-align:left;&#34;&gt;
-multiclass
-&lt;/td&gt;
-&lt;td style=&#34;text-align:right;&#34;&gt;
-0.1906783
-&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td style=&#34;text-align:left;&#34;&gt;
-roc_auc
-&lt;/td&gt;
-&lt;td style=&#34;text-align:left;&#34;&gt;
-hand_till
-&lt;/td&gt;
-&lt;td style=&#34;text-align:right;&#34;&gt;
-0.9914153
-&lt;/td&gt;
-&lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style=&#34;text-align:left;&#34;&gt; accuracy &lt;/td&gt;
+   &lt;td style=&#34;text-align:left;&#34;&gt; multiclass &lt;/td&gt;
+   &lt;td style=&#34;text-align:right;&#34;&gt; 0.9432000 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style=&#34;text-align:left;&#34;&gt; kap &lt;/td&gt;
+   &lt;td style=&#34;text-align:left;&#34;&gt; multiclass &lt;/td&gt;
+   &lt;td style=&#34;text-align:right;&#34;&gt; 0.9116029 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style=&#34;text-align:left;&#34;&gt; mn_log_loss &lt;/td&gt;
+   &lt;td style=&#34;text-align:left;&#34;&gt; multiclass &lt;/td&gt;
+   &lt;td style=&#34;text-align:right;&#34;&gt; 0.1906783 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style=&#34;text-align:left;&#34;&gt; roc_auc &lt;/td&gt;
+   &lt;td style=&#34;text-align:left;&#34;&gt; hand_till &lt;/td&gt;
+   &lt;td style=&#34;text-align:right;&#34;&gt; 0.9914153 &lt;/td&gt;
+  &lt;/tr&gt;
 &lt;/tbody&gt;
 &lt;/table&gt;
-&lt;p&gt;When I first fit this model with XGBoost I got an accuracy of 0.96 and a validation log-loss of 0.306. So far with the current approach accuracy is at 0.943 and validation log-loss (from the &lt;code&gt;xgTuned&lt;/code&gt; table in the previous section) at 0.313. I haven’t achieved results as good as I had before but I also have to note that getting to those values took me a lot of effort and going through the tuning process many times. Here, I did one pass and I’m already close. If I expand the tuning grid I could probably get better performance metrics.&lt;/p&gt;
+&lt;p&gt;When I first fit this model with XGBoost I got an accuracy of 0.96 and a validation log-loss of 0.306. So far with the current approach accuracy is at 0.943 and validation log-loss (from the &lt;code&gt;xgTuned&lt;/code&gt; table in the previous section) at 0.313. I haven&amp;rsquo;t achieved results as good as I had before but I also have to note that getting to those values took me a lot of effort and going through the tuning process many times. Here, I did one pass and I&amp;rsquo;m already close. If I expand the tuning grid I could probably get better performance metrics.&lt;/p&gt;
 &lt;p&gt;We can also get the confusion matrix with &lt;code&gt;conf_mat&lt;/code&gt;.&lt;/p&gt;
-&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;cm&amp;lt;-proc_mwTrainSet %&amp;gt;% yardstick::conf_mat(truth=outcome,estimate=.pred_class) 
-autoplot(cm, type = &amp;quot;heatmap&amp;quot;) &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;/post/2020-05-24-tidymodels-and-xgbooost-a-few-learnings_files/figure-html/unnamed-chunk-26-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#93a1a1;background-color:#002b36;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-r&#34; data-lang=&#34;r&#34;&gt;cm&lt;span style=&#34;color:#719e07&#34;&gt;&amp;lt;-&lt;/span&gt;proc_mwTrainSet &lt;span style=&#34;color:#719e07&#34;&gt;%&amp;gt;%&lt;/span&gt; yardstick&lt;span style=&#34;color:#719e07&#34;&gt;::&lt;/span&gt;&lt;span style=&#34;color:#268bd2&#34;&gt;conf_mat&lt;/span&gt;(truth&lt;span style=&#34;color:#719e07&#34;&gt;=&lt;/span&gt;outcome,estimate&lt;span style=&#34;color:#719e07&#34;&gt;=&lt;/span&gt;.pred_class) 
+&lt;span style=&#34;color:#268bd2&#34;&gt;autoplot&lt;/span&gt;(cm, type &lt;span style=&#34;color:#719e07&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#2aa198&#34;&gt;&amp;#34;heatmap&amp;#34;&lt;/span&gt;) 
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;img src=&#34;/post/2020-05-24-tidymodels-and-xgbooost-a-few-learnings_files/figure-html/unnamed-chunk-26-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
 &lt;p&gt;We can see that the &lt;code&gt;Type3&lt;/code&gt; class is better predicted than the other two.&lt;/p&gt;
-&lt;p&gt;In order to &lt;em&gt;really&lt;/em&gt; finalise the model I would need to fit the test data and check the metrics in that set which has not been used in the modeling and hence provides an unbiased validation of out approach. I’m not going to focus on that here mainly because the test set did not come with labels so I won’t be able to calculate any performance metrics from it.&lt;/p&gt;
+&lt;p&gt;In order to &lt;em&gt;really&lt;/em&gt; finalise the model I would need to fit the test data and check the metrics in that set which has not been used in the modeling and hence provides an unbiased validation of out approach. I&amp;rsquo;m not going to focus on that here mainly because the test set did not come with labels so I won&amp;rsquo;t be able to calculate any performance metrics from it.&lt;/p&gt;
 &lt;p&gt;If this was a real life case, once you were happy with the results in the test set you could put the model into production and make predictions on new data.&lt;/p&gt;
-&lt;/div&gt;
-&lt;div id=&#34;conclusions&#34; class=&#34;section level3&#34;&gt;
-&lt;h3&gt;Conclusions&lt;/h3&gt;
+&lt;h3 id=&#34;conclusions&#34;&gt;Conclusions&lt;/h3&gt;
 &lt;p&gt;This was a really quick tour around how &lt;code&gt;tidymodels&lt;/code&gt; works. I think it has many advantages and it definitively makes the task of fitting reproducible ML models faster and more user-friendly so it is certainly something I will keep playing with.&lt;/p&gt;
-&lt;p&gt;I still think familiarity with the underlying models, in this case XGBoost, helps the user understand what this framework can and can’t do so I wouldn’t use it blindly without having some experience with the original model first.&lt;/p&gt;
-&lt;/div&gt;
+&lt;p&gt;I still think familiarity with the underlying models, in this case XGBoost, helps the user understand what this framework can and can&amp;rsquo;t do so I wouldn&amp;rsquo;t use it blindly without having some experience with the original model first.&lt;/p&gt;
 </description>
     </item>
     
@@ -779,50 +481,47 @@ autoplot(cm, type = &amp;quot;heatmap&amp;quot;) &lt;/code&gt;&lt;/pre&gt;
       <pubDate>Sat, 16 May 2020 00:00:00 +0000</pubDate>
       
       <guid>/2020/05/gs_gganim/</guid>
-	  <description>
-
-
-&lt;p&gt;&lt;img src=&#34;/post/2020-05-15-grand-slam-title-history-as-an-animated-bar-chart-race_files/gganim6.gif&#34; /&gt;&lt;/p&gt;
-&lt;p&gt;I’ve spoiled it by putting the gif at the start of the post but if you are interested in how it was made then read on!&lt;/p&gt;
-&lt;p&gt;I’ve seen this kind of charts around the web so I wanted to make a tennis-related one and what better than using Grand Slam wins since the very beginning; 1877.&lt;/p&gt;
+	  <description>&lt;p&gt;&lt;img src=&#34;/post/2020-05-15-grand-slam-title-history-as-an-animated-bar-chart-race_files/gganim6.gif&#34; alt=&#34;&#34;&gt;&lt;/p&gt;
+&lt;p&gt;I&amp;rsquo;ve spoiled it by putting the gif at the start of the post but if you are interested in how it was made then read on!&lt;/p&gt;
+&lt;p&gt;I&amp;rsquo;ve seen this kind of charts around the web so I wanted to make a tennis-related one and what better than using Grand Slam wins since the very beginning; 1877.&lt;/p&gt;
 &lt;p&gt;The main package that is needed for the animation is gganimate. As the name suggests it integrates with ggplot to make an animation given many different charts and a transition variable.&lt;/p&gt;
-&lt;p&gt;Let’s load the necessary packages&lt;/p&gt;
-&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;require(XML)
-require(data.table)
-library(httr)
-require(dplyr)
-require(stringr)
-require(ggplot2)
-require(gganimate)&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Then we need to get the data for the chart.
+&lt;p&gt;Let&amp;rsquo;s load the necessary packages&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#93a1a1;background-color:#002b36;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-r&#34; data-lang=&#34;r&#34;&gt;&lt;span style=&#34;color:#268bd2&#34;&gt;require&lt;/span&gt;(XML)
+&lt;span style=&#34;color:#268bd2&#34;&gt;require&lt;/span&gt;(data.table)
+&lt;span style=&#34;color:#268bd2&#34;&gt;library&lt;/span&gt;(httr)
+&lt;span style=&#34;color:#268bd2&#34;&gt;require&lt;/span&gt;(dplyr)
+&lt;span style=&#34;color:#268bd2&#34;&gt;require&lt;/span&gt;(stringr)
+&lt;span style=&#34;color:#268bd2&#34;&gt;require&lt;/span&gt;(ggplot2)
+&lt;span style=&#34;color:#268bd2&#34;&gt;require&lt;/span&gt;(gganimate)
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Then we need to get the data for the chart. 
 Wikipedia helpfully has an article with all Grand Slam winner in history so we can pull the table within the article using &lt;code&gt;GET&lt;/code&gt; and &lt;code&gt;readHTMLTable&lt;/code&gt;&lt;/p&gt;
 &lt;p&gt;Once we know where the table is located in the HTML we can pull it into a data table.&lt;/p&gt;
 &lt;p&gt;There are some kinks in the table we have to get rid off. For example, in 1977 there were two Austrlian Opens so the entry for 1977 is split into two rows but just one year.&lt;/p&gt;
 &lt;p&gt;We then get rid of anything that is not a player name including special characters. Tjem the table is melted so we get one entry per year and Grand Slam.&lt;/p&gt;
-&lt;p&gt;We also get rid of other stuff such as all the French Opens before 1925 because the tournament was not actually “open” and also instances when the tournaments were not held such as world wars.&lt;/p&gt;
-&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;gs&amp;lt;-data.table(tabs[[3]])
+&lt;p&gt;We also get rid of other stuff such as all the French Opens before 1925 because the tournament was not actually &amp;ldquo;open&amp;rdquo; and also instances when the tournaments were not held such as world wars.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#93a1a1;background-color:#002b36;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-r&#34; data-lang=&#34;r&#34;&gt;gs&lt;span style=&#34;color:#719e07&#34;&gt;&amp;lt;-&lt;/span&gt;&lt;span style=&#34;color:#268bd2&#34;&gt;data.table&lt;/span&gt;(tabs[[3]])
 
-names(gs) &amp;lt;- as.character(unlist(gs[1,]))
-gs&amp;lt;-gs[-1]
+&lt;span style=&#34;color:#268bd2&#34;&gt;names&lt;/span&gt;(gs) &lt;span style=&#34;color:#719e07&#34;&gt;&amp;lt;-&lt;/span&gt; &lt;span style=&#34;color:#268bd2&#34;&gt;as.character&lt;/span&gt;(&lt;span style=&#34;color:#268bd2&#34;&gt;unlist&lt;/span&gt;(gs[1,]))
+gs&lt;span style=&#34;color:#719e07&#34;&gt;&amp;lt;-&lt;/span&gt;gs[&lt;span style=&#34;color:#2aa198&#34;&gt;-1&lt;/span&gt;]
 
-gs&amp;lt;-bind_rows(gs,data.table(Year=&amp;quot;1977&amp;quot;,&amp;quot;Australian Open&amp;quot;=&amp;quot;Vitas Gerulaitis&amp;quot;))
+gs&lt;span style=&#34;color:#719e07&#34;&gt;&amp;lt;-&lt;/span&gt;&lt;span style=&#34;color:#268bd2&#34;&gt;bind_rows&lt;/span&gt;(gs,&lt;span style=&#34;color:#268bd2&#34;&gt;data.table&lt;/span&gt;(Year&lt;span style=&#34;color:#719e07&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#2aa198&#34;&gt;&amp;#34;1977&amp;#34;&lt;/span&gt;,&lt;span style=&#34;color:#2aa198&#34;&gt;&amp;#34;Australian Open&amp;#34;&lt;/span&gt;&lt;span style=&#34;color:#719e07&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#2aa198&#34;&gt;&amp;#34;Vitas Gerulaitis&amp;#34;&lt;/span&gt;))
 
-gs&amp;lt;-gs[grep(&amp;quot;[0-9]&amp;quot;,Year)][order(Year)]
+gs&lt;span style=&#34;color:#719e07&#34;&gt;&amp;lt;-&lt;/span&gt;gs&lt;span style=&#34;color:#268bd2&#34;&gt;[grep&lt;/span&gt;(&lt;span style=&#34;color:#2aa198&#34;&gt;&amp;#34;[0-9]&amp;#34;&lt;/span&gt;,Year)]&lt;span style=&#34;color:#268bd2&#34;&gt;[order&lt;/span&gt;(Year)]
 
-gs &amp;lt;- melt(gs, id.vars = &amp;quot;Year&amp;quot;)
+gs &lt;span style=&#34;color:#719e07&#34;&gt;&amp;lt;-&lt;/span&gt; &lt;span style=&#34;color:#268bd2&#34;&gt;melt&lt;/span&gt;(gs, id.vars &lt;span style=&#34;color:#719e07&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#2aa198&#34;&gt;&amp;#34;Year&amp;#34;&lt;/span&gt;)
 
-gs$winner &amp;lt;- gsub(&amp;quot;\\(([^)]+)\\)&amp;quot;,&amp;quot;&amp;quot;,gs$value)
+gs&lt;span style=&#34;color:#719e07&#34;&gt;$&lt;/span&gt;winner &lt;span style=&#34;color:#719e07&#34;&gt;&amp;lt;-&lt;/span&gt; &lt;span style=&#34;color:#268bd2&#34;&gt;gsub&lt;/span&gt;(&lt;span style=&#34;color:#2aa198&#34;&gt;&amp;#34;\\(([^)]+)\\)&amp;#34;&lt;/span&gt;,&lt;span style=&#34;color:#2aa198&#34;&gt;&amp;#34;&amp;#34;&lt;/span&gt;,gs&lt;span style=&#34;color:#719e07&#34;&gt;$&lt;/span&gt;value)
 
-gs$winner&amp;lt;-gsub(&amp;quot;[*]&amp;quot;,&amp;quot;&amp;quot;,gs$winner)
-gs$winner&amp;lt;-gsub(&amp;quot;[†]&amp;quot;,&amp;quot;&amp;quot;,gs$winner)
+gs&lt;span style=&#34;color:#719e07&#34;&gt;$&lt;/span&gt;winner&lt;span style=&#34;color:#719e07&#34;&gt;&amp;lt;-&lt;/span&gt;&lt;span style=&#34;color:#268bd2&#34;&gt;gsub&lt;/span&gt;(&lt;span style=&#34;color:#2aa198&#34;&gt;&amp;#34;[*]&amp;#34;&lt;/span&gt;,&lt;span style=&#34;color:#2aa198&#34;&gt;&amp;#34;&amp;#34;&lt;/span&gt;,gs&lt;span style=&#34;color:#719e07&#34;&gt;$&lt;/span&gt;winner)
+gs&lt;span style=&#34;color:#719e07&#34;&gt;$&lt;/span&gt;winner&lt;span style=&#34;color:#719e07&#34;&gt;&amp;lt;-&lt;/span&gt;&lt;span style=&#34;color:#268bd2&#34;&gt;gsub&lt;/span&gt;(&lt;span style=&#34;color:#2aa198&#34;&gt;&amp;#34;[†]&amp;#34;&lt;/span&gt;,&lt;span style=&#34;color:#2aa198&#34;&gt;&amp;#34;&amp;#34;&lt;/span&gt;,gs&lt;span style=&#34;color:#719e07&#34;&gt;$&lt;/span&gt;winner)
 
-gs$winner&amp;lt;-gsub(&amp;quot;Amateur Era ends&amp;quot;,&amp;quot;&amp;quot;,gs$winner)
-gs$winner&amp;lt;-gsub(&amp;quot;Open Era begins&amp;quot;,&amp;quot;&amp;quot;,gs$winner)
+gs&lt;span style=&#34;color:#719e07&#34;&gt;$&lt;/span&gt;winner&lt;span style=&#34;color:#719e07&#34;&gt;&amp;lt;-&lt;/span&gt;&lt;span style=&#34;color:#268bd2&#34;&gt;gsub&lt;/span&gt;(&lt;span style=&#34;color:#2aa198&#34;&gt;&amp;#34;Amateur Era ends&amp;#34;&lt;/span&gt;,&lt;span style=&#34;color:#2aa198&#34;&gt;&amp;#34;&amp;#34;&lt;/span&gt;,gs&lt;span style=&#34;color:#719e07&#34;&gt;$&lt;/span&gt;winner)
+gs&lt;span style=&#34;color:#719e07&#34;&gt;$&lt;/span&gt;winner&lt;span style=&#34;color:#719e07&#34;&gt;&amp;lt;-&lt;/span&gt;&lt;span style=&#34;color:#268bd2&#34;&gt;gsub&lt;/span&gt;(&lt;span style=&#34;color:#2aa198&#34;&gt;&amp;#34;Open Era begins&amp;#34;&lt;/span&gt;,&lt;span style=&#34;color:#2aa198&#34;&gt;&amp;#34;&amp;#34;&lt;/span&gt;,gs&lt;span style=&#34;color:#719e07&#34;&gt;$&lt;/span&gt;winner)
 
-gs[,winner:=str_trim(winner)]
+gs[,winner&lt;span style=&#34;color:#719e07&#34;&gt;:=&lt;/span&gt;&lt;span style=&#34;color:#268bd2&#34;&gt;str_trim&lt;/span&gt;(winner)]
 
-gs[,.N,winner][order(-N)]&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;##                      winner  N
+gs[,.N,winner]&lt;span style=&#34;color:#268bd2&#34;&gt;[order&lt;/span&gt;(&lt;span style=&#34;color:#719e07&#34;&gt;-&lt;/span&gt;N)]
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;pre&gt;&lt;code&gt;##                      winner  N
 ##   1: tournament not created 43
 ##   2:                   &amp;lt;NA&amp;gt; 24
 ##   3:          Roger Federer 20
@@ -833,65 +532,65 @@ gs[,.N,winner][order(-N)]&lt;/code&gt;&lt;/pre&gt;
 ## 168:         Manuel Orantes  1
 ## 169:           Andy Roddick  1
 ## 170:  Juan Martín del Potro  1
-## 171:            Marin Cilic  1&lt;/code&gt;&lt;/pre&gt;
-&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;gs&amp;lt;-gs[!(variable==&amp;quot;French Open&amp;quot; &amp;amp; Year&amp;lt;1925)]
+## 171:            Marin Cilic  1
+&lt;/code&gt;&lt;/pre&gt;&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#93a1a1;background-color:#002b36;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-r&#34; data-lang=&#34;r&#34;&gt;gs&lt;span style=&#34;color:#719e07&#34;&gt;&amp;lt;-&lt;/span&gt;gs[&lt;span style=&#34;color:#719e07&#34;&gt;!&lt;/span&gt;(variable&lt;span style=&#34;color:#719e07&#34;&gt;==&lt;/span&gt;&lt;span style=&#34;color:#2aa198&#34;&gt;&amp;#34;French Open&amp;#34;&lt;/span&gt; &lt;span style=&#34;color:#719e07&#34;&gt;&amp;amp;&lt;/span&gt; Year&lt;span style=&#34;color:#719e07&#34;&gt;&amp;lt;&lt;/span&gt;&lt;span style=&#34;color:#2aa198&#34;&gt;1925&lt;/span&gt;)]
 
-gs[,win:=1]
+gs[,win&lt;span style=&#34;color:#719e07&#34;&gt;:=&lt;/span&gt;&lt;span style=&#34;color:#2aa198&#34;&gt;1&lt;/span&gt;]
 
-gs&amp;lt;-gs[!grep(&amp;quot;tournament|started|WorldW|occupation|Tournament|oronavir&amp;quot;,winner)]
+gs&lt;span style=&#34;color:#719e07&#34;&gt;&amp;lt;-&lt;/span&gt;gs[&lt;span style=&#34;color:#719e07&#34;&gt;!&lt;/span&gt;&lt;span style=&#34;color:#268bd2&#34;&gt;grep&lt;/span&gt;(&lt;span style=&#34;color:#2aa198&#34;&gt;&amp;#34;tournament|started|WorldW|occupation|Tournament|oronavir&amp;#34;&lt;/span&gt;,winner)]
 
-gs&amp;lt;-gs[winner!=&amp;quot;&amp;quot;]&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;We now need to keep a running tally of anyone who has won at least one Grand Slam for every year so that they show up in our chart with the correct number of GS’s. This is what the &lt;code&gt;fun&lt;/code&gt; function is doing below.&lt;/p&gt;
-&lt;p&gt;Additionally we also need to rank the players from most GS’s to least GS’s to create a rank variable.&lt;/p&gt;
-&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;#Get a list of all the years
-yearList&amp;lt;-gs[order(Year)][,unique(Year)]
-#Function fun calculates cumulative GS wins for all the players up to the current year
-fun&amp;lt;-function(year){ gs[Year&amp;lt;=year,.(win=sum(win),latestWin=max(Year)),.(winner)][,year:=year] }
-#Create a table that has all combinations of year/player
-gsfull&amp;lt;-lapply(yearList, fun) %&amp;gt;% rbindlist()
+gs&lt;span style=&#34;color:#719e07&#34;&gt;&amp;lt;-&lt;/span&gt;gs[winner&lt;span style=&#34;color:#719e07&#34;&gt;!=&lt;/span&gt;&lt;span style=&#34;color:#2aa198&#34;&gt;&amp;#34;&amp;#34;&lt;/span&gt;]
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;We now need to keep a running tally of anyone who has won at least one Grand Slam for every year so that they show up in our chart with the correct number of GS&amp;rsquo;s. This is what the &lt;code&gt;fun&lt;/code&gt; function is doing below.&lt;/p&gt;
+&lt;p&gt;Additionally we also need to rank the players from most GS&amp;rsquo;s to least GS&amp;rsquo;s to create a rank variable.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#93a1a1;background-color:#002b36;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-r&#34; data-lang=&#34;r&#34;&gt;&lt;span style=&#34;color:#586e75&#34;&gt;#Get a list of all the years&lt;/span&gt;
+yearList&lt;span style=&#34;color:#719e07&#34;&gt;&amp;lt;-&lt;/span&gt;gs&lt;span style=&#34;color:#268bd2&#34;&gt;[order&lt;/span&gt;(Year)][,&lt;span style=&#34;color:#268bd2&#34;&gt;unique&lt;/span&gt;(Year)]
+&lt;span style=&#34;color:#586e75&#34;&gt;#Function fun calculates cumulative GS wins for all the players up to the current year&lt;/span&gt;
+fun&lt;span style=&#34;color:#719e07&#34;&gt;&amp;lt;-&lt;/span&gt;&lt;span style=&#34;color:#268bd2&#34;&gt;function&lt;/span&gt;(year){ gs[Year&lt;span style=&#34;color:#719e07&#34;&gt;&amp;lt;=&lt;/span&gt;year,.(win&lt;span style=&#34;color:#719e07&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#268bd2&#34;&gt;sum&lt;/span&gt;(win),latestWin&lt;span style=&#34;color:#719e07&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#268bd2&#34;&gt;max&lt;/span&gt;(Year)),.(winner)][,year&lt;span style=&#34;color:#719e07&#34;&gt;:=&lt;/span&gt;year] }
+&lt;span style=&#34;color:#586e75&#34;&gt;#Create a table that has all combinations of year/player&lt;/span&gt;
+gsfull&lt;span style=&#34;color:#719e07&#34;&gt;&amp;lt;-&lt;/span&gt;&lt;span style=&#34;color:#268bd2&#34;&gt;lapply&lt;/span&gt;(yearList, fun) &lt;span style=&#34;color:#719e07&#34;&gt;%&amp;gt;%&lt;/span&gt; &lt;span style=&#34;color:#268bd2&#34;&gt;rbindlist&lt;/span&gt;()
 
-gsfull&amp;lt;-gsfull[order(year,-win,-latestWin)]
-gsfull[,rank:=seq(1,.N),year]
+gsfull&lt;span style=&#34;color:#719e07&#34;&gt;&amp;lt;-&lt;/span&gt;gsfull&lt;span style=&#34;color:#268bd2&#34;&gt;[order&lt;/span&gt;(year,&lt;span style=&#34;color:#719e07&#34;&gt;-&lt;/span&gt;win,&lt;span style=&#34;color:#719e07&#34;&gt;-&lt;/span&gt;latestWin)]
+gsfull[,rank&lt;span style=&#34;color:#719e07&#34;&gt;:=&lt;/span&gt;&lt;span style=&#34;color:#268bd2&#34;&gt;seq&lt;/span&gt;(&lt;span style=&#34;color:#2aa198&#34;&gt;1&lt;/span&gt;,.N),year]
 
-gsfull[,win_label := paste0(&amp;quot; &amp;quot;, win)]&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;We can now start plotting our data. First create a tile plot with ggplot. Tiles work better than plot for this case because they slide into position in a nicer way when the plot transitions between years.&lt;/p&gt;
-&lt;p&gt;A lot of the code I’m using I found over here in &lt;a href=&#34;https://stackoverflow.com/questions/53162821/animated-sorted-bar-chart-with-bars-overtaking-each-other&#34;&gt;stack overflow&lt;/a&gt;.&lt;/p&gt;
-&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;y&amp;lt;-1877
+gsfull[,win_label &lt;span style=&#34;color:#719e07&#34;&gt;:=&lt;/span&gt; &lt;span style=&#34;color:#268bd2&#34;&gt;paste0&lt;/span&gt;(&lt;span style=&#34;color:#2aa198&#34;&gt;&amp;#34; &amp;#34;&lt;/span&gt;, win)]
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;We can now start plotting our data. First create a tile plot with ggplot. Tiles work better than plot for this case because they slide into position in a nicer way when the plot transitions between years.&lt;/p&gt;
+&lt;p&gt;A lot of the code I&amp;rsquo;m using I found over here in &lt;a href=&#34;https://stackoverflow.com/questions/53162821/animated-sorted-bar-chart-with-bars-overtaking-each-other&#34;&gt;stack overflow&lt;/a&gt;.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#93a1a1;background-color:#002b36;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-r&#34; data-lang=&#34;r&#34;&gt;y&lt;span style=&#34;color:#719e07&#34;&gt;&amp;lt;-&lt;/span&gt;&lt;span style=&#34;color:#2aa198&#34;&gt;1877&lt;/span&gt;
 
-sp&amp;lt;-ggplot(gsfull[year&amp;gt;=y &amp;amp; rank&amp;lt;=30],aes(x=rank,y=win,fill=winner)) + 
-  geom_tile(aes(y=win/2,height=win, width=0.95),alpha=0.9) + theme_bw() +
-  geom_text(aes(y=0,label = paste0(winner,&amp;quot; &amp;quot;)), hjust = 1) +
-  geom_text(aes(y=win,label = win_label, hjust=0)) +
-  coord_flip(clip = &amp;quot;off&amp;quot;, expand = F) +
-  scale_x_reverse() +
-  guides(color = FALSE, fill = FALSE) +
-  theme(axis.line=element_blank(),
-        axis.text.x=element_blank(),
-        axis.text.y=element_blank(),
-        axis.ticks=element_blank(),
-        axis.title.x=element_blank(),
-        axis.title.y=element_blank(),
-        legend.position=&amp;quot;bottom&amp;quot;,
-        panel.background=element_blank(),
-        panel.border=element_blank(),
-        panel.grid.major=element_blank(),
-        panel.grid.minor=element_blank(),
-        panel.grid.major.x = element_line( size=.1, color=&amp;quot;grey&amp;quot; ),
-        panel.grid.minor.x = element_line( size=.1, color=&amp;quot;grey&amp;quot; ),
-        plot.margin = margin(5,5,5,5, &amp;quot;cm&amp;quot;)
-        )&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;With the base plot made it’s time to actually animate it. This is where &lt;code&gt;gganimate&lt;/code&gt; comes into play. The main funtion needed is &lt;code&gt;transition_states&lt;/code&gt; which takes a transition parameter, &lt;code&gt;year&lt;/code&gt; in our case, and animates the plot based on it.&lt;/p&gt;
-&lt;p&gt;There’s a few extra bits in there; &lt;code&gt;enter_drift&lt;/code&gt; and &lt;code&gt;exit_shrink&lt;/code&gt; govern how the bars enter and leave the plot and &lt;code&gt;ease_aes&lt;/code&gt; controls how the bars switch around. There are many other options that &lt;code&gt;gganimate&lt;/code&gt; provides so this is just scratching the surface.&lt;/p&gt;
-&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;p &amp;lt;- sp + transition_states(year, transition_length = 4, state_length = 2) +
-  view_follow(fixed_x = TRUE)  +
-  labs(title = &amp;#39;Grand Slam Titles : {closest_state}&amp;#39;)  +
-   enter_drift(y_mod=10) + exit_shrink()  + 
-  ease_aes(&amp;#39;linear&amp;#39;)&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Finally once the transitions are defined &lt;code&gt;animate&lt;/code&gt; takes the object and turns it into a gif or a video if you want depending on the renderer that you choose. The code below is what renders the plot at the start of this post.&lt;/p&gt;
-&lt;p&gt;Duration and size parameters are passed by the user. Here I would like to note that if you call the plot &lt;code&gt;p&lt;/code&gt; it does get rendered but it looks different than the output you get with animate so I’d recommend always running &lt;code&gt;animate&lt;/code&gt; to see what the actual final output will be.&lt;/p&gt;
-&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;animate(p, 1200, fps = 10,  width = 800, height = 600, 
-        renderer = gifski_renderer(&amp;quot;gs_chart.gif&amp;quot;))&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;And that’s it! As with most projects the trickiest part was getting the data in the format I needed it and then spent some time with aesthetic choices. The point being that once you have your data ready &lt;code&gt;ggplot&lt;/code&gt; and &lt;code&gt;gganimate&lt;/code&gt; provide an intuitive framework to create cool looking charts.&lt;/p&gt;
+sp&lt;span style=&#34;color:#719e07&#34;&gt;&amp;lt;-&lt;/span&gt;&lt;span style=&#34;color:#268bd2&#34;&gt;ggplot&lt;/span&gt;(gsfull[year&lt;span style=&#34;color:#719e07&#34;&gt;&amp;gt;=&lt;/span&gt;y &lt;span style=&#34;color:#719e07&#34;&gt;&amp;amp;&lt;/span&gt; rank&lt;span style=&#34;color:#719e07&#34;&gt;&amp;lt;=&lt;/span&gt;&lt;span style=&#34;color:#2aa198&#34;&gt;30&lt;/span&gt;],&lt;span style=&#34;color:#268bd2&#34;&gt;aes&lt;/span&gt;(x&lt;span style=&#34;color:#719e07&#34;&gt;=&lt;/span&gt;rank,y&lt;span style=&#34;color:#719e07&#34;&gt;=&lt;/span&gt;win,fill&lt;span style=&#34;color:#719e07&#34;&gt;=&lt;/span&gt;winner)) &lt;span style=&#34;color:#719e07&#34;&gt;+&lt;/span&gt; 
+  &lt;span style=&#34;color:#268bd2&#34;&gt;geom_tile&lt;/span&gt;(&lt;span style=&#34;color:#268bd2&#34;&gt;aes&lt;/span&gt;(y&lt;span style=&#34;color:#719e07&#34;&gt;=&lt;/span&gt;win&lt;span style=&#34;color:#719e07&#34;&gt;/&lt;/span&gt;&lt;span style=&#34;color:#2aa198&#34;&gt;2&lt;/span&gt;,height&lt;span style=&#34;color:#719e07&#34;&gt;=&lt;/span&gt;win, width&lt;span style=&#34;color:#719e07&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#2aa198&#34;&gt;0.95&lt;/span&gt;),alpha&lt;span style=&#34;color:#719e07&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#2aa198&#34;&gt;0.9&lt;/span&gt;) &lt;span style=&#34;color:#719e07&#34;&gt;+&lt;/span&gt; &lt;span style=&#34;color:#268bd2&#34;&gt;theme_bw&lt;/span&gt;() &lt;span style=&#34;color:#719e07&#34;&gt;+&lt;/span&gt;
+  &lt;span style=&#34;color:#268bd2&#34;&gt;geom_text&lt;/span&gt;(&lt;span style=&#34;color:#268bd2&#34;&gt;aes&lt;/span&gt;(y&lt;span style=&#34;color:#719e07&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#2aa198&#34;&gt;0&lt;/span&gt;,label &lt;span style=&#34;color:#719e07&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#268bd2&#34;&gt;paste0&lt;/span&gt;(winner,&lt;span style=&#34;color:#2aa198&#34;&gt;&amp;#34; &amp;#34;&lt;/span&gt;)), hjust &lt;span style=&#34;color:#719e07&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#2aa198&#34;&gt;1&lt;/span&gt;) &lt;span style=&#34;color:#719e07&#34;&gt;+&lt;/span&gt;
+  &lt;span style=&#34;color:#268bd2&#34;&gt;geom_text&lt;/span&gt;(&lt;span style=&#34;color:#268bd2&#34;&gt;aes&lt;/span&gt;(y&lt;span style=&#34;color:#719e07&#34;&gt;=&lt;/span&gt;win,label &lt;span style=&#34;color:#719e07&#34;&gt;=&lt;/span&gt; win_label, hjust&lt;span style=&#34;color:#719e07&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#2aa198&#34;&gt;0&lt;/span&gt;)) &lt;span style=&#34;color:#719e07&#34;&gt;+&lt;/span&gt;
+  &lt;span style=&#34;color:#268bd2&#34;&gt;coord_flip&lt;/span&gt;(clip &lt;span style=&#34;color:#719e07&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#2aa198&#34;&gt;&amp;#34;off&amp;#34;&lt;/span&gt;, expand &lt;span style=&#34;color:#719e07&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#268bd2&#34;&gt;F&lt;/span&gt;) &lt;span style=&#34;color:#719e07&#34;&gt;+&lt;/span&gt;
+  &lt;span style=&#34;color:#268bd2&#34;&gt;scale_x_reverse&lt;/span&gt;() &lt;span style=&#34;color:#719e07&#34;&gt;+&lt;/span&gt;
+  &lt;span style=&#34;color:#268bd2&#34;&gt;guides&lt;/span&gt;(color &lt;span style=&#34;color:#719e07&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#cb4b16&#34;&gt;FALSE&lt;/span&gt;, fill &lt;span style=&#34;color:#719e07&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#cb4b16&#34;&gt;FALSE&lt;/span&gt;) &lt;span style=&#34;color:#719e07&#34;&gt;+&lt;/span&gt;
+  &lt;span style=&#34;color:#268bd2&#34;&gt;theme&lt;/span&gt;(axis.line&lt;span style=&#34;color:#719e07&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#268bd2&#34;&gt;element_blank&lt;/span&gt;(),
+        axis.text.x&lt;span style=&#34;color:#719e07&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#268bd2&#34;&gt;element_blank&lt;/span&gt;(),
+        axis.text.y&lt;span style=&#34;color:#719e07&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#268bd2&#34;&gt;element_blank&lt;/span&gt;(),
+        axis.ticks&lt;span style=&#34;color:#719e07&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#268bd2&#34;&gt;element_blank&lt;/span&gt;(),
+        axis.title.x&lt;span style=&#34;color:#719e07&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#268bd2&#34;&gt;element_blank&lt;/span&gt;(),
+        axis.title.y&lt;span style=&#34;color:#719e07&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#268bd2&#34;&gt;element_blank&lt;/span&gt;(),
+        legend.position&lt;span style=&#34;color:#719e07&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#2aa198&#34;&gt;&amp;#34;bottom&amp;#34;&lt;/span&gt;,
+        panel.background&lt;span style=&#34;color:#719e07&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#268bd2&#34;&gt;element_blank&lt;/span&gt;(),
+        panel.border&lt;span style=&#34;color:#719e07&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#268bd2&#34;&gt;element_blank&lt;/span&gt;(),
+        panel.grid.major&lt;span style=&#34;color:#719e07&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#268bd2&#34;&gt;element_blank&lt;/span&gt;(),
+        panel.grid.minor&lt;span style=&#34;color:#719e07&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#268bd2&#34;&gt;element_blank&lt;/span&gt;(),
+        panel.grid.major.x &lt;span style=&#34;color:#719e07&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#268bd2&#34;&gt;element_line&lt;/span&gt;( size&lt;span style=&#34;color:#719e07&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#2aa198&#34;&gt;.1&lt;/span&gt;, color&lt;span style=&#34;color:#719e07&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#2aa198&#34;&gt;&amp;#34;grey&amp;#34;&lt;/span&gt; ),
+        panel.grid.minor.x &lt;span style=&#34;color:#719e07&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#268bd2&#34;&gt;element_line&lt;/span&gt;( size&lt;span style=&#34;color:#719e07&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#2aa198&#34;&gt;.1&lt;/span&gt;, color&lt;span style=&#34;color:#719e07&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#2aa198&#34;&gt;&amp;#34;grey&amp;#34;&lt;/span&gt; ),
+        plot.margin &lt;span style=&#34;color:#719e07&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#268bd2&#34;&gt;margin&lt;/span&gt;(&lt;span style=&#34;color:#2aa198&#34;&gt;5&lt;/span&gt;,&lt;span style=&#34;color:#2aa198&#34;&gt;5&lt;/span&gt;,&lt;span style=&#34;color:#2aa198&#34;&gt;5&lt;/span&gt;,&lt;span style=&#34;color:#2aa198&#34;&gt;5&lt;/span&gt;, &lt;span style=&#34;color:#2aa198&#34;&gt;&amp;#34;cm&amp;#34;&lt;/span&gt;)
+        )
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;With the base plot made it&amp;rsquo;s time to actually animate it. This is where &lt;code&gt;gganimate&lt;/code&gt; comes into play. The main funtion needed is &lt;code&gt;transition_states&lt;/code&gt; which takes a transition parameter, &lt;code&gt;year&lt;/code&gt; in our case, and animates the plot based on it.&lt;/p&gt;
+&lt;p&gt;There&amp;rsquo;s a few extra bits in there; &lt;code&gt;enter_drift&lt;/code&gt; and &lt;code&gt;exit_shrink&lt;/code&gt; govern how the bars enter and leave the plot and &lt;code&gt;ease_aes&lt;/code&gt; controls how the bars switch around. There are many other options that &lt;code&gt;gganimate&lt;/code&gt; provides so this is just scratching the surface.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#93a1a1;background-color:#002b36;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-r&#34; data-lang=&#34;r&#34;&gt;p &lt;span style=&#34;color:#719e07&#34;&gt;&amp;lt;-&lt;/span&gt; sp &lt;span style=&#34;color:#719e07&#34;&gt;+&lt;/span&gt; &lt;span style=&#34;color:#268bd2&#34;&gt;transition_states&lt;/span&gt;(year, transition_length &lt;span style=&#34;color:#719e07&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#2aa198&#34;&gt;4&lt;/span&gt;, state_length &lt;span style=&#34;color:#719e07&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#2aa198&#34;&gt;2&lt;/span&gt;) &lt;span style=&#34;color:#719e07&#34;&gt;+&lt;/span&gt;
+  &lt;span style=&#34;color:#268bd2&#34;&gt;view_follow&lt;/span&gt;(fixed_x &lt;span style=&#34;color:#719e07&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#cb4b16&#34;&gt;TRUE&lt;/span&gt;)  &lt;span style=&#34;color:#719e07&#34;&gt;+&lt;/span&gt;
+  &lt;span style=&#34;color:#268bd2&#34;&gt;labs&lt;/span&gt;(title &lt;span style=&#34;color:#719e07&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#2aa198&#34;&gt;&amp;#39;Grand Slam Titles : {closest_state}&amp;#39;&lt;/span&gt;)  &lt;span style=&#34;color:#719e07&#34;&gt;+&lt;/span&gt;
+   &lt;span style=&#34;color:#268bd2&#34;&gt;enter_drift&lt;/span&gt;(y_mod&lt;span style=&#34;color:#719e07&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#2aa198&#34;&gt;10&lt;/span&gt;) &lt;span style=&#34;color:#719e07&#34;&gt;+&lt;/span&gt; &lt;span style=&#34;color:#268bd2&#34;&gt;exit_shrink&lt;/span&gt;()  &lt;span style=&#34;color:#719e07&#34;&gt;+&lt;/span&gt; 
+  &lt;span style=&#34;color:#268bd2&#34;&gt;ease_aes&lt;/span&gt;(&lt;span style=&#34;color:#2aa198&#34;&gt;&amp;#39;linear&amp;#39;&lt;/span&gt;)
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Finally once the transitions are defined &lt;code&gt;animate&lt;/code&gt; takes the object and turns it into a gif or a video if you want depending on the renderer that you choose. The code below is what renders the plot at the start of this post.&lt;/p&gt;
+&lt;p&gt;Duration and size parameters are passed by the user. Here I would like to note that if you call the plot &lt;code&gt;p&lt;/code&gt; it does get rendered but it looks different than the output you get with animate so I&amp;rsquo;d recommend always running &lt;code&gt;animate&lt;/code&gt; to see what the actual final output will be.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#93a1a1;background-color:#002b36;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-r&#34; data-lang=&#34;r&#34;&gt;&lt;span style=&#34;color:#268bd2&#34;&gt;animate&lt;/span&gt;(p, &lt;span style=&#34;color:#2aa198&#34;&gt;1200&lt;/span&gt;, fps &lt;span style=&#34;color:#719e07&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#2aa198&#34;&gt;10&lt;/span&gt;,  width &lt;span style=&#34;color:#719e07&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#2aa198&#34;&gt;800&lt;/span&gt;, height &lt;span style=&#34;color:#719e07&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#2aa198&#34;&gt;600&lt;/span&gt;, 
+        renderer &lt;span style=&#34;color:#719e07&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#268bd2&#34;&gt;gifski_renderer&lt;/span&gt;(&lt;span style=&#34;color:#2aa198&#34;&gt;&amp;#34;gs_chart.gif&amp;#34;&lt;/span&gt;))
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;And that&amp;rsquo;s it! As with most projects the trickiest part was getting the data in the format I needed it and then spent some time with aesthetic choices. The point being that once you have your data ready &lt;code&gt;ggplot&lt;/code&gt; and &lt;code&gt;gganimate&lt;/code&gt; provide an intuitive framework to create cool looking charts.&lt;/p&gt;
 </description>
     </item>
     
