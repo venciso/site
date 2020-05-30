@@ -13,11 +13,73 @@
     <language>en-us</language>
 	
 	
-    <lastBuildDate>Wed, 27 May 2020 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Fri, 29 May 2020 00:00:00 +0000</lastBuildDate>
 	
     
         <atom:link href="/post/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Syntax Highlighting in Blogdown; a very specific solution</title>
+      <link>/2020/05/syntax-highlighting-blogdown/</link>
+      <pubDate>Fri, 29 May 2020 00:00:00 +0000</pubDate>
+      
+      <guid>/2020/05/syntax-highlighting-blogdown/</guid>
+	  <description>&lt;p&gt;If you spend more than 5 seconds on this site you will be able to tell that it is not one of the snazziest ones around. This is mostly by design but also a because I know very little about web development.&lt;/p&gt;
+&lt;p&gt;These days it is &lt;em&gt;really&lt;/em&gt; easy to have your own R website thanks to &lt;code&gt;blogdown&lt;/code&gt;. &lt;code&gt;blogdown&lt;/code&gt; interfaces with &lt;code&gt;Hugo&lt;/code&gt; to let you have a working site up and running in minutes. A good tutorial to get started can be found &lt;a href=&#34;http://jonthegeek.com/2018/02/27/blogging-in-ten-minutes/&#34;&gt;here&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;When I decided to build this site I knew I wanted a simple design and that I didn&amp;rsquo;t want to mess about too long with setting it up and so I went looking for &lt;code&gt;Hugo&lt;/code&gt; &lt;a href=&#34;https://themes.gohugo.io/&#34;&gt;themes&lt;/a&gt; and I settled on &lt;a href=&#34;https://themes.gohugo.io/minimal-bootstrap-hugo-theme/&#34;&gt;this one&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;As you can see I&amp;rsquo;ve only got three pages; posts, tags and about. I&amp;rsquo;d rather like to add an archive and maybe a search bar but the point is I&amp;rsquo;m happy with the basic structure I&amp;rsquo;ve got. What&amp;rsquo;s important to me is that the posts render properly and that they are readable.&lt;/p&gt;
+&lt;p&gt;Which is why I wanted to add syntax highlighting to my posts. Without it the code chunks in your post look like this:&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;xgboostParams &amp;lt;- dials::parameters(
+  min_n(),
+  tree_depth(),
+  learn_rate(),
+  finalize(mtry(),select(proc_mwTrainSet,-outcome)),
+  sample_size = sample_prop(c(0.4, 0.9))
+)
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;It is functional but it makes the post look a bit samey. You can play around with the colour of the text to help differentiate between code and not-code.&lt;/p&gt;
+&lt;p&gt;If you apply syntax highlighting you end up with something more like this:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#93a1a1;background-color:#002b36;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-r&#34; data-lang=&#34;r&#34;&gt;xgboostParams &lt;span style=&#34;color:#719e07&#34;&gt;&amp;lt;-&lt;/span&gt; dials&lt;span style=&#34;color:#719e07&#34;&gt;::&lt;/span&gt;&lt;span style=&#34;color:#268bd2&#34;&gt;parameters&lt;/span&gt;(
+  &lt;span style=&#34;color:#268bd2&#34;&gt;min_n&lt;/span&gt;(),
+  &lt;span style=&#34;color:#268bd2&#34;&gt;tree_depth&lt;/span&gt;(),
+  &lt;span style=&#34;color:#268bd2&#34;&gt;learn_rate&lt;/span&gt;(),
+  &lt;span style=&#34;color:#268bd2&#34;&gt;finalize&lt;/span&gt;(&lt;span style=&#34;color:#268bd2&#34;&gt;mtry&lt;/span&gt;(),&lt;span style=&#34;color:#268bd2&#34;&gt;select&lt;/span&gt;(proc_mwTrainSet,&lt;span style=&#34;color:#719e07&#34;&gt;-&lt;/span&gt;outcome)),
+  sample_size &lt;span style=&#34;color:#719e07&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#268bd2&#34;&gt;sample_prop&lt;/span&gt;(&lt;span style=&#34;color:#268bd2&#34;&gt;c&lt;/span&gt;(&lt;span style=&#34;color:#2aa198&#34;&gt;0.4&lt;/span&gt;, &lt;span style=&#34;color:#2aa198&#34;&gt;0.9&lt;/span&gt;))
+)
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;This looks much nicer in my opinion and makes the post more readable.&lt;/p&gt;
+&lt;p&gt;So, how do you do it?&lt;/p&gt;
+&lt;p&gt;The answer won&amp;rsquo;t be universal but if you are lucky and the theme you&amp;rsquo;re using already supports it then this might save you some googling.&lt;/p&gt;
+&lt;h2 id=&#34;tldr&#34;&gt;TL;DR&lt;/h2&gt;
+&lt;p&gt;When creating the a new post through the &lt;code&gt;blogdown&lt;/code&gt; Addins be sure to select &lt;strong&gt;Rmarkdown&lt;/strong&gt; as a format and not &lt;strong&gt;Rmd&lt;/strong&gt;.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;/post/2020-05-29-syntax-highlighting-in-blogdown-a-very-specific-solution_files/select_rmarkdown.gif&#34; alt=&#34;&#34;&gt;&lt;/p&gt;
+&lt;h3 id=&#34;a-bit-more-detail&#34;&gt;A bit more detail&lt;/h3&gt;
+&lt;p&gt;To anyone with some knowledge of &lt;code&gt;Hugo&lt;/code&gt; the above will be completely obvious and even silly but actually it took me longer than I&amp;rsquo;d care to admit to get to the answer.&lt;/p&gt;
+&lt;p&gt;First, I knew that it should be possible to have syntax highlighting in my theme because it is mentioned on the theme&amp;rsquo;s &lt;a href=&#34;https://themes.gohugo.io/minimal-bootstrap-hugo-theme/&#34;&gt;page&lt;/a&gt;:&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Hugo has built-in syntax highlighting, provided by Chroma. It is currently enabled in the config.toml file from the exampleSite.
+Checkout the Chroma style gallery and choose the style you like.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;Also, the &lt;code&gt;config.toml&lt;/code&gt; file contains this section which is the bit that actually parametrises the highlighting.&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt; [markup.highlight]
+    codeFences = true
+    hl_Lines = &amp;quot;&amp;quot;
+    lineNoStart = 1
+    lineNos = false
+    lineNumbersInTable = true
+    noClasses = true
+    style = &amp;quot;solarized-dark&amp;quot;
+    tabWidth = 4
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;In the code above &lt;code&gt;solarized-dark&lt;/code&gt; is the name of the &lt;code&gt;Chroma&lt;/code&gt; highlighting style. All the available styles can be found &lt;a href=&#34;https://xyproto.github.io/splash/docs/all.html&#34;&gt;here&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;However, I didn&amp;rsquo;t know how to activate it. In fact according to that description it should come activated by default but none of the posts I had created displayed any highlighting.&lt;/p&gt;
+&lt;p&gt;After some more googling I stumbled onto &lt;a href=&#34;https://bookdown.org/yihui/blogdown/output-format.html&#34;&gt;this section&lt;/a&gt; of the &lt;strong&gt;Creating Websites with R Markdown&lt;/strong&gt; book which outlines the differences between the &lt;code&gt;Rmd&lt;/code&gt; and &lt;code&gt;Rmarkdown&lt;/code&gt;formats.&lt;/p&gt;
+&lt;p&gt;Turns out that each format is rendered to HTML through different converters. &lt;code&gt;Rmarkdown&lt;/code&gt; uses something called &lt;code&gt;Blackfriday&lt;/code&gt; and &lt;code&gt;Rmd&lt;/code&gt; uses &lt;code&gt;Pandoc&lt;/code&gt;. As I understanding then &lt;code&gt;Rmd&lt;/code&gt; is rendered by &lt;code&gt;R&lt;/code&gt; and &lt;code&gt;Rmarkdown&lt;/code&gt; is rendered by &lt;code&gt;Hugo&lt;/code&gt; and so posts need to be rendered by &lt;code&gt;Hugo&lt;/code&gt; in order for all the configs in the .toml file to apply.&lt;/p&gt;
+&lt;p&gt;In the aforementioned book the authors call out some limitations with &lt;code&gt;Rmarkdown&lt;/code&gt;; namely that it does not support bibliography nor does it support HTML widgets.&lt;/p&gt;
+&lt;p&gt;The second one of those is more relevant to my site as I have at least one post that uses widgets. For example, &lt;a href=&#34;https://venciso.netlify.app/2020/05/virtual-madrid-open/&#34;&gt;this post&lt;/a&gt; contains a &lt;code&gt;leaflet&lt;/code&gt; map which is not rendered if I use &lt;code&gt;Rmarkdown&lt;/code&gt;. This means that for now if I want to use HTML widgets I&amp;rsquo;ll have to sacrifice syntax highlighting in those posts. Having said that, I am sure that somebody knows how to apply highlighting to &lt;code&gt;Rmd&lt;/code&gt; files but for now I&amp;rsquo;m ok with the compromise.&lt;/p&gt;
+&lt;p&gt;One more thing I should say is that my site&amp;rsquo;s theme requires Hugo version &lt;code&gt;0.60.1&lt;/code&gt; as a minimum which is quite a recent one. In older posts I found on this issue such as &lt;a href=&#34;https://discourse.gohugo.io/t/cant-get-syntax-highlighting-to-work/15350&#34;&gt;this one&lt;/a&gt; there are references to parameters like &lt;code&gt;pygmentsCodefences&lt;/code&gt; and &lt;code&gt;pygmentsStyle&lt;/code&gt; so if your theme is running on an older Hugo version this might be of help.&lt;/p&gt;
+&lt;p&gt;Also, if your site&amp;rsquo;s theme doesn&amp;rsquo;t already come with syntax highlighting &lt;a href=&#34;https://amber.rbind.io/2017/11/15/syntaxhighlighting/&#34;&gt;this post&lt;/a&gt; might help you out. It goes into quite a bit of detail on how to add &lt;code&gt;highlight.js&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;That&amp;rsquo;s all I&amp;rsquo;ve got for now. I hope this is useful to at least one other &lt;code&gt;R&lt;/code&gt; user lost in the in and outs of how &lt;code&gt;Hugo&lt;/code&gt; works.&lt;/p&gt;
+</description>
+    </item>
     
     <item>
       <title>Tidymodels and XGBoost; a few learnings</title>
