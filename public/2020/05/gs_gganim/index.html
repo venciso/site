@@ -207,41 +207,41 @@ blockquote,
 <p>I&rsquo;ve seen this kind of charts around the web so I wanted to make a tennis-related one and what better than using Grand Slam wins since the very beginning; 1877.</p>
 <p>The main package that is needed for the animation is gganimate. As the name suggests it integrates with ggplot to make an animation given many different charts and a transition variable.</p>
 <p>Let&rsquo;s load the necessary packages</p>
-<div class="highlight"><pre style="color:#93a1a1;background-color:#002b36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r"><span style="color:#268bd2">require</span>(XML)
-<span style="color:#268bd2">require</span>(data.table)
-<span style="color:#268bd2">library</span>(httr)
-<span style="color:#268bd2">require</span>(dplyr)
-<span style="color:#268bd2">require</span>(stringr)
-<span style="color:#268bd2">require</span>(ggplot2)
-<span style="color:#268bd2">require</span>(gganimate)
+<div class="highlight"><pre style="background-color:#f0f0f0;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r"><span style="color:#06287e">require</span>(XML)
+<span style="color:#06287e">require</span>(data.table)
+<span style="color:#06287e">library</span>(httr)
+<span style="color:#06287e">require</span>(dplyr)
+<span style="color:#06287e">require</span>(stringr)
+<span style="color:#06287e">require</span>(ggplot2)
+<span style="color:#06287e">require</span>(gganimate)
 </code></pre></div><p>Then we need to get the data for the chart. 
 Wikipedia helpfully has an article with all Grand Slam winner in history so we can pull the table within the article using <code>GET</code> and <code>readHTMLTable</code></p>
 <p>Once we know where the table is located in the HTML we can pull it into a data table.</p>
 <p>There are some kinks in the table we have to get rid off. For example, in 1977 there were two Austrlian Opens so the entry for 1977 is split into two rows but just one year.</p>
 <p>We then get rid of anything that is not a player name including special characters. Tjem the table is melted so we get one entry per year and Grand Slam.</p>
 <p>We also get rid of other stuff such as all the French Opens before 1925 because the tournament was not actually &ldquo;open&rdquo; and also instances when the tournaments were not held such as world wars.</p>
-<div class="highlight"><pre style="color:#93a1a1;background-color:#002b36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r">gs<span style="color:#719e07">&lt;-</span><span style="color:#268bd2">data.table</span>(tabs[[3]])
+<div class="highlight"><pre style="background-color:#f0f0f0;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r">gs<span style="color:#666">&lt;-</span><span style="color:#06287e">data.table</span>(tabs[[3]])
 
-<span style="color:#268bd2">names</span>(gs) <span style="color:#719e07">&lt;-</span> <span style="color:#268bd2">as.character</span>(<span style="color:#268bd2">unlist</span>(gs[1,]))
-gs<span style="color:#719e07">&lt;-</span>gs[<span style="color:#2aa198">-1</span>]
+<span style="color:#06287e">names</span>(gs) <span style="color:#666">&lt;-</span> <span style="color:#06287e">as.character</span>(<span style="color:#06287e">unlist</span>(gs[1,]))
+gs<span style="color:#666">&lt;-</span>gs[<span style="color:#40a070">-1</span>]
 
-gs<span style="color:#719e07">&lt;-</span><span style="color:#268bd2">bind_rows</span>(gs,<span style="color:#268bd2">data.table</span>(Year<span style="color:#719e07">=</span><span style="color:#2aa198">&#34;1977&#34;</span>,<span style="color:#2aa198">&#34;Australian Open&#34;</span><span style="color:#719e07">=</span><span style="color:#2aa198">&#34;Vitas Gerulaitis&#34;</span>))
+gs<span style="color:#666">&lt;-</span><span style="color:#06287e">bind_rows</span>(gs,<span style="color:#06287e">data.table</span>(Year<span style="color:#666">=</span><span style="color:#4070a0">&#34;1977&#34;</span>,<span style="color:#4070a0">&#34;Australian Open&#34;</span><span style="color:#666">=</span><span style="color:#4070a0">&#34;Vitas Gerulaitis&#34;</span>))
 
-gs<span style="color:#719e07">&lt;-</span>gs<span style="color:#268bd2">[grep</span>(<span style="color:#2aa198">&#34;[0-9]&#34;</span>,Year)]<span style="color:#268bd2">[order</span>(Year)]
+gs<span style="color:#666">&lt;-</span>gs<span style="color:#06287e">[grep</span>(<span style="color:#4070a0">&#34;[0-9]&#34;</span>,Year)]<span style="color:#06287e">[order</span>(Year)]
 
-gs <span style="color:#719e07">&lt;-</span> <span style="color:#268bd2">melt</span>(gs, id.vars <span style="color:#719e07">=</span> <span style="color:#2aa198">&#34;Year&#34;</span>)
+gs <span style="color:#666">&lt;-</span> <span style="color:#06287e">melt</span>(gs, id.vars <span style="color:#666">=</span> <span style="color:#4070a0">&#34;Year&#34;</span>)
 
-gs<span style="color:#719e07">$</span>winner <span style="color:#719e07">&lt;-</span> <span style="color:#268bd2">gsub</span>(<span style="color:#2aa198">&#34;\\(([^)]+)\\)&#34;</span>,<span style="color:#2aa198">&#34;&#34;</span>,gs<span style="color:#719e07">$</span>value)
+gs<span style="color:#666">$</span>winner <span style="color:#666">&lt;-</span> <span style="color:#06287e">gsub</span>(<span style="color:#4070a0">&#34;\\(([^)]+)\\)&#34;</span>,<span style="color:#4070a0">&#34;&#34;</span>,gs<span style="color:#666">$</span>value)
 
-gs<span style="color:#719e07">$</span>winner<span style="color:#719e07">&lt;-</span><span style="color:#268bd2">gsub</span>(<span style="color:#2aa198">&#34;[*]&#34;</span>,<span style="color:#2aa198">&#34;&#34;</span>,gs<span style="color:#719e07">$</span>winner)
-gs<span style="color:#719e07">$</span>winner<span style="color:#719e07">&lt;-</span><span style="color:#268bd2">gsub</span>(<span style="color:#2aa198">&#34;[†]&#34;</span>,<span style="color:#2aa198">&#34;&#34;</span>,gs<span style="color:#719e07">$</span>winner)
+gs<span style="color:#666">$</span>winner<span style="color:#666">&lt;-</span><span style="color:#06287e">gsub</span>(<span style="color:#4070a0">&#34;[*]&#34;</span>,<span style="color:#4070a0">&#34;&#34;</span>,gs<span style="color:#666">$</span>winner)
+gs<span style="color:#666">$</span>winner<span style="color:#666">&lt;-</span><span style="color:#06287e">gsub</span>(<span style="color:#4070a0">&#34;[†]&#34;</span>,<span style="color:#4070a0">&#34;&#34;</span>,gs<span style="color:#666">$</span>winner)
 
-gs<span style="color:#719e07">$</span>winner<span style="color:#719e07">&lt;-</span><span style="color:#268bd2">gsub</span>(<span style="color:#2aa198">&#34;Amateur Era ends&#34;</span>,<span style="color:#2aa198">&#34;&#34;</span>,gs<span style="color:#719e07">$</span>winner)
-gs<span style="color:#719e07">$</span>winner<span style="color:#719e07">&lt;-</span><span style="color:#268bd2">gsub</span>(<span style="color:#2aa198">&#34;Open Era begins&#34;</span>,<span style="color:#2aa198">&#34;&#34;</span>,gs<span style="color:#719e07">$</span>winner)
+gs<span style="color:#666">$</span>winner<span style="color:#666">&lt;-</span><span style="color:#06287e">gsub</span>(<span style="color:#4070a0">&#34;Amateur Era ends&#34;</span>,<span style="color:#4070a0">&#34;&#34;</span>,gs<span style="color:#666">$</span>winner)
+gs<span style="color:#666">$</span>winner<span style="color:#666">&lt;-</span><span style="color:#06287e">gsub</span>(<span style="color:#4070a0">&#34;Open Era begins&#34;</span>,<span style="color:#4070a0">&#34;&#34;</span>,gs<span style="color:#666">$</span>winner)
 
-gs[,winner<span style="color:#719e07">:=</span><span style="color:#268bd2">str_trim</span>(winner)]
+gs[,winner<span style="color:#666">:=</span><span style="color:#06287e">str_trim</span>(winner)]
 
-gs[,.N,winner]<span style="color:#268bd2">[order</span>(<span style="color:#719e07">-</span>N)]
+gs[,.N,winner]<span style="color:#06287e">[order</span>(<span style="color:#666">-</span>N)]
 </code></pre></div><pre><code>##                      winner  N
 ##   1: tournament not created 43
 ##   2:                   &lt;NA&gt; 24
@@ -254,63 +254,63 @@ gs[,.N,winner]<span style="color:#268bd2">[order</span>(<span style="color:#719e
 ## 169:           Andy Roddick  1
 ## 170:  Juan Martín del Potro  1
 ## 171:            Marin Cilic  1
-</code></pre><div class="highlight"><pre style="color:#93a1a1;background-color:#002b36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r">gs<span style="color:#719e07">&lt;-</span>gs[<span style="color:#719e07">!</span>(variable<span style="color:#719e07">==</span><span style="color:#2aa198">&#34;French Open&#34;</span> <span style="color:#719e07">&amp;</span> Year<span style="color:#719e07">&lt;</span><span style="color:#2aa198">1925</span>)]
+</code></pre><div class="highlight"><pre style="background-color:#f0f0f0;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r">gs<span style="color:#666">&lt;-</span>gs[<span style="color:#666">!</span>(variable<span style="color:#666">==</span><span style="color:#4070a0">&#34;French Open&#34;</span> <span style="color:#666">&amp;</span> Year<span style="color:#666">&lt;</span><span style="color:#40a070">1925</span>)]
 
-gs[,win<span style="color:#719e07">:=</span><span style="color:#2aa198">1</span>]
+gs[,win<span style="color:#666">:=</span><span style="color:#40a070">1</span>]
 
-gs<span style="color:#719e07">&lt;-</span>gs[<span style="color:#719e07">!</span><span style="color:#268bd2">grep</span>(<span style="color:#2aa198">&#34;tournament|started|WorldW|occupation|Tournament|oronavir&#34;</span>,winner)]
+gs<span style="color:#666">&lt;-</span>gs[<span style="color:#666">!</span><span style="color:#06287e">grep</span>(<span style="color:#4070a0">&#34;tournament|started|WorldW|occupation|Tournament|oronavir&#34;</span>,winner)]
 
-gs<span style="color:#719e07">&lt;-</span>gs[winner<span style="color:#719e07">!=</span><span style="color:#2aa198">&#34;&#34;</span>]
+gs<span style="color:#666">&lt;-</span>gs[winner<span style="color:#666">!=</span><span style="color:#4070a0">&#34;&#34;</span>]
 </code></pre></div><p>We now need to keep a running tally of anyone who has won at least one Grand Slam for every year so that they show up in our chart with the correct number of GS&rsquo;s. This is what the <code>fun</code> function is doing below.</p>
 <p>Additionally we also need to rank the players from most GS&rsquo;s to least GS&rsquo;s to create a rank variable.</p>
-<div class="highlight"><pre style="color:#93a1a1;background-color:#002b36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r"><span style="color:#586e75">#Get a list of all the years</span>
-yearList<span style="color:#719e07">&lt;-</span>gs<span style="color:#268bd2">[order</span>(Year)][,<span style="color:#268bd2">unique</span>(Year)]
-<span style="color:#586e75">#Function fun calculates cumulative GS wins for all the players up to the current year</span>
-fun<span style="color:#719e07">&lt;-</span><span style="color:#268bd2">function</span>(year){ gs[Year<span style="color:#719e07">&lt;=</span>year,.(win<span style="color:#719e07">=</span><span style="color:#268bd2">sum</span>(win),latestWin<span style="color:#719e07">=</span><span style="color:#268bd2">max</span>(Year)),.(winner)][,year<span style="color:#719e07">:=</span>year] }
-<span style="color:#586e75">#Create a table that has all combinations of year/player</span>
-gsfull<span style="color:#719e07">&lt;-</span><span style="color:#268bd2">lapply</span>(yearList, fun) <span style="color:#719e07">%&gt;%</span> <span style="color:#268bd2">rbindlist</span>()
+<div class="highlight"><pre style="background-color:#f0f0f0;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r"><span style="color:#60a0b0;font-style:italic">#Get a list of all the years</span>
+yearList<span style="color:#666">&lt;-</span>gs<span style="color:#06287e">[order</span>(Year)][,<span style="color:#06287e">unique</span>(Year)]
+<span style="color:#60a0b0;font-style:italic">#Function fun calculates cumulative GS wins for all the players up to the current year</span>
+fun<span style="color:#666">&lt;-</span><span style="color:#06287e">function</span>(year){ gs[Year<span style="color:#666">&lt;=</span>year,.(win<span style="color:#666">=</span><span style="color:#06287e">sum</span>(win),latestWin<span style="color:#666">=</span><span style="color:#06287e">max</span>(Year)),.(winner)][,year<span style="color:#666">:=</span>year] }
+<span style="color:#60a0b0;font-style:italic">#Create a table that has all combinations of year/player</span>
+gsfull<span style="color:#666">&lt;-</span><span style="color:#06287e">lapply</span>(yearList, fun) <span style="color:#666">%&gt;%</span> <span style="color:#06287e">rbindlist</span>()
 
-gsfull<span style="color:#719e07">&lt;-</span>gsfull<span style="color:#268bd2">[order</span>(year,<span style="color:#719e07">-</span>win,<span style="color:#719e07">-</span>latestWin)]
-gsfull[,rank<span style="color:#719e07">:=</span><span style="color:#268bd2">seq</span>(<span style="color:#2aa198">1</span>,.N),year]
+gsfull<span style="color:#666">&lt;-</span>gsfull<span style="color:#06287e">[order</span>(year,<span style="color:#666">-</span>win,<span style="color:#666">-</span>latestWin)]
+gsfull[,rank<span style="color:#666">:=</span><span style="color:#06287e">seq</span>(<span style="color:#40a070">1</span>,.N),year]
 
-gsfull[,win_label <span style="color:#719e07">:=</span> <span style="color:#268bd2">paste0</span>(<span style="color:#2aa198">&#34; &#34;</span>, win)]
+gsfull[,win_label <span style="color:#666">:=</span> <span style="color:#06287e">paste0</span>(<span style="color:#4070a0">&#34; &#34;</span>, win)]
 </code></pre></div><p>We can now start plotting our data. First create a tile plot with ggplot. Tiles work better than plot for this case because they slide into position in a nicer way when the plot transitions between years.</p>
 <p>A lot of the code I&rsquo;m using I found over here in <a href="https://stackoverflow.com/questions/53162821/animated-sorted-bar-chart-with-bars-overtaking-each-other">stack overflow</a>.</p>
-<div class="highlight"><pre style="color:#93a1a1;background-color:#002b36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r">y<span style="color:#719e07">&lt;-</span><span style="color:#2aa198">1877</span>
+<div class="highlight"><pre style="background-color:#f0f0f0;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r">y<span style="color:#666">&lt;-</span><span style="color:#40a070">1877</span>
 
-sp<span style="color:#719e07">&lt;-</span><span style="color:#268bd2">ggplot</span>(gsfull[year<span style="color:#719e07">&gt;=</span>y <span style="color:#719e07">&amp;</span> rank<span style="color:#719e07">&lt;=</span><span style="color:#2aa198">30</span>],<span style="color:#268bd2">aes</span>(x<span style="color:#719e07">=</span>rank,y<span style="color:#719e07">=</span>win,fill<span style="color:#719e07">=</span>winner)) <span style="color:#719e07">+</span> 
-  <span style="color:#268bd2">geom_tile</span>(<span style="color:#268bd2">aes</span>(y<span style="color:#719e07">=</span>win<span style="color:#719e07">/</span><span style="color:#2aa198">2</span>,height<span style="color:#719e07">=</span>win, width<span style="color:#719e07">=</span><span style="color:#2aa198">0.95</span>),alpha<span style="color:#719e07">=</span><span style="color:#2aa198">0.9</span>) <span style="color:#719e07">+</span> <span style="color:#268bd2">theme_bw</span>() <span style="color:#719e07">+</span>
-  <span style="color:#268bd2">geom_text</span>(<span style="color:#268bd2">aes</span>(y<span style="color:#719e07">=</span><span style="color:#2aa198">0</span>,label <span style="color:#719e07">=</span> <span style="color:#268bd2">paste0</span>(winner,<span style="color:#2aa198">&#34; &#34;</span>)), hjust <span style="color:#719e07">=</span> <span style="color:#2aa198">1</span>) <span style="color:#719e07">+</span>
-  <span style="color:#268bd2">geom_text</span>(<span style="color:#268bd2">aes</span>(y<span style="color:#719e07">=</span>win,label <span style="color:#719e07">=</span> win_label, hjust<span style="color:#719e07">=</span><span style="color:#2aa198">0</span>)) <span style="color:#719e07">+</span>
-  <span style="color:#268bd2">coord_flip</span>(clip <span style="color:#719e07">=</span> <span style="color:#2aa198">&#34;off&#34;</span>, expand <span style="color:#719e07">=</span> <span style="color:#268bd2">F</span>) <span style="color:#719e07">+</span>
-  <span style="color:#268bd2">scale_x_reverse</span>() <span style="color:#719e07">+</span>
-  <span style="color:#268bd2">guides</span>(color <span style="color:#719e07">=</span> <span style="color:#cb4b16">FALSE</span>, fill <span style="color:#719e07">=</span> <span style="color:#cb4b16">FALSE</span>) <span style="color:#719e07">+</span>
-  <span style="color:#268bd2">theme</span>(axis.line<span style="color:#719e07">=</span><span style="color:#268bd2">element_blank</span>(),
-        axis.text.x<span style="color:#719e07">=</span><span style="color:#268bd2">element_blank</span>(),
-        axis.text.y<span style="color:#719e07">=</span><span style="color:#268bd2">element_blank</span>(),
-        axis.ticks<span style="color:#719e07">=</span><span style="color:#268bd2">element_blank</span>(),
-        axis.title.x<span style="color:#719e07">=</span><span style="color:#268bd2">element_blank</span>(),
-        axis.title.y<span style="color:#719e07">=</span><span style="color:#268bd2">element_blank</span>(),
-        legend.position<span style="color:#719e07">=</span><span style="color:#2aa198">&#34;bottom&#34;</span>,
-        panel.background<span style="color:#719e07">=</span><span style="color:#268bd2">element_blank</span>(),
-        panel.border<span style="color:#719e07">=</span><span style="color:#268bd2">element_blank</span>(),
-        panel.grid.major<span style="color:#719e07">=</span><span style="color:#268bd2">element_blank</span>(),
-        panel.grid.minor<span style="color:#719e07">=</span><span style="color:#268bd2">element_blank</span>(),
-        panel.grid.major.x <span style="color:#719e07">=</span> <span style="color:#268bd2">element_line</span>( size<span style="color:#719e07">=</span><span style="color:#2aa198">.1</span>, color<span style="color:#719e07">=</span><span style="color:#2aa198">&#34;grey&#34;</span> ),
-        panel.grid.minor.x <span style="color:#719e07">=</span> <span style="color:#268bd2">element_line</span>( size<span style="color:#719e07">=</span><span style="color:#2aa198">.1</span>, color<span style="color:#719e07">=</span><span style="color:#2aa198">&#34;grey&#34;</span> ),
-        plot.margin <span style="color:#719e07">=</span> <span style="color:#268bd2">margin</span>(<span style="color:#2aa198">5</span>,<span style="color:#2aa198">5</span>,<span style="color:#2aa198">5</span>,<span style="color:#2aa198">5</span>, <span style="color:#2aa198">&#34;cm&#34;</span>)
+sp<span style="color:#666">&lt;-</span><span style="color:#06287e">ggplot</span>(gsfull[year<span style="color:#666">&gt;=</span>y <span style="color:#666">&amp;</span> rank<span style="color:#666">&lt;=</span><span style="color:#40a070">30</span>],<span style="color:#06287e">aes</span>(x<span style="color:#666">=</span>rank,y<span style="color:#666">=</span>win,fill<span style="color:#666">=</span>winner)) <span style="color:#666">+</span> 
+  <span style="color:#06287e">geom_tile</span>(<span style="color:#06287e">aes</span>(y<span style="color:#666">=</span>win<span style="color:#666">/</span><span style="color:#40a070">2</span>,height<span style="color:#666">=</span>win, width<span style="color:#666">=</span><span style="color:#40a070">0.95</span>),alpha<span style="color:#666">=</span><span style="color:#40a070">0.9</span>) <span style="color:#666">+</span> <span style="color:#06287e">theme_bw</span>() <span style="color:#666">+</span>
+  <span style="color:#06287e">geom_text</span>(<span style="color:#06287e">aes</span>(y<span style="color:#666">=</span><span style="color:#40a070">0</span>,label <span style="color:#666">=</span> <span style="color:#06287e">paste0</span>(winner,<span style="color:#4070a0">&#34; &#34;</span>)), hjust <span style="color:#666">=</span> <span style="color:#40a070">1</span>) <span style="color:#666">+</span>
+  <span style="color:#06287e">geom_text</span>(<span style="color:#06287e">aes</span>(y<span style="color:#666">=</span>win,label <span style="color:#666">=</span> win_label, hjust<span style="color:#666">=</span><span style="color:#40a070">0</span>)) <span style="color:#666">+</span>
+  <span style="color:#06287e">coord_flip</span>(clip <span style="color:#666">=</span> <span style="color:#4070a0">&#34;off&#34;</span>, expand <span style="color:#666">=</span> F) <span style="color:#666">+</span>
+  <span style="color:#06287e">scale_x_reverse</span>() <span style="color:#666">+</span>
+  <span style="color:#06287e">guides</span>(color <span style="color:#666">=</span> <span style="color:#007020;font-weight:bold">FALSE</span>, fill <span style="color:#666">=</span> <span style="color:#007020;font-weight:bold">FALSE</span>) <span style="color:#666">+</span>
+  <span style="color:#06287e">theme</span>(axis.line<span style="color:#666">=</span><span style="color:#06287e">element_blank</span>(),
+        axis.text.x<span style="color:#666">=</span><span style="color:#06287e">element_blank</span>(),
+        axis.text.y<span style="color:#666">=</span><span style="color:#06287e">element_blank</span>(),
+        axis.ticks<span style="color:#666">=</span><span style="color:#06287e">element_blank</span>(),
+        axis.title.x<span style="color:#666">=</span><span style="color:#06287e">element_blank</span>(),
+        axis.title.y<span style="color:#666">=</span><span style="color:#06287e">element_blank</span>(),
+        legend.position<span style="color:#666">=</span><span style="color:#4070a0">&#34;bottom&#34;</span>,
+        panel.background<span style="color:#666">=</span><span style="color:#06287e">element_blank</span>(),
+        panel.border<span style="color:#666">=</span><span style="color:#06287e">element_blank</span>(),
+        panel.grid.major<span style="color:#666">=</span><span style="color:#06287e">element_blank</span>(),
+        panel.grid.minor<span style="color:#666">=</span><span style="color:#06287e">element_blank</span>(),
+        panel.grid.major.x <span style="color:#666">=</span> <span style="color:#06287e">element_line</span>( size<span style="color:#666">=</span><span style="color:#40a070">.1</span>, color<span style="color:#666">=</span><span style="color:#4070a0">&#34;grey&#34;</span> ),
+        panel.grid.minor.x <span style="color:#666">=</span> <span style="color:#06287e">element_line</span>( size<span style="color:#666">=</span><span style="color:#40a070">.1</span>, color<span style="color:#666">=</span><span style="color:#4070a0">&#34;grey&#34;</span> ),
+        plot.margin <span style="color:#666">=</span> <span style="color:#06287e">margin</span>(<span style="color:#40a070">5</span>,<span style="color:#40a070">5</span>,<span style="color:#40a070">5</span>,<span style="color:#40a070">5</span>, <span style="color:#4070a0">&#34;cm&#34;</span>)
         )
 </code></pre></div><p>With the base plot made it&rsquo;s time to actually animate it. This is where <code>gganimate</code> comes into play. The main funtion needed is <code>transition_states</code> which takes a transition parameter, <code>year</code> in our case, and animates the plot based on it.</p>
 <p>There&rsquo;s a few extra bits in there; <code>enter_drift</code> and <code>exit_shrink</code> govern how the bars enter and leave the plot and <code>ease_aes</code> controls how the bars switch around. There are many other options that <code>gganimate</code> provides so this is just scratching the surface.</p>
-<div class="highlight"><pre style="color:#93a1a1;background-color:#002b36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r">p <span style="color:#719e07">&lt;-</span> sp <span style="color:#719e07">+</span> <span style="color:#268bd2">transition_states</span>(year, transition_length <span style="color:#719e07">=</span> <span style="color:#2aa198">4</span>, state_length <span style="color:#719e07">=</span> <span style="color:#2aa198">2</span>) <span style="color:#719e07">+</span>
-  <span style="color:#268bd2">view_follow</span>(fixed_x <span style="color:#719e07">=</span> <span style="color:#cb4b16">TRUE</span>)  <span style="color:#719e07">+</span>
-  <span style="color:#268bd2">labs</span>(title <span style="color:#719e07">=</span> <span style="color:#2aa198">&#39;Grand Slam Titles : {closest_state}&#39;</span>)  <span style="color:#719e07">+</span>
-   <span style="color:#268bd2">enter_drift</span>(y_mod<span style="color:#719e07">=</span><span style="color:#2aa198">10</span>) <span style="color:#719e07">+</span> <span style="color:#268bd2">exit_shrink</span>()  <span style="color:#719e07">+</span> 
-  <span style="color:#268bd2">ease_aes</span>(<span style="color:#2aa198">&#39;linear&#39;</span>)
+<div class="highlight"><pre style="background-color:#f0f0f0;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r">p <span style="color:#666">&lt;-</span> sp <span style="color:#666">+</span> <span style="color:#06287e">transition_states</span>(year, transition_length <span style="color:#666">=</span> <span style="color:#40a070">4</span>, state_length <span style="color:#666">=</span> <span style="color:#40a070">2</span>) <span style="color:#666">+</span>
+  <span style="color:#06287e">view_follow</span>(fixed_x <span style="color:#666">=</span> <span style="color:#007020;font-weight:bold">TRUE</span>)  <span style="color:#666">+</span>
+  <span style="color:#06287e">labs</span>(title <span style="color:#666">=</span> <span style="color:#4070a0">&#39;Grand Slam Titles : {closest_state}&#39;</span>)  <span style="color:#666">+</span>
+   <span style="color:#06287e">enter_drift</span>(y_mod<span style="color:#666">=</span><span style="color:#40a070">10</span>) <span style="color:#666">+</span> <span style="color:#06287e">exit_shrink</span>()  <span style="color:#666">+</span> 
+  <span style="color:#06287e">ease_aes</span>(<span style="color:#4070a0">&#39;linear&#39;</span>)
 </code></pre></div><p>Finally once the transitions are defined <code>animate</code> takes the object and turns it into a gif or a video if you want depending on the renderer that you choose. The code below is what renders the plot at the start of this post.</p>
 <p>Duration and size parameters are passed by the user. Here I would like to note that if you call the plot <code>p</code> it does get rendered but it looks different than the output you get with animate so I&rsquo;d recommend always running <code>animate</code> to see what the actual final output will be.</p>
-<div class="highlight"><pre style="color:#93a1a1;background-color:#002b36;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r"><span style="color:#268bd2">animate</span>(p, <span style="color:#2aa198">1200</span>, fps <span style="color:#719e07">=</span> <span style="color:#2aa198">10</span>,  width <span style="color:#719e07">=</span> <span style="color:#2aa198">800</span>, height <span style="color:#719e07">=</span> <span style="color:#2aa198">600</span>, 
-        renderer <span style="color:#719e07">=</span> <span style="color:#268bd2">gifski_renderer</span>(<span style="color:#2aa198">&#34;gs_chart.gif&#34;</span>))
+<div class="highlight"><pre style="background-color:#f0f0f0;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r"><span style="color:#06287e">animate</span>(p, <span style="color:#40a070">1200</span>, fps <span style="color:#666">=</span> <span style="color:#40a070">10</span>,  width <span style="color:#666">=</span> <span style="color:#40a070">800</span>, height <span style="color:#666">=</span> <span style="color:#40a070">600</span>, 
+        renderer <span style="color:#666">=</span> <span style="color:#06287e">gifski_renderer</span>(<span style="color:#4070a0">&#34;gs_chart.gif&#34;</span>))
 </code></pre></div><p>And that&rsquo;s it! As with most projects the trickiest part was getting the data in the format I needed it and then spent some time with aesthetic choices. The point being that once you have your data ready <code>ggplot</code> and <code>gganimate</code> provide an intuitive framework to create cool looking charts.</p>
 
     </article>

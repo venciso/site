@@ -1,0 +1,17 @@
+base
+dplyr
+rsample
+recipes
+parsnip
+tune
+scales
+dials
+workflows
+yardstick
+knitr
+kableExtra
+xgboost
+ggplot2
+data.table
+tictoc
+h2o

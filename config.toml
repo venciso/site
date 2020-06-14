@@ -72,7 +72,7 @@ theme = "minimal-bootstrap-hugo-theme"
     lineNos = false
     lineNumbersInTable = true
     noClasses = true
-    style = "solarized-dark"
+    style = "friendly"
     tabWidth = 4
   [markup.tableOfContents]
     endLevel = 6

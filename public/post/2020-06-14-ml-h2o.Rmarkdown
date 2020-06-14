@@ -1,0 +1,213 @@
+---
+title: Machine learning using H2O
+author: ''
+date: '2020-06-14'
+slug: ML-H2O
+categories:
+  - R
+  - Machine Larning
+  - GBM
+  - H2O
+tags:
+  - R
+  - Machine Larning
+  - GBM
+  - H2O
+publishdate: '2020-06-14'
+lastmod: '2020-06-14'
+---
+
+```{r message=FALSE, warning=FALSE, cache=FALSE, include=FALSE}
+require(dplyr)
+require(rsample)
+require(recipes)
+require(parsnip)
+require(tune)
+require(dials)
+require(workflows)
+require(yardstick)
+require(knitr)
+require(kableExtra)
+require(xgboost)
+require(ggplot2)
+require(data.table)
+require(tictoc)
+```
+
+```{r, include=FALSE}
+source("kablify.R")
+```
+
+This post will be a quick introduction to using `H2O` through `R`. `H2O` is a platform for machine learning; it is distributed which means it can use all the cores in your computer offering parallelisation out of the box. You can also hook it up to already set up `Hadoop` or `Spark` clusters. It is also supposed to be industrial scale and able to cope with large amounts of data. 
+
+You can install `H2O` from CRAN in the usual way using `install.packages()`. Once you load the package you can initialise a cluster using the `h2o.init()` command. 
+
+```{r, warning=FALSE, message=FALSE}
+require(h2o)
+h2o.init()
+```
+
+You will get some detail about your cluster as above. 
+
+I've got a prepared data set that I can load in and start playing around with. 
+
+```{r message=FALSE, warning=FALSE, cache=FALSE, include=FALSE}
+mensTrain<-read.csv('C:/Users/victor.enciso/OneDrive - ITF Licensing (UK) Ltd/Documents/R misc code/ao_to_ai_verif/mens_train_file.csv')
+womensTrain<-read.csv('C:/Users/victor.enciso/OneDrive - ITF Licensing (UK) Ltd/Documents/R misc code/ao_to_ai_verif/womens_train_file.csv')
+mwTrainSet<-rbind(mensTrain,womensTrain)
+
+mensTest<-read.csv('C:/Users/victor.enciso/OneDrive - ITF Licensing (UK) Ltd/Documents/R misc code/ao_to_ai_verif/mens_test_file.csv')
+womensTest<-read.csv('C:/Users/victor.enciso/OneDrive - ITF Licensing (UK) Ltd/Documents/R misc code/ao_to_ai_verif/womens_test_file.csv')
+mwTestSet<-rbind(mensTest,womensTest)
+```
+
+The dataset has 10,000 rows. Using H2O with such a small dataset might be overkill but I just want to illustrate the basics of how it works.
+
+```{r}
+dim(mwTrainSet)
+```
+
+I preprocess the data using the `recipes` package as in my [`xgboost`](https://venciso.netlify.app/2020/05/tidymodels-xgboost/) post.
+
+```{r message=FALSE, warning=FALSE, cache=FALSE, eval=FALSE}
+myRecipe<- recipes::recipe(outcome ~ ., data=mwTrainSet) %>% 
+  recipes::step_mutate(os = as.factor(os)) %>%
+  recipes::step_mutate(ob = as.factor(ob)) %>%
+  step_rm(id) %>%
+  step_mutate(w50s = ifelse(ds<=0.5,'TRUE','FALSE')) %>%
+  prep()
+```
+
+
+```{r message=FALSE, warning=FALSE, cache=FALSE, include=FALSE}
+myRecipe<- recipes::recipe(outcome ~ ., data=mwTrainSet) %>% 
+  recipes::step_mutate(outside.sideline=as.factor(outside.sideline)) %>%
+  recipes::step_mutate(outside.baseline=as.factor(outside.baseline)) %>%
+  recipes::step_mutate(same.side=as.factor(same.side)) %>%
+  recipes::step_mutate(seer.is.impact.player=as.factor(server.is.impact.player)) %>%
+  step_rm(id) %>%
+  step_rm(train) %>%
+  step_mutate(within.50.cm.of.sideline=ifelse(distance.from.sideline<=0.5,'TRUE','FALSE')) %>%
+  step_mutate(within.50.cm.of.baselineline=ifelse(depth<=0.5,'TRUE','FALSE')) %>%
+  step_mutate(within.25.cm.of.sideline=ifelse(distance.from.sideline<=0.25,'TRUE','FALSE')) %>%
+  step_mutate(within.25.cm.of.baselineline=ifelse(depth<=0.25,'TRUE','FALSE')) %>%
+  step_mutate(within.10.cm.of.sideline=ifelse(distance.from.sideline<=0.1,'TRUE','FALSE')) %>%
+  step_mutate(within.10.cm.of.baselineline=ifelse(depth<=0.1,'TRUE','FALSE')) %>%
+  step_mutate(within.05.cm.of.sideline=ifelse(distance.from.sideline<=0.05,'TRUE','FALSE')) %>%
+  step_mutate(within.05.cm.of.baselineline=ifelse(depth<=0.05,'TRUE','FALSE')) %>%
+  step_mutate(within.01.cm.of.sideline=ifelse(distance.from.sideline<=0.01,'TRUE','FALSE')) %>%
+  step_mutate(within.01.cm.of.baselineline=ifelse(depth<=0.01,'TRUE','FALSE')) %>%
+  step_mutate(impact.player.vertical.distance = player.impact.depth - player.depth) %>%
+  step_mutate(impact.player.horizontal.distance = player.impact.distance.from.center - player.distance.from.center) %>%
+  step_mutate(net.cleared.and.bounce.in=ifelse(outside.baseline=='FALSE' & outside.sideline=='FALSE' & net.clearance>=0,'TRUE','FALSE')) %>%
+  step_mutate(depth.from.net = ifelse(outside.baseline=='FALSE',11.885-depth,11.885+depth)) %>%
+  step_mutate(previous.depth.from.net = 11.885 - previous.depth) %>%
+  step_mutate(width.from.center = ifelse(outside.sideline=='FALSE',4.115-distance.from.sideline,4.115+distance.from.sideline)) %>%
+  step_mutate(previous.width.form.center = 4.115 - previous.distance.from.sideline) %>%
+  step_mutate(vertical.distance.from.bounce.to.impact = player.impact.depth - previous.depth.from.net) %>%
+  step_mutate(vertical.distance.from.prev.pos.to.bounce = player.depth - previous.depth.from.net) %>%
+  step_mutate(impact.player.distance.from.left.sideline = ifelse(hitpoint=='F',4.115+player.impact.distance.from.center,
+                                                                 ifelse(hitpoint=='B',4.115-player.impact.distance.from.center,4.115))) %>%
+  step_mutate(previous.distance.from.left.sideline = ifelse(previous.hitpoint=='F',4.115+previous.distance.from.sideline,
+                                                            ifelse(previous.hitpoint=='B',4.115-previous.distance.from.sideline,4.115))) %>%
+  step_mutate(horizontal.distance.from.bounce.to.impact = previous.distance.from.left.sideline - impact.player.distance.from.left.sideline) %>%
+  step_mutate(distance.bounce.to.impact = sqrt((horizontal.distance.from.bounce.to.impact)^2 + (vertical.distance.from.bounce.to.impact)^2)) %>%
+  prep()   
+```
+
+```{r}
+proc_mwTrainSet <- myRecipe %>% bake(mwTrainSet)
+proc_mwTestSet <- myRecipe %>% bake(mwTestSet)
+```
+ 
+Also, I get the names of the predictors in an array which will be used as input when the model is constructed.
+
+```{r message=FALSE, warning=FALSE, cache=TRUE, include=FALSE}
+proc_mwTrainSet <- proc_mwTrainSet %>% 
+  mutate(outcome2 = factor(case_when(outcome=="FE" ~ "Type1", outcome=="UE" ~ "Type2", outcome=="W" ~ "Type3")))
+proc_mwTrainSet <- proc_mwTrainSet %>% rename("outcome_og" = "outcome", "outcome" = "outcome2")
+proc_mwTrainSet$outcome_og <- NULL
+colnames(proc_mwTrainSet)[1:49] <- paste0("V",seq(1:49))
+
+proc_mwTestSet <- proc_mwTestSet %>% 
+  mutate(outcome2 = factor(case_when(outcome=="FE" ~ "Type1", outcome=="UE" ~ "Type2", outcome=="W" ~ "Type3")))
+proc_mwTestSet <- proc_mwTestSet %>% rename("outcome_og" = "outcome", "outcome" = "outcome2")
+proc_mwTestSet$outcome_og <- NULL
+colnames(proc_mwTestSet)[1:49] <- paste0("V",seq(1:49))
+```
+
+```{r}
+predictors <- setdiff(colnames(proc_mwTrainSet), c("outcome"))
+```
+
+The training dataset needs to be converted into an `H2O` dataset so it can be passed to the model.
+
+```{r, message=FALSE, warning=FALSE, include=FALSE}
+train.h2o <- as.h2o(proc_mwTrainSet, destination_frame = "train.h2o")
+test.h2o <- as.h2o(proc_mwTestSet, destination_frame = "test.h2o")
+```
+
+```{r, message=FALSE, warning=FALSE, eval=FALSE}
+train.h2o <- as.h2o(proc_mwTrainSet, destination_frame = "train.h2o")
+test.h2o <- as.h2o(proc_mwTestSet, destination_frame = "test.h2o")
+```
+
+Actually, all the preprocessing can be done using `H2O` specific commands rather than `R` commands. This will become necessary if your dataset becomes larger.
+
+I'm going to fit a gradient boosted tree model to the dataset. Originally I wanted to use `xgboost` here but I later discovered that `H2O` doesn't support it on Windows. However, if you're running Linux or OS X then you're in luck. If you're set on using it on Windows one solution could be to create a Linux VM.
+
+I specify the `gbm` model with some parameters I used when I trained the same dataset using `xgboost` with the rationale that they should translate reasonably well. Note that I'm doing 5-fold cross-validation through the `nfolds` parameter, I'm building 1000 trees and setting a stopping parameter.
+
+```{r, cache=TRUE, include=FALSE}
+tic()
+gbm <- h2o.gbm(x = predictors, y = "outcome", training_frame = train.h2o,
+               ntrees=1000, nfolds = 5 ,max_depth = 6, learn_rate = 0.01
+               ,min_rows = 5, col_sample_rate = 0.8 ,sample_rate = 0.75
+               ,stopping_rounds = 25, seed=2020)
+toc()
+```
+
+```{r, cache=TRUE, eval=FALSE}
+
+gbm <- h2o.gbm(x = predictors, y = "outcome", training_frame = train.h2o,
+               ntrees=1000, nfolds = 5 ,max_depth = 6, learn_rate = 0.01
+               ,min_rows = 5, col_sample_rate = 0.8 ,sample_rate = 0.75
+               ,stopping_rounds = 25, seed=2020)
+
+```
+
+When the cluster is initialised you also get access to a web-based UI. This UI can be accessed locally through a web browser on `http://localhost:54321/`. In theory you can do all your analysis and build all your models directly in the UI if you want without interacting with `R` at all. 
+
+Having the UI is handy to get a quick view of your model results without running any more commands. 
+
+![](/post/2020-06-14-ml-h2o_files/flow_ui.gif)
+
+Finally, we can feed new data into the model to get predictions.
+
+```{r, message=FALSE, warning=FALSE, echo=FALSE, include=FALSE}
+pred<-h2o.predict(object = gbm , newdata=test.h2o)
+```
+
+```{r, message=FALSE, warning=FALSE, eval=FALSE}
+pred<-h2o.predict(object = gbm , newdata=test.h2o)
+```
+
+```{r}
+kablify(head(pred,5))
+```
+
+I don't actually know the labels of my test set but if I did I could use the following to get the performance in the test set
+
+```{r,eval=FALSE}
+h2o.performance(model = gbm, newdata = test.h2o)
+```
+
+Once all the work is done we shut down the cluster
+```{r}
+h2o.shutdown()
+```
+
+That will do for now. This was a very light introduction into `H2O`, one more tool to be aware of if you work with machine learning. 
+
+
+
