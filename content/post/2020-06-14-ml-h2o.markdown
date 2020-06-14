@@ -5,7 +5,7 @@ date: '2020-06-14'
 slug: ML-H2O
 categories:
   - R
-  - Machine Larning
+  - Machine Learning
   - GBM
   - H2O
 tags:
@@ -35,7 +35,7 @@ h2o.init()
 ##  Connection successful!
 ## 
 ## R is connected to the H2O cluster: 
-##     H2O cluster uptime:         2 hours 7 minutes 
+##     H2O cluster uptime:         2 hours 14 minutes 
 ##     H2O cluster timezone:       Europe/London 
 ##     H2O data parsing timezone:  UTC 
 ##     H2O cluster version:        3.30.0.1 
