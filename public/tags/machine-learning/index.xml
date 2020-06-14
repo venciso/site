@@ -13,11 +13,124 @@
     <language>en-us</language>
 	
 	
-    <lastBuildDate>Wed, 27 May 2020 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Sun, 14 Jun 2020 00:00:00 +0000</lastBuildDate>
 	
     
         <atom:link href="/tags/machine-learning/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Machine learning using H2O</title>
+      <link>/2020/06/ml-h2o/</link>
+      <pubDate>Sun, 14 Jun 2020 00:00:00 +0000</pubDate>
+      
+      <guid>/2020/06/ml-h2o/</guid>
+	  <description>&lt;p&gt;This post will be a quick introduction to using &lt;code&gt;H2O&lt;/code&gt; through &lt;code&gt;R&lt;/code&gt;. &lt;code&gt;H2O&lt;/code&gt; is a platform for machine learning; it is distributed which means it can use all the cores in your computer offering parallelisation out of the box. You can also hook it up to already set up &lt;code&gt;Hadoop&lt;/code&gt; or &lt;code&gt;Spark&lt;/code&gt; clusters. It is also supposed to be industrial scale and able to cope with large amounts of data.&lt;/p&gt;
+&lt;p&gt;You can install &lt;code&gt;H2O&lt;/code&gt; from CRAN in the usual way using &lt;code&gt;install.packages()&lt;/code&gt;. Once you load the package you can initialise a cluster using the &lt;code&gt;h2o.init()&lt;/code&gt; command.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f0f0f0;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-r&#34; data-lang=&#34;r&#34;&gt;&lt;span style=&#34;color:#06287e&#34;&gt;require&lt;/span&gt;(h2o)
+&lt;span style=&#34;color:#06287e&#34;&gt;h2o.init&lt;/span&gt;()
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;pre&gt;&lt;code&gt;##  Connection successful!
+## 
+## R is connected to the H2O cluster: 
+##     H2O cluster uptime:         2 hours 17 minutes 
+##     H2O cluster timezone:       Europe/London 
+##     H2O data parsing timezone:  UTC 
+##     H2O cluster version:        3.30.0.1 
+##     H2O cluster version age:    2 months and 10 days  
+##     H2O cluster name:           H2O_started_from_R_victor.enciso_ird509 
+##     H2O cluster total nodes:    1 
+##     H2O cluster total memory:   3.26 GB 
+##     H2O cluster total cores:    4 
+##     H2O cluster allowed cores:  4 
+##     H2O cluster healthy:        TRUE 
+##     H2O Connection ip:          localhost 
+##     H2O Connection port:        54321 
+##     H2O Connection proxy:       NA 
+##     H2O Internal Security:      FALSE 
+##     H2O API Extensions:         Amazon S3, Algos, AutoML, Core V3, TargetEncoder, Core V4 
+##     R Version:                  R version 4.0.0 (2020-04-24)
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;You will get some detail about your cluster as above.&lt;/p&gt;
+&lt;p&gt;I&amp;rsquo;ve got a prepared data set that I can load in and start playing around with.&lt;/p&gt;
+&lt;p&gt;The dataset has 10,000 rows. Using H2O with such a small dataset might be overkill but I just want to illustrate the basics of how it works.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f0f0f0;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-r&#34; data-lang=&#34;r&#34;&gt;&lt;span style=&#34;color:#06287e&#34;&gt;dim&lt;/span&gt;(mwTrainSet)
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;pre&gt;&lt;code&gt;## [1] 10000    28
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;I preprocess the data using the &lt;code&gt;recipes&lt;/code&gt; package as in my &lt;a href=&#34;https://venciso.netlify.app/2020/05/tidymodels-xgboost/&#34;&gt;&lt;code&gt;xgboost&lt;/code&gt;&lt;/a&gt; post.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f0f0f0;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-r&#34; data-lang=&#34;r&#34;&gt;myRecipe&lt;span style=&#34;color:#666&#34;&gt;&amp;lt;-&lt;/span&gt; recipes&lt;span style=&#34;color:#666&#34;&gt;::&lt;/span&gt;&lt;span style=&#34;color:#06287e&#34;&gt;recipe&lt;/span&gt;(outcome &lt;span style=&#34;color:#666&#34;&gt;~&lt;/span&gt; ., data&lt;span style=&#34;color:#666&#34;&gt;=&lt;/span&gt;mwTrainSet) &lt;span style=&#34;color:#666&#34;&gt;%&amp;gt;%&lt;/span&gt; 
+  recipes&lt;span style=&#34;color:#666&#34;&gt;::&lt;/span&gt;&lt;span style=&#34;color:#06287e&#34;&gt;step_mutate&lt;/span&gt;(os &lt;span style=&#34;color:#666&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#06287e&#34;&gt;as.factor&lt;/span&gt;(os)) &lt;span style=&#34;color:#666&#34;&gt;%&amp;gt;%&lt;/span&gt;
+  recipes&lt;span style=&#34;color:#666&#34;&gt;::&lt;/span&gt;&lt;span style=&#34;color:#06287e&#34;&gt;step_mutate&lt;/span&gt;(ob &lt;span style=&#34;color:#666&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#06287e&#34;&gt;as.factor&lt;/span&gt;(ob)) &lt;span style=&#34;color:#666&#34;&gt;%&amp;gt;%&lt;/span&gt;
+  &lt;span style=&#34;color:#06287e&#34;&gt;step_rm&lt;/span&gt;(id) &lt;span style=&#34;color:#666&#34;&gt;%&amp;gt;%&lt;/span&gt;
+  &lt;span style=&#34;color:#06287e&#34;&gt;step_mutate&lt;/span&gt;(w50s &lt;span style=&#34;color:#666&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#06287e&#34;&gt;ifelse&lt;/span&gt;(ds&lt;span style=&#34;color:#666&#34;&gt;&amp;lt;=&lt;/span&gt;&lt;span style=&#34;color:#40a070&#34;&gt;0.5&lt;/span&gt;,&lt;span style=&#34;color:#4070a0&#34;&gt;&amp;#39;TRUE&amp;#39;&lt;/span&gt;,&lt;span style=&#34;color:#4070a0&#34;&gt;&amp;#39;FALSE&amp;#39;&lt;/span&gt;)) &lt;span style=&#34;color:#666&#34;&gt;%&amp;gt;%&lt;/span&gt;
+  &lt;span style=&#34;color:#06287e&#34;&gt;prep&lt;/span&gt;()
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f0f0f0;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-r&#34; data-lang=&#34;r&#34;&gt;proc_mwTrainSet &lt;span style=&#34;color:#666&#34;&gt;&amp;lt;-&lt;/span&gt; myRecipe &lt;span style=&#34;color:#666&#34;&gt;%&amp;gt;%&lt;/span&gt; &lt;span style=&#34;color:#06287e&#34;&gt;bake&lt;/span&gt;(mwTrainSet)
+proc_mwTestSet &lt;span style=&#34;color:#666&#34;&gt;&amp;lt;-&lt;/span&gt; myRecipe &lt;span style=&#34;color:#666&#34;&gt;%&amp;gt;%&lt;/span&gt; &lt;span style=&#34;color:#06287e&#34;&gt;bake&lt;/span&gt;(mwTestSet)
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Also, I get the names of the predictors in an array which will be used as input when the model is constructed.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f0f0f0;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-r&#34; data-lang=&#34;r&#34;&gt;predictors &lt;span style=&#34;color:#666&#34;&gt;&amp;lt;-&lt;/span&gt; &lt;span style=&#34;color:#06287e&#34;&gt;setdiff&lt;/span&gt;(&lt;span style=&#34;color:#06287e&#34;&gt;colnames&lt;/span&gt;(proc_mwTrainSet), &lt;span style=&#34;color:#06287e&#34;&gt;c&lt;/span&gt;(&lt;span style=&#34;color:#4070a0&#34;&gt;&amp;#34;outcome&amp;#34;&lt;/span&gt;))
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;The training dataset needs to be converted into an &lt;code&gt;H2O&lt;/code&gt; dataset so it can be passed to the model.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f0f0f0;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-r&#34; data-lang=&#34;r&#34;&gt;train.h2o &lt;span style=&#34;color:#666&#34;&gt;&amp;lt;-&lt;/span&gt; &lt;span style=&#34;color:#06287e&#34;&gt;as.h2o&lt;/span&gt;(proc_mwTrainSet, destination_frame &lt;span style=&#34;color:#666&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#4070a0&#34;&gt;&amp;#34;train.h2o&amp;#34;&lt;/span&gt;)
+test.h2o &lt;span style=&#34;color:#666&#34;&gt;&amp;lt;-&lt;/span&gt; &lt;span style=&#34;color:#06287e&#34;&gt;as.h2o&lt;/span&gt;(proc_mwTestSet, destination_frame &lt;span style=&#34;color:#666&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#4070a0&#34;&gt;&amp;#34;test.h2o&amp;#34;&lt;/span&gt;)
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Actually, all the preprocessing can be done using &lt;code&gt;H2O&lt;/code&gt; specific commands rather than &lt;code&gt;R&lt;/code&gt; commands. This will become necessary if your dataset becomes larger.&lt;/p&gt;
+&lt;p&gt;I&amp;rsquo;m going to fit a gradient boosted tree model to the dataset. Originally I wanted to use &lt;code&gt;xgboost&lt;/code&gt; here but I later discovered that &lt;code&gt;H2O&lt;/code&gt; doesn&amp;rsquo;t support it on Windows. However, if you&amp;rsquo;re running Linux or OS X then you&amp;rsquo;re in luck. If you&amp;rsquo;re set on using it on Windows one solution could be to create a Linux VM.&lt;/p&gt;
+&lt;p&gt;I specify the &lt;code&gt;gbm&lt;/code&gt; model with some parameters I used when I trained the same dataset using &lt;code&gt;xgboost&lt;/code&gt; with the rationale that they should translate reasonably well. Note that I&amp;rsquo;m doing 5-fold cross-validation through the &lt;code&gt;nfolds&lt;/code&gt; parameter, I&amp;rsquo;m building 1000 trees and setting a stopping parameter.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f0f0f0;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-r&#34; data-lang=&#34;r&#34;&gt;gbm &lt;span style=&#34;color:#666&#34;&gt;&amp;lt;-&lt;/span&gt; &lt;span style=&#34;color:#06287e&#34;&gt;h2o.gbm&lt;/span&gt;(x &lt;span style=&#34;color:#666&#34;&gt;=&lt;/span&gt; predictors, y &lt;span style=&#34;color:#666&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#4070a0&#34;&gt;&amp;#34;outcome&amp;#34;&lt;/span&gt;, training_frame &lt;span style=&#34;color:#666&#34;&gt;=&lt;/span&gt; train.h2o,
+               ntrees&lt;span style=&#34;color:#666&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#40a070&#34;&gt;1000&lt;/span&gt;, nfolds &lt;span style=&#34;color:#666&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#40a070&#34;&gt;5&lt;/span&gt; ,max_depth &lt;span style=&#34;color:#666&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#40a070&#34;&gt;6&lt;/span&gt;, learn_rate &lt;span style=&#34;color:#666&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#40a070&#34;&gt;0.01&lt;/span&gt;
+               ,min_rows &lt;span style=&#34;color:#666&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#40a070&#34;&gt;5&lt;/span&gt;, col_sample_rate &lt;span style=&#34;color:#666&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#40a070&#34;&gt;0.8&lt;/span&gt; ,sample_rate &lt;span style=&#34;color:#666&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#40a070&#34;&gt;0.75&lt;/span&gt;
+               ,stopping_rounds &lt;span style=&#34;color:#666&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#40a070&#34;&gt;25&lt;/span&gt;, seed&lt;span style=&#34;color:#666&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#40a070&#34;&gt;2020&lt;/span&gt;)
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;When the cluster is initialised you also get access to a web-based UI. This UI can be accessed locally through a web browser on &lt;code&gt;http://localhost:54321/&lt;/code&gt;. In theory you can do all your analysis and build all your models directly in the UI if you want without interacting with &lt;code&gt;R&lt;/code&gt; at all.&lt;/p&gt;
+&lt;p&gt;Having the UI is handy to get a quick view of your model results without running any more commands.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;/post/2020-06-14-ml-h2o_files/flow_ui.gif&#34; alt=&#34;&#34;&gt;&lt;/p&gt;
+&lt;p&gt;Finally, we can feed new data into the model to get predictions.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f0f0f0;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-r&#34; data-lang=&#34;r&#34;&gt;pred&lt;span style=&#34;color:#666&#34;&gt;&amp;lt;-&lt;/span&gt;&lt;span style=&#34;color:#06287e&#34;&gt;h2o.predict&lt;/span&gt;(object &lt;span style=&#34;color:#666&#34;&gt;=&lt;/span&gt; gbm , newdata&lt;span style=&#34;color:#666&#34;&gt;=&lt;/span&gt;test.h2o)
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f0f0f0;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-r&#34; data-lang=&#34;r&#34;&gt;&lt;span style=&#34;color:#06287e&#34;&gt;kablify&lt;/span&gt;(&lt;span style=&#34;color:#06287e&#34;&gt;head&lt;/span&gt;(pred,&lt;span style=&#34;color:#40a070&#34;&gt;5&lt;/span&gt;))
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;table class=&#34;table table-striped&#34; style=&#34;margin-left: auto; margin-right: auto;&#34;&gt;
+ &lt;thead&gt;
+  &lt;tr&gt;
+   &lt;th style=&#34;text-align:left;&#34;&gt; predict &lt;/th&gt;
+   &lt;th style=&#34;text-align:right;&#34;&gt; Type1 &lt;/th&gt;
+   &lt;th style=&#34;text-align:right;&#34;&gt; Type2 &lt;/th&gt;
+   &lt;th style=&#34;text-align:right;&#34;&gt; Type3 &lt;/th&gt;
+  &lt;/tr&gt;
+ &lt;/thead&gt;
+&lt;tbody&gt;
+  &lt;tr&gt;
+   &lt;td style=&#34;text-align:left;&#34;&gt; Type2 &lt;/td&gt;
+   &lt;td style=&#34;text-align:right;&#34;&gt; 0.0696576 &lt;/td&gt;
+   &lt;td style=&#34;text-align:right;&#34;&gt; 0.9231076 &lt;/td&gt;
+   &lt;td style=&#34;text-align:right;&#34;&gt; 0.0072348 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style=&#34;text-align:left;&#34;&gt; Type2 &lt;/td&gt;
+   &lt;td style=&#34;text-align:right;&#34;&gt; 0.0051987 &lt;/td&gt;
+   &lt;td style=&#34;text-align:right;&#34;&gt; 0.9566815 &lt;/td&gt;
+   &lt;td style=&#34;text-align:right;&#34;&gt; 0.0381198 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style=&#34;text-align:left;&#34;&gt; Type2 &lt;/td&gt;
+   &lt;td style=&#34;text-align:right;&#34;&gt; 0.0082406 &lt;/td&gt;
+   &lt;td style=&#34;text-align:right;&#34;&gt; 0.9884921 &lt;/td&gt;
+   &lt;td style=&#34;text-align:right;&#34;&gt; 0.0032673 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style=&#34;text-align:left;&#34;&gt; Type2 &lt;/td&gt;
+   &lt;td style=&#34;text-align:right;&#34;&gt; 0.0118451 &lt;/td&gt;
+   &lt;td style=&#34;text-align:right;&#34;&gt; 0.9852316 &lt;/td&gt;
+   &lt;td style=&#34;text-align:right;&#34;&gt; 0.0029233 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style=&#34;text-align:left;&#34;&gt; Type2 &lt;/td&gt;
+   &lt;td style=&#34;text-align:right;&#34;&gt; 0.1531306 &lt;/td&gt;
+   &lt;td style=&#34;text-align:right;&#34;&gt; 0.8428315 &lt;/td&gt;
+   &lt;td style=&#34;text-align:right;&#34;&gt; 0.0040379 &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;I don&amp;rsquo;t actually know the labels of my test set but if I did I could use the following to get the performance in the test set&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f0f0f0;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-r&#34; data-lang=&#34;r&#34;&gt;&lt;span style=&#34;color:#06287e&#34;&gt;h2o.performance&lt;/span&gt;(model &lt;span style=&#34;color:#666&#34;&gt;=&lt;/span&gt; gbm, newdata &lt;span style=&#34;color:#666&#34;&gt;=&lt;/span&gt; test.h2o)
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Once all the work is done we shut down the cluster&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#f0f0f0;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-r&#34; data-lang=&#34;r&#34;&gt;&lt;span style=&#34;color:#06287e&#34;&gt;h2o.shutdown&lt;/span&gt;()
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;pre&gt;&lt;code&gt;## Are you sure you want to shutdown the H2O instance running at http://localhost:54321/ (Y/N)?
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;That will do for now. This was a very light introduction into &lt;code&gt;H2O&lt;/code&gt;, one more tool to be aware of if you work with machine learning.&lt;/p&gt;
+</description>
+    </item>
     
     <item>
       <title>Tidymodels and XGBoost; a few learnings</title>
