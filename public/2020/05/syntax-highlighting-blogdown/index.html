@@ -216,12 +216,12 @@ blockquote,
 )
 </code></pre><p>It is functional but it makes the post look a bit samey. You can play around with the colour of the text to help differentiate between code and not-code.</p>
 <p>If you apply syntax highlighting you end up with something more like this:</p>
-<div class="highlight"><pre style="background-color:#f0f0f0;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r">xgboostParams <span style="color:#666">&lt;-</span> dials<span style="color:#666">::</span><span style="color:#06287e">parameters</span>(
-  <span style="color:#06287e">min_n</span>(),
-  <span style="color:#06287e">tree_depth</span>(),
-  <span style="color:#06287e">learn_rate</span>(),
-  <span style="color:#06287e">finalize</span>(<span style="color:#06287e">mtry</span>(),<span style="color:#06287e">select</span>(proc_mwTrainSet,<span style="color:#666">-</span>outcome)),
-  sample_size <span style="color:#666">=</span> <span style="color:#06287e">sample_prop</span>(<span style="color:#06287e">c</span>(<span style="color:#40a070">0.4</span>, <span style="color:#40a070">0.9</span>))
+<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r">xgboostParams &lt;- dials::<span style="color:#06b;font-weight:bold">parameters</span>(
+  <span style="color:#06b;font-weight:bold">min_n</span>(),
+  <span style="color:#06b;font-weight:bold">tree_depth</span>(),
+  <span style="color:#06b;font-weight:bold">learn_rate</span>(),
+  <span style="color:#06b;font-weight:bold">finalize</span>(<span style="color:#06b;font-weight:bold">mtry</span>(),<span style="color:#06b;font-weight:bold">select</span>(proc_mwTrainSet,-outcome)),
+  sample_size = <span style="color:#06b;font-weight:bold">sample_prop</span>(<span style="color:#06b;font-weight:bold">c</span>(<span style="color:#00d;font-weight:bold">0.4</span>, <span style="color:#00d;font-weight:bold">0.9</span>))
 )
 </code></pre></div><p>This looks much nicer in my opinion and makes the post more readable.</p>
 <p>So, how do you do it?</p>

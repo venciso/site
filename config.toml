@@ -72,7 +72,7 @@ theme = "minimal-bootstrap-hugo-theme"
     lineNos = false
     lineNumbersInTable = true
     noClasses = true
-    style = "friendly"
+    style = "pastie"
     tabWidth = 4
   [markup.tableOfContents]
     endLevel = 6
