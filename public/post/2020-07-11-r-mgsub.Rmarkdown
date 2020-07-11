@@ -1,0 +1,62 @@
+---
+title: 'Useful R functions: mgsub'
+author: ''
+date: '2020-07-11'
+slug: r-mgsub
+categories:
+  - R
+  - string substitution
+tags:
+  - R
+  - string substitution
+  - useful functions
+publishdate: '2020-07-11'
+lastmod: '2020-07-11'
+---
+
+Many a-time I come across R functions and packages that I was not aware existed. Once I find what I was looking for I always think 'Cool! Learned something new today'. However, most of the time the problem I was trying to solve is so specific that I end up not needing to use that new knowledge for a while.
+
+When I need to use that function I so painstakingly googled for again I end up needing to search for scripts where I might have used it or trying to remember the dates around which I was working on that problem. This can be very time consuming and the old memory is not as good as it used to be! So, I've decided to try to make life easier for myself and I'll start documenting those random but potentially very useful functions. 
+
+So, after all that rambling let's get to the point. In this first post I will talk about multiple string replacement using `mgsub`. 
+
+In base `R` if you want to find a replace a string you can use the `gsub` function. Let's say you have a table of names like this one. 
+
+```{r, warning=FALSE, message=FALSE}
+require(data.table)
+names <- data.table(names=c('Alice','Bob','Pedro','Alex'))
+names
+```
+
+Bob wasn't happy with his name and changed it to Bart. You could keep track of this change in a new column **names_1**
+
+```{r}
+names[,names_1 := gsub('Bob','Bart',names)]
+names
+```
+
+Pedro catches wind of this name change and thinks 'Bart's a pretty cool name, I'll change mine too!'. The list can be updated in one go by using an or condition inside `gsub`
+
+```{r}
+names[,names_2 := gsub('Bob|Pedro','Bart',names)]
+names
+```
+
+Now Bob feels like Pedro is cramping his style and decides he no longer wants to be called Bart but chooses Homer instead.
+
+This is where the multiple substitution and `mgsub` come in. The list can be updated in a single command.
+
+```{r, message=FALSE, warning=FALSE}
+require(mgsub)
+names[,names_3 := mgsub(names, c('Bob','Pedro'),c('Homer','Bart'))]
+names
+```
+
+Now you could question the need for a single command. You could just have two `gsub` commands and be done with it. 
+
+My particular use case was that I needed to do the string substitution inside a function. Of course you could pass the terms you want to substitute in a list or as several parameters but the code inside the function would need to recognise how many terms you are passing and generate the appropriate commands which sounds cumbersome to me. 
+
+Using `mgsub` you can pass all the terms as a single parameter and use a single command inside your function to deal with the substitutions. 
+
+Hope this helps someone. Thanks for reading!
+

@@ -204,8 +204,8 @@ blockquote,
 </p>
 <p>This post will be a quick introduction to using <code>H2O</code> through <code>R</code>. <code>H2O</code> is a platform for machine learning; it is distributed which means it can use all the cores in your computer offering parallelisation out of the box. You can also hook it up to already set up <code>Hadoop</code> or <code>Spark</code> clusters. It is also supposed to be industrial scale and able to cope with large amounts of data.</p>
 <p>You can install <code>H2O</code> from CRAN in the usual way using <code>install.packages()</code>. Once you load the package you can initialise a cluster using the <code>h2o.init()</code> command.</p>
-<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r"><span style="color:#06b;font-weight:bold">require</span>(h2o)
-<span style="color:#06b;font-weight:bold">h2o.init</span>()
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r"><span style="color:#a6e22e">require</span>(h2o)
+<span style="color:#a6e22e">h2o.init</span>()
 </code></pre></div><pre><code>##  Connection successful!
 ## 
 ## R is connected to the H2O cluster: 
@@ -229,35 +229,35 @@ blockquote,
 </code></pre><p>You will get some detail about your cluster as above.</p>
 <p>I&rsquo;ve got a prepared data set that I can load in and start playing around with.</p>
 <p>The dataset has 10,000 rows. Using H2O with such a small dataset might be overkill but I just want to illustrate the basics of how it works.</p>
-<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r"><span style="color:#06b;font-weight:bold">dim</span>(mwTrainSet)
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r"><span style="color:#a6e22e">dim</span>(mwTrainSet)
 </code></pre></div><pre><code>## [1] 10000    28
 </code></pre><p>I preprocess the data using the <code>recipes</code> package as in my <a href="https://venciso.netlify.app/2020/05/tidymodels-xgboost/"><code>xgboost</code></a> post.</p>
-<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r">myRecipe&lt;- recipes::<span style="color:#06b;font-weight:bold">recipe</span>(outcome ~ ., data=mwTrainSet) %&gt;% 
-  recipes::<span style="color:#06b;font-weight:bold">step_mutate</span>(os = <span style="color:#06b;font-weight:bold">as.factor</span>(os)) %&gt;%
-  recipes::<span style="color:#06b;font-weight:bold">step_mutate</span>(ob = <span style="color:#06b;font-weight:bold">as.factor</span>(ob)) %&gt;%
-  <span style="color:#06b;font-weight:bold">step_rm</span>(id) %&gt;%
-  <span style="color:#06b;font-weight:bold">step_mutate</span>(w50s = <span style="color:#06b;font-weight:bold">ifelse</span>(ds&lt;=<span style="color:#00d;font-weight:bold">0.5</span>,<span style="color:#d20;background-color:#fff0f0">&#39;TRUE&#39;</span>,<span style="color:#d20;background-color:#fff0f0">&#39;FALSE&#39;</span>)) %&gt;%
-  <span style="color:#06b;font-weight:bold">prep</span>()
-</code></pre></div><div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r">proc_mwTrainSet &lt;- myRecipe %&gt;% <span style="color:#06b;font-weight:bold">bake</span>(mwTrainSet)
-proc_mwTestSet &lt;- myRecipe %&gt;% <span style="color:#06b;font-weight:bold">bake</span>(mwTestSet)
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r">myRecipe<span style="color:#f92672">&lt;-</span> recipes<span style="color:#f92672">::</span><span style="color:#a6e22e">recipe</span>(outcome <span style="color:#f92672">~</span> ., data<span style="color:#f92672">=</span>mwTrainSet) <span style="color:#f92672">%&gt;%</span> 
+  recipes<span style="color:#f92672">::</span><span style="color:#a6e22e">step_mutate</span>(os <span style="color:#f92672">=</span> <span style="color:#a6e22e">as.factor</span>(os)) <span style="color:#f92672">%&gt;%</span>
+  recipes<span style="color:#f92672">::</span><span style="color:#a6e22e">step_mutate</span>(ob <span style="color:#f92672">=</span> <span style="color:#a6e22e">as.factor</span>(ob)) <span style="color:#f92672">%&gt;%</span>
+  <span style="color:#a6e22e">step_rm</span>(id) <span style="color:#f92672">%&gt;%</span>
+  <span style="color:#a6e22e">step_mutate</span>(w50s <span style="color:#f92672">=</span> <span style="color:#a6e22e">ifelse</span>(ds<span style="color:#f92672">&lt;=</span><span style="color:#ae81ff">0.5</span>,<span style="color:#e6db74">&#39;TRUE&#39;</span>,<span style="color:#e6db74">&#39;FALSE&#39;</span>)) <span style="color:#f92672">%&gt;%</span>
+  <span style="color:#a6e22e">prep</span>()
+</code></pre></div><div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r">proc_mwTrainSet <span style="color:#f92672">&lt;-</span> myRecipe <span style="color:#f92672">%&gt;%</span> <span style="color:#a6e22e">bake</span>(mwTrainSet)
+proc_mwTestSet <span style="color:#f92672">&lt;-</span> myRecipe <span style="color:#f92672">%&gt;%</span> <span style="color:#a6e22e">bake</span>(mwTestSet)
 </code></pre></div><p>Also, I get the names of the predictors in an array which will be used as input when the model is constructed.</p>
-<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r">predictors &lt;- <span style="color:#06b;font-weight:bold">setdiff</span>(<span style="color:#06b;font-weight:bold">colnames</span>(proc_mwTrainSet), <span style="color:#06b;font-weight:bold">c</span>(<span style="color:#d20;background-color:#fff0f0">&#34;outcome&#34;</span>))
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r">predictors <span style="color:#f92672">&lt;-</span> <span style="color:#a6e22e">setdiff</span>(<span style="color:#a6e22e">colnames</span>(proc_mwTrainSet), <span style="color:#a6e22e">c</span>(<span style="color:#e6db74">&#34;outcome&#34;</span>))
 </code></pre></div><p>The training dataset needs to be converted into an <code>H2O</code> dataset so it can be passed to the model.</p>
-<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r">train.h2o &lt;- <span style="color:#06b;font-weight:bold">as.h2o</span>(proc_mwTrainSet, destination_frame = <span style="color:#d20;background-color:#fff0f0">&#34;train.h2o&#34;</span>)
-test.h2o &lt;- <span style="color:#06b;font-weight:bold">as.h2o</span>(proc_mwTestSet, destination_frame = <span style="color:#d20;background-color:#fff0f0">&#34;test.h2o&#34;</span>)
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r">train.h2o <span style="color:#f92672">&lt;-</span> <span style="color:#a6e22e">as.h2o</span>(proc_mwTrainSet, destination_frame <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;train.h2o&#34;</span>)
+test.h2o <span style="color:#f92672">&lt;-</span> <span style="color:#a6e22e">as.h2o</span>(proc_mwTestSet, destination_frame <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;test.h2o&#34;</span>)
 </code></pre></div><p>Actually, all the preprocessing can be done using <code>H2O</code> specific commands rather than <code>R</code> commands. This will become necessary if your dataset becomes larger.</p>
 <p>I&rsquo;m going to fit a gradient boosted tree model to the dataset. Originally I wanted to use <code>xgboost</code> here but I later discovered that <code>H2O</code> doesn&rsquo;t support it on Windows. However, if you&rsquo;re running Linux or OS X then you&rsquo;re in luck. If you&rsquo;re set on using it on Windows one solution could be to create a Linux VM.</p>
 <p>I specify the <code>gbm</code> model with some parameters I used when I trained the same dataset using <code>xgboost</code> with the rationale that they should translate reasonably well. Note that I&rsquo;m doing 5-fold cross-validation through the <code>nfolds</code> parameter, I&rsquo;m building 1000 trees and setting a stopping parameter.</p>
-<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r">gbm &lt;- <span style="color:#06b;font-weight:bold">h2o.gbm</span>(x = predictors, y = <span style="color:#d20;background-color:#fff0f0">&#34;outcome&#34;</span>, training_frame = train.h2o,
-               ntrees=<span style="color:#00d;font-weight:bold">1000</span>, nfolds = <span style="color:#00d;font-weight:bold">5</span> ,max_depth = <span style="color:#00d;font-weight:bold">6</span>, learn_rate = <span style="color:#00d;font-weight:bold">0.01</span>
-               ,min_rows = <span style="color:#00d;font-weight:bold">5</span>, col_sample_rate = <span style="color:#00d;font-weight:bold">0.8</span> ,sample_rate = <span style="color:#00d;font-weight:bold">0.75</span>
-               ,stopping_rounds = <span style="color:#00d;font-weight:bold">25</span>, seed=<span style="color:#00d;font-weight:bold">2020</span>)
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r">gbm <span style="color:#f92672">&lt;-</span> <span style="color:#a6e22e">h2o.gbm</span>(x <span style="color:#f92672">=</span> predictors, y <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;outcome&#34;</span>, training_frame <span style="color:#f92672">=</span> train.h2o,
+               ntrees<span style="color:#f92672">=</span><span style="color:#ae81ff">1000</span>, nfolds <span style="color:#f92672">=</span> <span style="color:#ae81ff">5</span> ,max_depth <span style="color:#f92672">=</span> <span style="color:#ae81ff">6</span>, learn_rate <span style="color:#f92672">=</span> <span style="color:#ae81ff">0.01</span>
+               ,min_rows <span style="color:#f92672">=</span> <span style="color:#ae81ff">5</span>, col_sample_rate <span style="color:#f92672">=</span> <span style="color:#ae81ff">0.8</span> ,sample_rate <span style="color:#f92672">=</span> <span style="color:#ae81ff">0.75</span>
+               ,stopping_rounds <span style="color:#f92672">=</span> <span style="color:#ae81ff">25</span>, seed<span style="color:#f92672">=</span><span style="color:#ae81ff">2020</span>)
 </code></pre></div><p>When the cluster is initialised you also get access to a web-based UI. This UI can be accessed locally through a web browser on <code>http://localhost:54321/</code>. In theory you can do all your analysis and build all your models directly in the UI if you want without interacting with <code>R</code> at all.</p>
 <p>Having the UI is handy to get a quick view of your model results without running any more commands.</p>
 <p><img src="/post/2020-06-14-ml-h2o_files/flow_ui.gif" alt=""></p>
 <p>Finally, we can feed new data into the model to get predictions.</p>
-<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r">pred&lt;-<span style="color:#06b;font-weight:bold">h2o.predict</span>(object = gbm , newdata=test.h2o)
-</code></pre></div><div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r"><span style="color:#06b;font-weight:bold">kablify</span>(<span style="color:#06b;font-weight:bold">head</span>(pred,<span style="color:#00d;font-weight:bold">5</span>))
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r">pred<span style="color:#f92672">&lt;-</span><span style="color:#a6e22e">h2o.predict</span>(object <span style="color:#f92672">=</span> gbm , newdata<span style="color:#f92672">=</span>test.h2o)
+</code></pre></div><div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r"><span style="color:#a6e22e">kablify</span>(<span style="color:#a6e22e">head</span>(pred,<span style="color:#ae81ff">5</span>))
 </code></pre></div><table class="table table-striped" style="margin-left: auto; margin-right: auto;">
  <thead>
   <tr>
@@ -301,9 +301,9 @@ test.h2o &lt;- <span style="color:#06b;font-weight:bold">as.h2o</span>(proc_mwTe
 </tbody>
 </table>
 <p>I don&rsquo;t actually know the labels of my test set but if I did I could use the following to get the performance in the test set</p>
-<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r"><span style="color:#06b;font-weight:bold">h2o.performance</span>(model = gbm, newdata = test.h2o)
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r"><span style="color:#a6e22e">h2o.performance</span>(model <span style="color:#f92672">=</span> gbm, newdata <span style="color:#f92672">=</span> test.h2o)
 </code></pre></div><p>Once all the work is done we shut down the cluster</p>
-<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r"><span style="color:#06b;font-weight:bold">h2o.shutdown</span>()
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r"><span style="color:#a6e22e">h2o.shutdown</span>()
 </code></pre></div><pre><code>## Are you sure you want to shutdown the H2O instance running at http://localhost:54321/ (Y/N)?
 </code></pre><p>That will do for now. This was a very light introduction into <code>H2O</code>, one more tool to be aware of if you work with machine learning.</p>
 

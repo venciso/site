@@ -206,48 +206,48 @@ blockquote,
 <p>Tidymodels is a collection of packages that aims to standardise model creation by providing commands that can be applied across different R packages. For example, once the code is written to fit an XGBoost model a large amount of the same code could be used to fit a C5.0 algorithm.</p>
 <p>I will look at a dataset which I have analysed before so I know what to expect and I can compare the <code>tidymodels</code> steps with the ones I implemented originally.</p>
 <p>First let&rsquo;s load the necessary packages. I&rsquo;ll go through what each of the <code>tidymodels</code> packages does as we go along. We also call <code>doParallel</code> to enable parallelisation.</p>
-<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r"><span style="color:#06b;font-weight:bold">require</span>(dplyr)
-<span style="color:#06b;font-weight:bold">require</span>(rsample)
-<span style="color:#06b;font-weight:bold">require</span>(recipes)
-<span style="color:#06b;font-weight:bold">require</span>(parsnip)
-<span style="color:#06b;font-weight:bold">require</span>(tune)
-<span style="color:#06b;font-weight:bold">require</span>(dials)
-<span style="color:#06b;font-weight:bold">require</span>(workflows)
-<span style="color:#06b;font-weight:bold">require</span>(yardstick)
-<span style="color:#06b;font-weight:bold">require</span>(knitr)
-<span style="color:#06b;font-weight:bold">require</span>(kableExtra)
-<span style="color:#06b;font-weight:bold">require</span>(xgboost)
-<span style="color:#06b;font-weight:bold">require</span>(ggplot2)
-<span style="color:#06b;font-weight:bold">require</span>(data.table)
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r"><span style="color:#a6e22e">require</span>(dplyr)
+<span style="color:#a6e22e">require</span>(rsample)
+<span style="color:#a6e22e">require</span>(recipes)
+<span style="color:#a6e22e">require</span>(parsnip)
+<span style="color:#a6e22e">require</span>(tune)
+<span style="color:#a6e22e">require</span>(dials)
+<span style="color:#a6e22e">require</span>(workflows)
+<span style="color:#a6e22e">require</span>(yardstick)
+<span style="color:#a6e22e">require</span>(knitr)
+<span style="color:#a6e22e">require</span>(kableExtra)
+<span style="color:#a6e22e">require</span>(xgboost)
+<span style="color:#a6e22e">require</span>(ggplot2)
+<span style="color:#a6e22e">require</span>(data.table)
 
-<span style="color:#888">#Parallelisation</span>
-<span style="color:#06b;font-weight:bold">require</span>(doParallel)
-cores &lt;- parallel::<span style="color:#06b;font-weight:bold">detectCores</span>(logical = <span style="color:#080;font-weight:bold">FALSE</span>)
-<span style="color:#06b;font-weight:bold">registerDoParallel</span>(cores = cores)
+<span style="color:#75715e">#Parallelisation</span>
+<span style="color:#a6e22e">require</span>(doParallel)
+cores <span style="color:#f92672">&lt;-</span> parallel<span style="color:#f92672">::</span><span style="color:#a6e22e">detectCores</span>(logical <span style="color:#f92672">=</span> <span style="color:#66d9ef">FALSE</span>)
+<span style="color:#a6e22e">registerDoParallel</span>(cores <span style="color:#f92672">=</span> cores)
 </code></pre></div><p>The first step is to load in the data and apply any relevant pre-processing steps. Here I won&rsquo;t focus on exploring the data, I&rsquo;m more interested in following the <code>tidymodels</code> workflow. Also, I can&rsquo;t talk about the details of this dataset too much for privacy reasons.</p>
 <p>This dataset is already split in training and testing.</p>
-<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r"><span style="color:#06b;font-weight:bold">dim</span>(mwTrainSet)
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r"><span style="color:#a6e22e">dim</span>(mwTrainSet)
 </code></pre></div><pre><code>## [1] 10000    28
 </code></pre><h3 id="preprocessing">Preprocessing</h3>
 <p>The <code>recipes</code> package can be used to handle preprocessing. You need to build a recipe object that will contain a number of different steps to be followed. This recipe can then be applied to other data, e.g. testing data or new data from the same source.</p>
 <p><code>recipes</code> contains a large number of <code>step</code> functions that aim to account for any necessity you will need in your preprocessing.</p>
-<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r">myRecipe&lt;- recipes::<span style="color:#06b;font-weight:bold">recipe</span>(outcome ~ ., data=mwTrainSet) %&gt;% 
-  recipes::<span style="color:#06b;font-weight:bold">step_mutate</span>(os = <span style="color:#06b;font-weight:bold">as.factor</span>(os)) %&gt;%
-  recipes::<span style="color:#06b;font-weight:bold">step_mutate</span>(ob = <span style="color:#06b;font-weight:bold">as.factor</span>(ob)) %&gt;%
-  <span style="color:#06b;font-weight:bold">step_rm</span>(id) %&gt;%
-  <span style="color:#06b;font-weight:bold">step_mutate</span>(w50s = <span style="color:#06b;font-weight:bold">ifelse</span>(ds&lt;=<span style="color:#00d;font-weight:bold">0.5</span>,<span style="color:#d20;background-color:#fff0f0">&#39;TRUE&#39;</span>,<span style="color:#d20;background-color:#fff0f0">&#39;FALSE&#39;</span>)) %&gt;%
-  <span style="color:#06b;font-weight:bold">prep</span>()
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r">myRecipe<span style="color:#f92672">&lt;-</span> recipes<span style="color:#f92672">::</span><span style="color:#a6e22e">recipe</span>(outcome <span style="color:#f92672">~</span> ., data<span style="color:#f92672">=</span>mwTrainSet) <span style="color:#f92672">%&gt;%</span> 
+  recipes<span style="color:#f92672">::</span><span style="color:#a6e22e">step_mutate</span>(os <span style="color:#f92672">=</span> <span style="color:#a6e22e">as.factor</span>(os)) <span style="color:#f92672">%&gt;%</span>
+  recipes<span style="color:#f92672">::</span><span style="color:#a6e22e">step_mutate</span>(ob <span style="color:#f92672">=</span> <span style="color:#a6e22e">as.factor</span>(ob)) <span style="color:#f92672">%&gt;%</span>
+  <span style="color:#a6e22e">step_rm</span>(id) <span style="color:#f92672">%&gt;%</span>
+  <span style="color:#a6e22e">step_mutate</span>(w50s <span style="color:#f92672">=</span> <span style="color:#a6e22e">ifelse</span>(ds<span style="color:#f92672">&lt;=</span><span style="color:#ae81ff">0.5</span>,<span style="color:#e6db74">&#39;TRUE&#39;</span>,<span style="color:#e6db74">&#39;FALSE&#39;</span>)) <span style="color:#f92672">%&gt;%</span>
+  <span style="color:#a6e22e">prep</span>()
 </code></pre></div><p>This is not my recipe in full but you can see how the process works. <code>os</code> and <code>ob</code> are logical variables and I want to convert them to factors as required by XGBoost. I&rsquo;m also removing the <code>id</code> variable and creating a new variable <code>w50s</code>.</p>
 <p>Here I would like to note that if the logical variables were categorical instead I could have used a step like <code>step_string2factor(all_nominal())</code> to convert them all into factors at the same time. However, at this time I&rsquo;m not aware that the required <code>all_logical</code> or <code>step_logic2factor</code> exist so I mutate the variables one by one. There is an open issue with this request <a href="https://github.com/tidymodels/recipes/issues/193">here</a>.</p>
 <p>You can find a list of all step functions available <a href="https://recipes.tidymodels.org/reference/">here</a>.</p>
 <p>Now that the recipe is built we can use the <code>bake</code> function to actually run our data through it. I will save the modified dataset in a new object.</p>
-<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r">proc_mwTrainSet &lt;- myRecipe %&gt;% <span style="color:#06b;font-weight:bold">bake</span>(mwTrainSet)
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r">proc_mwTrainSet <span style="color:#f92672">&lt;-</span> myRecipe <span style="color:#f92672">%&gt;%</span> <span style="color:#a6e22e">bake</span>(mwTrainSet)
 </code></pre></div><h3 id="cross-validation">Cross-validation</h3>
 <p>Moving along the model-building pipeline we want to create some cross-validation folds from our training set. We will use these folds during the tuning process. For this purpose I use the <code>vfold_cv</code> function from <code>rsample</code> which in my case creates 5 folds of the processed data with each fold split with an 80/20 ratio. I also set the seed for reproducibility.</p>
-<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r"><span style="color:#06b;font-weight:bold">set.seed</span>(<span style="color:#00d;font-weight:bold">2020</span>)
-cvFolds &lt;- mwTrainSet %&gt;% 
-  <span style="color:#06b;font-weight:bold">bake</span>(myRecipe, new_data = .) %&gt;%
-  rsample::<span style="color:#06b;font-weight:bold">vfold_cv</span>(v = <span style="color:#00d;font-weight:bold">5</span>)
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r"><span style="color:#a6e22e">set.seed</span>(<span style="color:#ae81ff">2020</span>)
+cvFolds <span style="color:#f92672">&lt;-</span> mwTrainSet <span style="color:#f92672">%&gt;%</span> 
+  <span style="color:#a6e22e">bake</span>(myRecipe, new_data <span style="color:#f92672">=</span> .) <span style="color:#f92672">%&gt;%</span>
+  rsample<span style="color:#f92672">::</span><span style="color:#a6e22e">vfold_cv</span>(v <span style="color:#f92672">=</span> <span style="color:#ae81ff">5</span>)
 
 cvFolds
 </code></pre></div><pre><code>## #  5-fold cross-validation 
@@ -261,17 +261,17 @@ cvFolds
 ## 5 &lt;split [8K/2K]&gt; Fold5
 </code></pre><h3 id="model-specification">Model specification</h3>
 <p>We have a processed dataset and we know how we want to validate it so we can now specify the model we want to fit to the data.</p>
-<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r">xgmodel&lt;-parsnip::<span style="color:#06b;font-weight:bold">boost_tree</span>(
-  mode = <span style="color:#d20;background-color:#fff0f0">&#34;classification&#34;</span>,
-  trees = <span style="color:#00d;font-weight:bold">1000</span>, <span style="color:#888">#nrounds</span>
-  learn_rate = <span style="color:#06b;font-weight:bold">tune</span>(), <span style="color:#888">#eta</span>
-  sample_size = <span style="color:#06b;font-weight:bold">tune</span>(), <span style="color:#888">#subsample</span>
-  mtry = <span style="color:#06b;font-weight:bold">tune</span>(), <span style="color:#888">#colsample_bytree</span>
-  min_n = <span style="color:#06b;font-weight:bold">tune</span>(), <span style="color:#888">#min_child_weight</span>
-  tree_depth = <span style="color:#06b;font-weight:bold">tune</span>() <span style="color:#888">#max_depth</span>
-) %&gt;%
-  <span style="color:#06b;font-weight:bold">set_engine</span>(<span style="color:#d20;background-color:#fff0f0">&#34;xgboost&#34;</span>, objective = <span style="color:#d20;background-color:#fff0f0">&#34;multi:softprob&#34;</span>,
-             lambda=<span style="color:#00d;font-weight:bold">0</span>, alpha=<span style="color:#00d;font-weight:bold">1</span>, num_class=<span style="color:#00d;font-weight:bold">3</span>,verbose=<span style="color:#00d;font-weight:bold">1</span>)
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r">xgmodel<span style="color:#f92672">&lt;-</span>parsnip<span style="color:#f92672">::</span><span style="color:#a6e22e">boost_tree</span>(
+  mode <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;classification&#34;</span>,
+  trees <span style="color:#f92672">=</span> <span style="color:#ae81ff">1000</span>, <span style="color:#75715e">#nrounds</span>
+  learn_rate <span style="color:#f92672">=</span> <span style="color:#a6e22e">tune</span>(), <span style="color:#75715e">#eta</span>
+  sample_size <span style="color:#f92672">=</span> <span style="color:#a6e22e">tune</span>(), <span style="color:#75715e">#subsample</span>
+  mtry <span style="color:#f92672">=</span> <span style="color:#a6e22e">tune</span>(), <span style="color:#75715e">#colsample_bytree</span>
+  min_n <span style="color:#f92672">=</span> <span style="color:#a6e22e">tune</span>(), <span style="color:#75715e">#min_child_weight</span>
+  tree_depth <span style="color:#f92672">=</span> <span style="color:#a6e22e">tune</span>() <span style="color:#75715e">#max_depth</span>
+) <span style="color:#f92672">%&gt;%</span>
+  <span style="color:#a6e22e">set_engine</span>(<span style="color:#e6db74">&#34;xgboost&#34;</span>, objective <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;multi:softprob&#34;</span>,
+             lambda<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span>, alpha<span style="color:#f92672">=</span><span style="color:#ae81ff">1</span>, num_class<span style="color:#f92672">=</span><span style="color:#ae81ff">3</span>,verbose<span style="color:#f92672">=</span><span style="color:#ae81ff">1</span>)
 
 xgmodel
 </code></pre></div><pre><code>## Boosted Tree Model Specification (classification)
@@ -301,18 +301,18 @@ xgmodel
 <h3 id="tuning-the-model">Tuning the model</h3>
 <p>We now turn to the <code>dials</code> package. To me this is where <code>tiymodels</code> provides its biggest benefits. It gives the user the ability to tune models in a reproducible manner that is easy to replicate.</p>
 <p>First, we need to set up a <code>parameters</code> object with the parameters we want to be tuned.</p>
-<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r">xgboostParams &lt;- dials::<span style="color:#06b;font-weight:bold">parameters</span>(
-  <span style="color:#06b;font-weight:bold">min_n</span>(),
-  <span style="color:#06b;font-weight:bold">tree_depth</span>(),
-  <span style="color:#06b;font-weight:bold">learn_rate</span>(),
-  <span style="color:#06b;font-weight:bold">finalize</span>(<span style="color:#06b;font-weight:bold">mtry</span>(),<span style="color:#06b;font-weight:bold">select</span>(proc_mwTrainSet,-outcome)),
-  sample_size = <span style="color:#06b;font-weight:bold">sample_prop</span>(<span style="color:#06b;font-weight:bold">c</span>(<span style="color:#00d;font-weight:bold">0.4</span>, <span style="color:#00d;font-weight:bold">0.9</span>))
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r">xgboostParams <span style="color:#f92672">&lt;-</span> dials<span style="color:#f92672">::</span><span style="color:#a6e22e">parameters</span>(
+  <span style="color:#a6e22e">min_n</span>(),
+  <span style="color:#a6e22e">tree_depth</span>(),
+  <span style="color:#a6e22e">learn_rate</span>(),
+  <span style="color:#a6e22e">finalize</span>(<span style="color:#a6e22e">mtry</span>(),<span style="color:#a6e22e">select</span>(proc_mwTrainSet,<span style="color:#f92672">-</span>outcome)),
+  sample_size <span style="color:#f92672">=</span> <span style="color:#a6e22e">sample_prop</span>(<span style="color:#a6e22e">c</span>(<span style="color:#ae81ff">0.4</span>, <span style="color:#ae81ff">0.9</span>))
 )
 </code></pre></div><p>Note that, <code>mtry</code> had to be treated differently and we had to &lsquo;finalize&rsquo; it. The reason being that for parameters whose range depends on the data set the user has to provide the range. As <code>mtry()</code> is the number of variables used in the making of each tree we need to bound it by the number of variables available.</p>
-<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r"><span style="color:#06b;font-weight:bold">mtry</span>()
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r"><span style="color:#a6e22e">mtry</span>()
 </code></pre></div><pre><code>## # Randomly Selected Predictors  (quantitative)
 ## Range: [1, ?]
-</code></pre><div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r"><span style="color:#06b;font-weight:bold">finalize</span>(<span style="color:#06b;font-weight:bold">mtry</span>(),<span style="color:#06b;font-weight:bold">select</span>(proc_mwTrainSet,-outcome))
+</code></pre><div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r"><span style="color:#a6e22e">finalize</span>(<span style="color:#a6e22e">mtry</span>(),<span style="color:#a6e22e">select</span>(proc_mwTrainSet,<span style="color:#f92672">-</span>outcome))
 </code></pre></div><pre><code>## # Randomly Selected Predictors  (quantitative)
 ## Range: [1, 49]
 </code></pre><p>Another quirk we encounter here is that <code>boost_tree</code> takes the parameter <code>sample_size</code> as integer but XGBoost requires this parameter as a proportion, hence we use <code>sample_prop</code> to specify the range.</p>
@@ -321,11 +321,11 @@ xgmodel
 <p>Experimental designs for computer experiments are used to construct parameter grids that try to cover the parameter space such that any portion of the space has an observed combination that is not too far from it.</p>
 </blockquote>
 <p>So, we are letting <code>dials</code> define a grid for us that will explore as much as the parameter space as possible. I will set the number of combinations to 100.</p>
-<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r"><span style="color:#06b;font-weight:bold">set.seed</span>(<span style="color:#00d;font-weight:bold">2020</span>)
-xgGrid &lt;- dials::<span style="color:#06b;font-weight:bold">grid_max_entropy</span>(xgboostParams, size = <span style="color:#00d;font-weight:bold">100</span>)
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r"><span style="color:#a6e22e">set.seed</span>(<span style="color:#ae81ff">2020</span>)
+xgGrid <span style="color:#f92672">&lt;-</span> dials<span style="color:#f92672">::</span><span style="color:#a6e22e">grid_max_entropy</span>(xgboostParams, size <span style="color:#f92672">=</span> <span style="color:#ae81ff">100</span>)
 
-<span style="color:#888">#knitr::kable(head(xgGrid))</span>
-<span style="color:#06b;font-weight:bold">kablify</span>(xgGrid[1:<span style="color:#00d;font-weight:bold">5</span>,])
+<span style="color:#75715e">#knitr::kable(head(xgGrid))</span>
+<span style="color:#a6e22e">kablify</span>(xgGrid[1<span style="color:#f92672">:</span><span style="color:#ae81ff">5</span>,])
 </code></pre></div><table class="table table-striped" style="margin-left: auto; margin-right: auto;">
  <thead>
   <tr>
@@ -375,51 +375,51 @@ xgGrid &lt;- dials::<span style="color:#06b;font-weight:bold">grid_max_entropy</
 </tbody>
 </table>
 <p>This is great. When I first fit this model I was using a custom built function for tuning that I found on stackoverflow.</p>
-<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r"><span style="color:#06b;font-weight:bold">set.seed</span>(<span style="color:#00d;font-weight:bold">1234</span>)
-searchGridSubCol &lt;- <span style="color:#06b;font-weight:bold">expand.grid</span>(min_child_weight=<span style="color:#06b;font-weight:bold">c</span>(<span style="color:#00d;font-weight:bold">2</span>),
-                                subsample = <span style="color:#06b;font-weight:bold">c</span>(<span style="color:#00d;font-weight:bold">0.75</span>,<span style="color:#00d;font-weight:bold">0.6</span>,<span style="color:#00d;font-weight:bold">0.9</span>), 
-                                colsample_bytree = <span style="color:#06b;font-weight:bold">c</span>(<span style="color:#00d;font-weight:bold">0.6</span>,<span style="color:#00d;font-weight:bold">0.8</span>),
-                                lam = <span style="color:#06b;font-weight:bold">c</span>(<span style="color:#00d;font-weight:bold">2</span>),
-                                alph=<span style="color:#06b;font-weight:bold">c</span>(<span style="color:#00d;font-weight:bold">0</span>),
-                                depth=<span style="color:#06b;font-weight:bold">c</span>(<span style="color:#00d;font-weight:bold">6</span>,<span style="color:#00d;font-weight:bold">10</span>,<span style="color:#00d;font-weight:bold">3</span>),
-                                etaa=<span style="color:#06b;font-weight:bold">c</span>(<span style="color:#00d;font-weight:bold">0.009</span>,<span style="color:#00d;font-weight:bold">0.011</span>,<span style="color:#00d;font-weight:bold">0.013</span>,<span style="color:#00d;font-weight:bold">0.014</span>)
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r"><span style="color:#a6e22e">set.seed</span>(<span style="color:#ae81ff">1234</span>)
+searchGridSubCol <span style="color:#f92672">&lt;-</span> <span style="color:#a6e22e">expand.grid</span>(min_child_weight<span style="color:#f92672">=</span><span style="color:#a6e22e">c</span>(<span style="color:#ae81ff">2</span>),
+                                subsample <span style="color:#f92672">=</span> <span style="color:#a6e22e">c</span>(<span style="color:#ae81ff">0.75</span>,<span style="color:#ae81ff">0.6</span>,<span style="color:#ae81ff">0.9</span>), 
+                                colsample_bytree <span style="color:#f92672">=</span> <span style="color:#a6e22e">c</span>(<span style="color:#ae81ff">0.6</span>,<span style="color:#ae81ff">0.8</span>),
+                                lam <span style="color:#f92672">=</span> <span style="color:#a6e22e">c</span>(<span style="color:#ae81ff">2</span>),
+                                alph<span style="color:#f92672">=</span><span style="color:#a6e22e">c</span>(<span style="color:#ae81ff">0</span>),
+                                depth<span style="color:#f92672">=</span><span style="color:#a6e22e">c</span>(<span style="color:#ae81ff">6</span>,<span style="color:#ae81ff">10</span>,<span style="color:#ae81ff">3</span>),
+                                etaa<span style="color:#f92672">=</span><span style="color:#a6e22e">c</span>(<span style="color:#ae81ff">0.009</span>,<span style="color:#ae81ff">0.011</span>,<span style="color:#ae81ff">0.013</span>,<span style="color:#ae81ff">0.014</span>)
                                 )
-ntrees &lt;- <span style="color:#00d;font-weight:bold">5000</span>
-mllHyperparameters &lt;- <span style="color:#06b;font-weight:bold">apply</span>(searchGridSubCol, <span style="color:#00d;font-weight:bold">1</span>, <span style="color:#06b;font-weight:bold">function</span>(parameterList){
+ntrees <span style="color:#f92672">&lt;-</span> <span style="color:#ae81ff">5000</span>
+mllHyperparameters <span style="color:#f92672">&lt;-</span> <span style="color:#a6e22e">apply</span>(searchGridSubCol, <span style="color:#ae81ff">1</span>, <span style="color:#a6e22e">function</span>(parameterList){
   
-  <span style="color:#888">#Extract Parameters to test</span>
-  currentSubsampleRate &lt;- parameterList[[<span style="color:#d20;background-color:#fff0f0">&#34;subsample&#34;</span>]]
-  currentColsampleRate &lt;- parameterList[[<span style="color:#d20;background-color:#fff0f0">&#34;colsample_bytree&#34;</span>]]
-  currentMCW &lt;- parameterList[[<span style="color:#d20;background-color:#fff0f0">&#34;min_child_weight&#34;</span>]]
-  currentLambda &lt;- parameterList[[<span style="color:#d20;background-color:#fff0f0">&#34;lam&#34;</span>]]
-  currentAlpha &lt;- parameterList[[<span style="color:#d20;background-color:#fff0f0">&#34;alph&#34;</span>]]
-  currentDepth &lt;- parameterList[[<span style="color:#d20;background-color:#fff0f0">&#34;depth&#34;</span>]]
-  currentEta &lt;- parameterList[[<span style="color:#d20;background-color:#fff0f0">&#34;etaa&#34;</span>]]
+  <span style="color:#75715e">#Extract Parameters to test</span>
+  currentSubsampleRate <span style="color:#f92672">&lt;-</span> parameterList[[<span style="color:#e6db74">&#34;subsample&#34;</span>]]
+  currentColsampleRate <span style="color:#f92672">&lt;-</span> parameterList[[<span style="color:#e6db74">&#34;colsample_bytree&#34;</span>]]
+  currentMCW <span style="color:#f92672">&lt;-</span> parameterList[[<span style="color:#e6db74">&#34;min_child_weight&#34;</span>]]
+  currentLambda <span style="color:#f92672">&lt;-</span> parameterList[[<span style="color:#e6db74">&#34;lam&#34;</span>]]
+  currentAlpha <span style="color:#f92672">&lt;-</span> parameterList[[<span style="color:#e6db74">&#34;alph&#34;</span>]]
+  currentDepth <span style="color:#f92672">&lt;-</span> parameterList[[<span style="color:#e6db74">&#34;depth&#34;</span>]]
+  currentEta <span style="color:#f92672">&lt;-</span> parameterList[[<span style="color:#e6db74">&#34;etaa&#34;</span>]]
   
-  xgb_params &lt;- <span style="color:#06b;font-weight:bold">list</span>(<span style="color:#d20;background-color:#fff0f0">&#34;objective&#34;</span> = <span style="color:#d20;background-color:#fff0f0">&#34;multi:softprob&#34;</span>,
-                     <span style="color:#d20;background-color:#fff0f0">&#34;eval_metric&#34;</span> = <span style="color:#d20;background-color:#fff0f0">&#34;mlogloss&#34;</span>,
-                     <span style="color:#d20;background-color:#fff0f0">&#34;num_class&#34;</span> = <span style="color:#00d;font-weight:bold">3</span>,
-                     <span style="color:#d20;background-color:#fff0f0">&#34;eta&#34;</span> = currentEta,
-                     subsample = currentSubsampleRate,
-                     colsample_bytree= currentColsampleRate,
-                     min_child_weight=currentMCW,
-                     lambda=currentLambda,
-                     alpha=currentAlpha,
-                     max_depth=currentDepth)
+  xgb_params <span style="color:#f92672">&lt;-</span> <span style="color:#a6e22e">list</span>(<span style="color:#e6db74">&#34;objective&#34;</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;multi:softprob&#34;</span>,
+                     <span style="color:#e6db74">&#34;eval_metric&#34;</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;mlogloss&#34;</span>,
+                     <span style="color:#e6db74">&#34;num_class&#34;</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">3</span>,
+                     <span style="color:#e6db74">&#34;eta&#34;</span> <span style="color:#f92672">=</span> currentEta,
+                     subsample <span style="color:#f92672">=</span> currentSubsampleRate,
+                     colsample_bytree<span style="color:#f92672">=</span> currentColsampleRate,
+                     min_child_weight<span style="color:#f92672">=</span>currentMCW,
+                     lambda<span style="color:#f92672">=</span>currentLambda,
+                     alpha<span style="color:#f92672">=</span>currentAlpha,
+                     max_depth<span style="color:#f92672">=</span>currentDepth)
 })
 </code></pre></div><p>I did quite an extensive search but I always chose values in incremental steps, e.g., for <code>eta</code> I would try 0.1,0.15,0.2,&hellip; Using <code>dials</code> you might get to combinations that you didn&rsquo;t think about but mostly it&rsquo;ll optimise how to set the parameter combinations given the size parameter.</p>
 <p>Next, we create a workflow from <code>workflows</code> that we will pass into the tuning object in the following step. We specify the formula for the model we want to fit based on the dependent variable <code>outcome</code>.</p>
-<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r">xgWorkflow &lt;- 
-  workflows::<span style="color:#06b;font-weight:bold">workflow</span>() %&gt;%
-  <span style="color:#06b;font-weight:bold">add_model</span>(xgmodel) %&gt;% 
-  <span style="color:#06b;font-weight:bold">add_formula</span>(outcome ~ .)
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r">xgWorkflow <span style="color:#f92672">&lt;-</span> 
+  workflows<span style="color:#f92672">::</span><span style="color:#a6e22e">workflow</span>() <span style="color:#f92672">%&gt;%</span>
+  <span style="color:#a6e22e">add_model</span>(xgmodel) <span style="color:#f92672">%&gt;%</span> 
+  <span style="color:#a6e22e">add_formula</span>(outcome <span style="color:#f92672">~</span> .)
 </code></pre></div><p>We can finally tune the model! We pass the workflow, cross-validation folds, grid of parameters to test and the metric we want to save from each model output. Note that <code>metric_set</code> comes from the <code>yardstick</code> package.</p>
-<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r">xgTuned &lt;- <span style="color:#06b;font-weight:bold">tune_grid</span>(
-  object = xgWorkflow,
-  resamples = cvFolds,
-  grid      = xgGrid,
-  metrics   = <span style="color:#06b;font-weight:bold">metric_set</span>(mn_log_loss),
-  control   = <span style="color:#06b;font-weight:bold">control_grid</span>(verbose = <span style="color:#080;font-weight:bold">TRUE</span>))
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r">xgTuned <span style="color:#f92672">&lt;-</span> <span style="color:#a6e22e">tune_grid</span>(
+  object <span style="color:#f92672">=</span> xgWorkflow,
+  resamples <span style="color:#f92672">=</span> cvFolds,
+  grid      <span style="color:#f92672">=</span> xgGrid,
+  metrics   <span style="color:#f92672">=</span> <span style="color:#a6e22e">metric_set</span>(mn_log_loss),
+  control   <span style="color:#f92672">=</span> <span style="color:#a6e22e">control_grid</span>(verbose <span style="color:#f92672">=</span> <span style="color:#66d9ef">TRUE</span>))
 </code></pre></div><p>Tuning the model on that grid took a while, around 90 minutes in a 8-core machine runing in parallel.</p>
 <p>Since we are running parallelised code there is no progress output shown even though verbose is set to True.</p>
 <p>Also, note that I set the <code>trees</code> parameter to 1000 in the model specification. This means that we are fitting 100 different XGBoost model and each one of those will build 1000 trees. XGBoost supports early stopping, i.e., you can specify a parameter that tells the model to stop if there has been no log-loss improvement in the last <code>N</code> trees.</p>
@@ -427,7 +427,7 @@ mllHyperparameters &lt;- <span style="color:#06b;font-weight:bold">apply</span>(
 <p>Early stopping is currently not supported in the <code>boost_tree</code> function. However, according to this <a href="https://github.com/topepo/caret/issues/641">post</a> it has been very recently implemented in the development version so you could give it a try if you were so inclined.</p>
 <p>The <code>xgTuned</code> object contains the 100 combinations of parameters we tested and the corresponding mean log-loss from the cross-validation.</p>
 <p>The <code>show_best</code> function outputs the best performing combinations.</p>
-<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r">xgTuned %&gt;% tune::<span style="color:#06b;font-weight:bold">show_best</span>(metric = <span style="color:#d20;background-color:#fff0f0">&#34;mn_log_loss&#34;</span>) %&gt;% <span style="color:#06b;font-weight:bold">kablify</span>()
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r">xgTuned <span style="color:#f92672">%&gt;%</span> tune<span style="color:#f92672">::</span><span style="color:#a6e22e">show_best</span>(metric <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;mn_log_loss&#34;</span>) <span style="color:#f92672">%&gt;%</span> <span style="color:#a6e22e">kablify</span>()
 </code></pre></div><table class="table table-striped" style="margin-left: auto; margin-right: auto;">
  <thead>
   <tr>
@@ -507,21 +507,21 @@ mllHyperparameters &lt;- <span style="color:#06b;font-weight:bold">apply</span>(
 </tbody>
 </table>
 <p>We can also get all the combinations with <code>collect_metrics</code> and we can plot them against mean log-loss.</p>
-<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r">xgTuned %&gt;% <span style="color:#06b;font-weight:bold">collect_metrics</span>() %&gt;% 
-  <span style="color:#06b;font-weight:bold">select</span>(mean,mtry:sample_size) %&gt;% data.table %&gt;% 
-  <span style="color:#06b;font-weight:bold">melt</span>(id=<span style="color:#d20;background-color:#fff0f0">&#34;mean&#34;</span>) %&gt;% 
-  <span style="color:#06b;font-weight:bold">ggplot</span>(<span style="color:#06b;font-weight:bold">aes</span>(y=mean,x=value,colour=variable)) + 
-  <span style="color:#06b;font-weight:bold">geom_point</span>(show.legend = <span style="color:#080;font-weight:bold">FALSE</span>) + 
-  <span style="color:#06b;font-weight:bold">facet_wrap</span>(variable~. , scales=<span style="color:#d20;background-color:#fff0f0">&#34;free&#34;</span>) + <span style="color:#06b;font-weight:bold">theme_bw</span>() +
-  <span style="color:#06b;font-weight:bold">labs</span>(y=<span style="color:#d20;background-color:#fff0f0">&#34;Mean log-loss&#34;</span>, x = <span style="color:#d20;background-color:#fff0f0">&#34;Parameter&#34;</span>)
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r">xgTuned <span style="color:#f92672">%&gt;%</span> <span style="color:#a6e22e">collect_metrics</span>() <span style="color:#f92672">%&gt;%</span> 
+  <span style="color:#a6e22e">select</span>(mean,mtry<span style="color:#f92672">:</span>sample_size) <span style="color:#f92672">%&gt;%</span> data.table <span style="color:#f92672">%&gt;%</span> 
+  <span style="color:#a6e22e">melt</span>(id<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;mean&#34;</span>) <span style="color:#f92672">%&gt;%</span> 
+  <span style="color:#a6e22e">ggplot</span>(<span style="color:#a6e22e">aes</span>(y<span style="color:#f92672">=</span>mean,x<span style="color:#f92672">=</span>value,colour<span style="color:#f92672">=</span>variable)) <span style="color:#f92672">+</span> 
+  <span style="color:#a6e22e">geom_point</span>(show.legend <span style="color:#f92672">=</span> <span style="color:#66d9ef">FALSE</span>) <span style="color:#f92672">+</span> 
+  <span style="color:#a6e22e">facet_wrap</span>(variable<span style="color:#f92672">~</span>. , scales<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;free&#34;</span>) <span style="color:#f92672">+</span> <span style="color:#a6e22e">theme_bw</span>() <span style="color:#f92672">+</span>
+  <span style="color:#a6e22e">labs</span>(y<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;Mean log-loss&#34;</span>, x <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;Parameter&#34;</span>)
 </code></pre></div><p><img src="/post/2020-05-24-tidymodels-and-xgbooost-a-few-learnings_files/figure-html/unnamed-chunk-19-1.png" width="672" /></p>
 <p>No clear patterns emerge from looking at the plots except that very small learn rate values lead to high log-loss. Having a grid that covers the parameter space as extensively as possible leads to many combinations that aren&rsquo;t so great but the important point is that we get also get the ones that perform very well.</p>
 <h3 id="fitting-the-best-model">Fitting the best model</h3>
 <p>We can pick the best combination of parameters with <code>select_best</code>.</p>
-<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r">xgBestParams &lt;- xgTuned %&gt;% <span style="color:#06b;font-weight:bold">select_best</span>(<span style="color:#d20;background-color:#fff0f0">&#34;mn_log_loss&#34;</span>)
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r">xgBestParams <span style="color:#f92672">&lt;-</span> xgTuned <span style="color:#f92672">%&gt;%</span> <span style="color:#a6e22e">select_best</span>(<span style="color:#e6db74">&#34;mn_log_loss&#34;</span>)
 </code></pre></div><p>The model is then finalised with those parameters with <code>finalize_model</code> and then the training data can be fit to it using <code>fit</code></p>
-<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r">xgboost_model_final &lt;- xgmodel %&gt;% <span style="color:#06b;font-weight:bold">finalize_model</span>(xgBestParams)
-xgTrainFit&lt;-xgboost_model_final %&gt;% <span style="color:#06b;font-weight:bold">fit</span>(outcome~., data=proc_mwTrainSet)
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r">xgboost_model_final <span style="color:#f92672">&lt;-</span> xgmodel <span style="color:#f92672">%&gt;%</span> <span style="color:#a6e22e">finalize_model</span>(xgBestParams)
+xgTrainFit<span style="color:#f92672">&lt;-</span>xgboost_model_final <span style="color:#f92672">%&gt;%</span> <span style="color:#a6e22e">fit</span>(outcome<span style="color:#f92672">~</span>., data<span style="color:#f92672">=</span>proc_mwTrainSet)
 xgTrainFit
 </code></pre></div><pre><code>## parsnip model object
 ## 
@@ -544,11 +544,11 @@ xgTrainFit
 ## niter: 1000
 ## nfeatures : 53
 </code></pre><p>We can also get predictions on the training set; <code>predict</code> outputs the predicted classes while <code>predict_classprob.model_fit</code> outputs the class probabilities for each of the 3 classes.</p>
-<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r">xgTrainPreds&lt;- xgTrainFit %&gt;% <span style="color:#06b;font-weight:bold">predict</span>(new_data=proc_mwTrainSet)
-xgTrainPredProbs &lt;- xgTrainFit %&gt;% <span style="color:#06b;font-weight:bold">predict_classprob.model_fit</span>(new_data=proc_mwTrainSet)
-proc_mwTrainSet &lt;- <span style="color:#06b;font-weight:bold">bind_cols</span>(proc_mwTrainSet,xgTrainPreds,xgTrainPredProbs)
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r">xgTrainPreds<span style="color:#f92672">&lt;-</span> xgTrainFit <span style="color:#f92672">%&gt;%</span> <span style="color:#a6e22e">predict</span>(new_data<span style="color:#f92672">=</span>proc_mwTrainSet)
+xgTrainPredProbs <span style="color:#f92672">&lt;-</span> xgTrainFit <span style="color:#f92672">%&gt;%</span> <span style="color:#a6e22e">predict_classprob.model_fit</span>(new_data<span style="color:#f92672">=</span>proc_mwTrainSet)
+proc_mwTrainSet <span style="color:#f92672">&lt;-</span> <span style="color:#a6e22e">bind_cols</span>(proc_mwTrainSet,xgTrainPreds,xgTrainPredProbs)
 </code></pre></div><p>In the table below <code>outcome</code> is the dependent variable, <code>.pred_class</code> the predicted class and <code>Type*</code> are the class probabilities. As an example, in the first row Type2 has the highest probability so the prediction is assingnd to this class.</p>
-<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r">proc_mwTrainSet %&gt;% <span style="color:#06b;font-weight:bold">select</span>(Type1:outcome) %&gt;% head %&gt;% <span style="color:#06b;font-weight:bold">kablify</span>()
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r">proc_mwTrainSet <span style="color:#f92672">%&gt;%</span> <span style="color:#a6e22e">select</span>(Type1<span style="color:#f92672">:</span>outcome) <span style="color:#f92672">%&gt;%</span> head <span style="color:#f92672">%&gt;%</span> <span style="color:#a6e22e">kablify</span>()
 </code></pre></div><table class="table table-striped" style="margin-left: auto; margin-right: auto;">
  <thead>
   <tr>
@@ -606,7 +606,7 @@ proc_mwTrainSet &lt;- <span style="color:#06b;font-weight:bold">bind_cols</span>
 </table>
 <h3 id="model-evaluation">Model evaluation</h3>
 <p>We can evaluate the model using the <code>yardstick</code> package. The <code>metrics</code> function takes parameters <code>truth</code> and <code>estimate</code> and will output the accuracy and kappa metrics. If you pass the class probabilities it also calculates mean log-loss and roc_auc.</p>
-<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r">proc_mwTrainSet %&gt;% yardstick::<span style="color:#06b;font-weight:bold">metrics</span>(truth=outcome,estimate=.pred_class,Type1,Type2,Type3) %&gt;% <span style="color:#06b;font-weight:bold">kablify</span>()
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r">proc_mwTrainSet <span style="color:#f92672">%&gt;%</span> yardstick<span style="color:#f92672">::</span><span style="color:#a6e22e">metrics</span>(truth<span style="color:#f92672">=</span>outcome,estimate<span style="color:#f92672">=</span>.pred_class,Type1,Type2,Type3) <span style="color:#f92672">%&gt;%</span> <span style="color:#a6e22e">kablify</span>()
 </code></pre></div><table class="table table-striped" style="margin-left: auto; margin-right: auto;">
  <thead>
   <tr>
@@ -640,8 +640,8 @@ proc_mwTrainSet &lt;- <span style="color:#06b;font-weight:bold">bind_cols</span>
 </table>
 <p>When I first fit this model with XGBoost I got an accuracy of 0.96 and a validation log-loss of 0.306. So far with the current approach accuracy is at 0.943 and validation log-loss (from the <code>xgTuned</code> table in the previous section) at 0.313. I haven&rsquo;t achieved results as good as I had before but I also have to note that getting to those values took me a lot of effort and going through the tuning process many times. Here, I did one pass and I&rsquo;m already close. If I expand the tuning grid I could probably get better performance metrics.</p>
 <p>We can also get the confusion matrix with <code>conf_mat</code>.</p>
-<div class="highlight"><pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r">cm&lt;-proc_mwTrainSet %&gt;% yardstick::<span style="color:#06b;font-weight:bold">conf_mat</span>(truth=outcome,estimate=.pred_class) 
-<span style="color:#06b;font-weight:bold">autoplot</span>(cm, type = <span style="color:#d20;background-color:#fff0f0">&#34;heatmap&#34;</span>) 
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r">cm<span style="color:#f92672">&lt;-</span>proc_mwTrainSet <span style="color:#f92672">%&gt;%</span> yardstick<span style="color:#f92672">::</span><span style="color:#a6e22e">conf_mat</span>(truth<span style="color:#f92672">=</span>outcome,estimate<span style="color:#f92672">=</span>.pred_class) 
+<span style="color:#a6e22e">autoplot</span>(cm, type <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;heatmap&#34;</span>) 
 </code></pre></div><p><img src="/post/2020-05-24-tidymodels-and-xgbooost-a-few-learnings_files/figure-html/unnamed-chunk-26-1.png" width="672" /></p>
 <p>We can see that the <code>Type3</code> class is better predicted than the other two.</p>
 <p>In order to <em>really</em> finalise the model I would need to fit the test data and check the metrics in that set which has not been used in the modeling and hence provides an unbiased validation of out approach. I&rsquo;m not going to focus on that here mainly because the test set did not come with labels so I won&rsquo;t be able to calculate any performance metrics from it.</p>

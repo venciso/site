@@ -39,12 +39,12 @@
 )
 &lt;/code&gt;&lt;/pre&gt;&lt;p&gt;It is functional but it makes the post look a bit samey. You can play around with the colour of the text to help differentiate between code and not-code.&lt;/p&gt;
 &lt;p&gt;If you apply syntax highlighting you end up with something more like this:&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-r&#34; data-lang=&#34;r&#34;&gt;xgboostParams &amp;lt;- dials::&lt;span style=&#34;color:#06b;font-weight:bold&#34;&gt;parameters&lt;/span&gt;(
-  &lt;span style=&#34;color:#06b;font-weight:bold&#34;&gt;min_n&lt;/span&gt;(),
-  &lt;span style=&#34;color:#06b;font-weight:bold&#34;&gt;tree_depth&lt;/span&gt;(),
-  &lt;span style=&#34;color:#06b;font-weight:bold&#34;&gt;learn_rate&lt;/span&gt;(),
-  &lt;span style=&#34;color:#06b;font-weight:bold&#34;&gt;finalize&lt;/span&gt;(&lt;span style=&#34;color:#06b;font-weight:bold&#34;&gt;mtry&lt;/span&gt;(),&lt;span style=&#34;color:#06b;font-weight:bold&#34;&gt;select&lt;/span&gt;(proc_mwTrainSet,-outcome)),
-  sample_size = &lt;span style=&#34;color:#06b;font-weight:bold&#34;&gt;sample_prop&lt;/span&gt;(&lt;span style=&#34;color:#06b;font-weight:bold&#34;&gt;c&lt;/span&gt;(&lt;span style=&#34;color:#00d;font-weight:bold&#34;&gt;0.4&lt;/span&gt;, &lt;span style=&#34;color:#00d;font-weight:bold&#34;&gt;0.9&lt;/span&gt;))
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-r&#34; data-lang=&#34;r&#34;&gt;xgboostParams &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;-&lt;/span&gt; dials&lt;span style=&#34;color:#f92672&#34;&gt;::&lt;/span&gt;&lt;span style=&#34;color:#a6e22e&#34;&gt;parameters&lt;/span&gt;(
+  &lt;span style=&#34;color:#a6e22e&#34;&gt;min_n&lt;/span&gt;(),
+  &lt;span style=&#34;color:#a6e22e&#34;&gt;tree_depth&lt;/span&gt;(),
+  &lt;span style=&#34;color:#a6e22e&#34;&gt;learn_rate&lt;/span&gt;(),
+  &lt;span style=&#34;color:#a6e22e&#34;&gt;finalize&lt;/span&gt;(&lt;span style=&#34;color:#a6e22e&#34;&gt;mtry&lt;/span&gt;(),&lt;span style=&#34;color:#a6e22e&#34;&gt;select&lt;/span&gt;(proc_mwTrainSet,&lt;span style=&#34;color:#f92672&#34;&gt;-&lt;/span&gt;outcome)),
+  sample_size &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;sample_prop&lt;/span&gt;(&lt;span style=&#34;color:#a6e22e&#34;&gt;c&lt;/span&gt;(&lt;span style=&#34;color:#ae81ff&#34;&gt;0.4&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;0.9&lt;/span&gt;))
 )
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;This looks much nicer in my opinion and makes the post more readable.&lt;/p&gt;
 &lt;p&gt;So, how do you do it?&lt;/p&gt;

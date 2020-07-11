@@ -1,0 +1,74 @@
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>
+	string substitution on A stats website
+	
+	</title>
+    <link>/tags/string-substitution/</link>
+    <description>Recent content 
+	
+	in string substitution on A stats website
+	</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+	
+	
+    <lastBuildDate>Sat, 11 Jul 2020 00:00:00 +0000</lastBuildDate>
+	
+    
+        <atom:link href="/tags/string-substitution/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Useful R functions: mgsub</title>
+      <link>/2020/07/r-mgsub/</link>
+      <pubDate>Sat, 11 Jul 2020 00:00:00 +0000</pubDate>
+      
+      <guid>/2020/07/r-mgsub/</guid>
+	  <description>&lt;p&gt;Many a-time I come across R functions and packages that I was not aware existed. Once I find what I was looking for I always think &amp;lsquo;Cool! Learned something new today&amp;rsquo;. However, most of the time the problem I was trying to solve is so specific that I end up not needing to use that new knowledge for a while.&lt;/p&gt;
+&lt;p&gt;When I need to use that function I so painstakingly googled for again I end up needing to search for scripts where I might have used it or trying to remember the dates around which I was working on that problem. This can be very time consuming and the old memory is not as good as it used to be! So, I&amp;rsquo;ve decided to try to make life easier for myself and I&amp;rsquo;ll start documenting those random but potentially very useful functions.&lt;/p&gt;
+&lt;p&gt;So, after all that rambling let&amp;rsquo;s get to the point. In this first post I will talk about multiple string replacement using &lt;code&gt;mgsub&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;In base &lt;code&gt;R&lt;/code&gt; if you want to find a replace a string you can use the &lt;code&gt;gsub&lt;/code&gt; function. Let&amp;rsquo;s say you have a table of names like this one.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-r&#34; data-lang=&#34;r&#34;&gt;&lt;span style=&#34;color:#a6e22e&#34;&gt;require&lt;/span&gt;(data.table)
+names &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;-&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;data.table&lt;/span&gt;(names&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#a6e22e&#34;&gt;c&lt;/span&gt;(&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;Alice&amp;#39;&lt;/span&gt;,&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;Bob&amp;#39;&lt;/span&gt;,&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;Pedro&amp;#39;&lt;/span&gt;,&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;Alex&amp;#39;&lt;/span&gt;))
+names
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;pre&gt;&lt;code&gt;##    names
+## 1: Alice
+## 2:   Bob
+## 3: Pedro
+## 4:  Alex
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;Bob wasn&amp;rsquo;t happy with his name and changed it to Bart. You could keep track of this change in a new column &lt;strong&gt;names_1&lt;/strong&gt;&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-r&#34; data-lang=&#34;r&#34;&gt;names[,names_1 &lt;span style=&#34;color:#f92672&#34;&gt;:=&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;gsub&lt;/span&gt;(&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;Bob&amp;#39;&lt;/span&gt;,&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;Bart&amp;#39;&lt;/span&gt;,names)]
+names
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;pre&gt;&lt;code&gt;##    names names_1
+## 1: Alice   Alice
+## 2:   Bob    Bart
+## 3: Pedro   Pedro
+## 4:  Alex    Alex
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;Pedro catches wind of this name change and thinks &amp;lsquo;Bart&amp;rsquo;s a pretty cool name, I&amp;rsquo;ll change mine too!&#39;. The list can be updated in one go by using an or condition inside &lt;code&gt;gsub&lt;/code&gt;&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-r&#34; data-lang=&#34;r&#34;&gt;names[,names_2 &lt;span style=&#34;color:#f92672&#34;&gt;:=&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;gsub&lt;/span&gt;(&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;Bob|Pedro&amp;#39;&lt;/span&gt;,&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;Bart&amp;#39;&lt;/span&gt;,names)]
+names
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;pre&gt;&lt;code&gt;##    names names_1 names_2
+## 1: Alice   Alice   Alice
+## 2:   Bob    Bart    Bart
+## 3: Pedro   Pedro    Bart
+## 4:  Alex    Alex    Alex
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;Now Bob feels like Pedro is cramping his style and decides he no longer wants to be called Bart but chooses Homer instead.&lt;/p&gt;
+&lt;p&gt;This is where the multiple substitution and &lt;code&gt;mgsub&lt;/code&gt; come in. The list can be updated in a single command.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-r&#34; data-lang=&#34;r&#34;&gt;&lt;span style=&#34;color:#a6e22e&#34;&gt;require&lt;/span&gt;(mgsub)
+names[,names_3 &lt;span style=&#34;color:#f92672&#34;&gt;:=&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;mgsub&lt;/span&gt;(names, &lt;span style=&#34;color:#a6e22e&#34;&gt;c&lt;/span&gt;(&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;Bob&amp;#39;&lt;/span&gt;,&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;Pedro&amp;#39;&lt;/span&gt;),&lt;span style=&#34;color:#a6e22e&#34;&gt;c&lt;/span&gt;(&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;Homer&amp;#39;&lt;/span&gt;,&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;Bart&amp;#39;&lt;/span&gt;))]
+names
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;pre&gt;&lt;code&gt;##    names names_1 names_2 names_3
+## 1: Alice   Alice   Alice   Alice
+## 2:   Bob    Bart    Bart   Homer
+## 3: Pedro   Pedro    Bart    Bart
+## 4:  Alex    Alex    Alex    Alex
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;Now you could question the need for a single command. You could just have two &lt;code&gt;gsub&lt;/code&gt; commands and be done with it.&lt;/p&gt;
+&lt;p&gt;My particular use case was that I needed to do the string substitution inside a function. Of course you could pass the terms you want to substitute in a list or as several parameters but the code inside the function would need to recognise how many terms you are passing and generate the appropriate commands which sounds cumbersome to me.&lt;/p&gt;
+&lt;p&gt;Using &lt;code&gt;mgsub&lt;/code&gt; you can pass all the terms as a single parameter and use a single command inside your function to deal with the substitutions.&lt;/p&gt;
+&lt;p&gt;Hope this helps someone. Thanks for reading!&lt;/p&gt;
+</description>
+    </item>
+    
+  </channel>
+</rss>

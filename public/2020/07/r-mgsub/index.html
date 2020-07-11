@@ -1,0 +1,281 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  
+  <meta name="generator" content="Hugo 0.69.0" />
+
+  
+  <meta name="description" content="Some description">
+  
+
+  
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+
+  
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+
+  
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+
+  
+  <link rel="manifest" href="/site.webmanifest">
+
+  
+  <link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+
+  <meta name="msapplication-TileColor" content="#da532c">
+
+  <meta name="theme-color" content="#ffffff">
+
+  
+  <link rel="stylesheet" href="/css/bootstrap.min.css" />
+
+  
+  <title>Useful R functions: mgsub | A stats website</title>
+  
+
+  <style>
+body {
+  min-width: 300px;
+}
+
+.custom-navbar {
+  margin-bottom: 1em;
+  height: 60px;
+}
+
+.custom-navbar a {
+  display: inline-block; 
+  padding: 18px 0;
+  margin-right: 1em; 
+  font-weight: bold; 
+}
+
+.custom-navbar a:hover,
+.custom-navbar a:focus {
+  text-decoration: none; 
+}
+
+@media print {
+  .custom-navbar {
+    display: none;
+  }
+}
+
+article {
+  padding-bottom: 1em;
+}
+
+img {
+  max-width: 100%;
+}
+
+
+body {
+  background-color: #fff;
+}
+
+
+
+body {
+  color: #4a4545;
+}
+
+
+
+a {
+  color: #025ec2;
+}
+
+
+
+a:hover,
+a:focus {
+  color: #142940;
+}
+
+
+
+.custom-navbar {
+  background-color: #212529;
+}
+
+
+
+.custom-navbar a {
+  color: rgba(255, 255, 255, 0.75);
+}
+
+
+
+.custom-navbar a:hover,
+.custom-navbar a:focus {
+  color: rgba(255, 255, 255, 1);
+}
+
+
+
+.container {
+  max-width: 800px;
+}
+
+
+
+pre {
+  display: block;
+  padding: 9.5px;
+  word-break: break-all;
+  word-wrap: break-word;
+  background-color: #f5f5f5;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+pre code {
+  padding: 0;
+  font-size: inherit;
+  color: inherit; 
+  white-space: pre-wrap;
+  background-color: transparent;
+  border: none;
+  border-radius: 0;
+}
+
+code {
+  padding: 2px 4px;
+  color: inherit; 
+  background-color: #f5f5f5;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: .9em;
+}
+
+
+
+blockquote,
+.blockquote {
+  padding: 10px 20px;
+  margin: 0 0 20px;
+  font-size: 1em;
+  border-left: 5px solid #6c757d;
+}
+
+</style>
+</head>
+
+<body>
+  <nav class="custom-navbar">
+  <div class="container">
+    
+    <a href="/">Posts</a>
+    
+    <a href="/tags/">Tags</a>
+    
+    <a href="/about/">About</a>
+    
+  </div>
+</nav>
+  
+  <div class="container">
+    <article>
+      <h1>Useful R functions: mgsub</h1>
+<p>
+  <small class="text-secondary">
+  
+  
+  Jul 11, 2020
+  </small>
+  
+
+<small><code><a href="/tags/r">R</a></code></small>
+
+
+<small><code><a href="/tags/string-substitution">string substitution</a></code></small>
+
+
+<small><code><a href="/tags/useful-functions">useful functions</a></code></small>
+
+</p>
+<p>Many a-time I come across R functions and packages that I was not aware existed. Once I find what I was looking for I always think &lsquo;Cool! Learned something new today&rsquo;. However, most of the time the problem I was trying to solve is so specific that I end up not needing to use that new knowledge for a while.</p>
+<p>When I need to use that function I so painstakingly googled for again I end up needing to search for scripts where I might have used it or trying to remember the dates around which I was working on that problem. This can be very time consuming and the old memory is not as good as it used to be! So, I&rsquo;ve decided to try to make life easier for myself and I&rsquo;ll start documenting those random but potentially very useful functions.</p>
+<p>So, after all that rambling let&rsquo;s get to the point. In this first post I will talk about multiple string replacement using <code>mgsub</code>.</p>
+<p>In base <code>R</code> if you want to find a replace a string you can use the <code>gsub</code> function. Let&rsquo;s say you have a table of names like this one.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r"><span style="color:#a6e22e">require</span>(data.table)
+names <span style="color:#f92672">&lt;-</span> <span style="color:#a6e22e">data.table</span>(names<span style="color:#f92672">=</span><span style="color:#a6e22e">c</span>(<span style="color:#e6db74">&#39;Alice&#39;</span>,<span style="color:#e6db74">&#39;Bob&#39;</span>,<span style="color:#e6db74">&#39;Pedro&#39;</span>,<span style="color:#e6db74">&#39;Alex&#39;</span>))
+names
+</code></pre></div><pre><code>##    names
+## 1: Alice
+## 2:   Bob
+## 3: Pedro
+## 4:  Alex
+</code></pre><p>Bob wasn&rsquo;t happy with his name and changed it to Bart. You could keep track of this change in a new column <strong>names_1</strong></p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r">names[,names_1 <span style="color:#f92672">:=</span> <span style="color:#a6e22e">gsub</span>(<span style="color:#e6db74">&#39;Bob&#39;</span>,<span style="color:#e6db74">&#39;Bart&#39;</span>,names)]
+names
+</code></pre></div><pre><code>##    names names_1
+## 1: Alice   Alice
+## 2:   Bob    Bart
+## 3: Pedro   Pedro
+## 4:  Alex    Alex
+</code></pre><p>Pedro catches wind of this name change and thinks &lsquo;Bart&rsquo;s a pretty cool name, I&rsquo;ll change mine too!'. The list can be updated in one go by using an or condition inside <code>gsub</code></p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r">names[,names_2 <span style="color:#f92672">:=</span> <span style="color:#a6e22e">gsub</span>(<span style="color:#e6db74">&#39;Bob|Pedro&#39;</span>,<span style="color:#e6db74">&#39;Bart&#39;</span>,names)]
+names
+</code></pre></div><pre><code>##    names names_1 names_2
+## 1: Alice   Alice   Alice
+## 2:   Bob    Bart    Bart
+## 3: Pedro   Pedro    Bart
+## 4:  Alex    Alex    Alex
+</code></pre><p>Now Bob feels like Pedro is cramping his style and decides he no longer wants to be called Bart but chooses Homer instead.</p>
+<p>This is where the multiple substitution and <code>mgsub</code> come in. The list can be updated in a single command.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r"><span style="color:#a6e22e">require</span>(mgsub)
+names[,names_3 <span style="color:#f92672">:=</span> <span style="color:#a6e22e">mgsub</span>(names, <span style="color:#a6e22e">c</span>(<span style="color:#e6db74">&#39;Bob&#39;</span>,<span style="color:#e6db74">&#39;Pedro&#39;</span>),<span style="color:#a6e22e">c</span>(<span style="color:#e6db74">&#39;Homer&#39;</span>,<span style="color:#e6db74">&#39;Bart&#39;</span>))]
+names
+</code></pre></div><pre><code>##    names names_1 names_2 names_3
+## 1: Alice   Alice   Alice   Alice
+## 2:   Bob    Bart    Bart   Homer
+## 3: Pedro   Pedro    Bart    Bart
+## 4:  Alex    Alex    Alex    Alex
+</code></pre><p>Now you could question the need for a single command. You could just have two <code>gsub</code> commands and be done with it.</p>
+<p>My particular use case was that I needed to do the string substitution inside a function. Of course you could pass the terms you want to substitute in a list or as several parameters but the code inside the function would need to recognise how many terms you are passing and generate the appropriate commands which sounds cumbersome to me.</p>
+<p>Using <code>mgsub</code> you can pass all the terms as a single parameter and use a single command inside your function to deal with the substitutions.</p>
+<p>Hope this helps someone. Thanks for reading!</p>
+
+    </article>
+  </div>
+
+  
+  
+  
+  <script>
+  window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+  ga('create', 'UA-324335-2', 'auto');
+  ga('send', 'pageview');
+  </script>
+  <script async src='https://www.google-analytics.com/analytics.js'></script>
+  
+
+  
+
+  
+<link rel="stylesheet" type="text/css" href="//cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.1.0/cookieconsent.min.css" />
+<script src="//cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.1.0/cookieconsent.min.js"></script>
+<script>
+window.addEventListener("load", function(){
+window.cookieconsent.initialise({
+  "palette": {
+    "popup": {
+      "background": "#216942",
+      "text": "#b2d192"
+    },
+    "button": {
+      "background": "#afed71"
+    }
+  }
+})});
+</script>
+
+</body>
+
+</html>
